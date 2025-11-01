@@ -4,13 +4,10 @@ interface CanvasProps extends React.HTMLAttributes<HTMLDivElement> {
   src?: ArrayBuffer;
 }
 
-type DrawOffset = {
+type Point = {
   x: number;
   y: number;
 };
-
-const STROKE_STYLE = "black";
-const STROKE_WIDTH = 2;
 
 function renderImage(
   canvas: HTMLCanvasElement,
@@ -31,23 +28,6 @@ function renderImage(
   img.src = objectURL;
 }
 
-function drawLine(
-  ctx: CanvasRenderingContext2D,
-  x1: number,
-  y1: number,
-  x2: number,
-  y2: number
-) {
-  ctx.beginPath();
-  ctx.strokeStyle = STROKE_STYLE;
-  ctx.lineWidth = STROKE_WIDTH;
-  ctx.lineJoin = "round";
-  ctx.lineCap = "round";
-  ctx.moveTo(x1, y1);
-  ctx.lineTo(x2, y2);
-  ctx.stroke();
-}
-
 function Canvas({ src, ...props }: CanvasProps) {
   const imageCanvasRef = useRef<HTMLCanvasElement>(null);
   const drawCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -55,11 +35,124 @@ function Canvas({ src, ...props }: CanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const isDrawingRef = useRef(false);
-  const drawOffsetRef = useRef<DrawOffset>({ x: 0, y: 0 });
+  const pointsRef = useRef<Point[]>([]);
+  const startPointRef = useRef<Point | null>(null);
+  const selectedPixelsRef = useRef<Set<string>>(new Set());
 
   const [ongoingTouches, setOngoingTouches] = useState<Touch[]>([]);
   const getOngoingTouchById = (id: number) =>
     ongoingTouches.findIndex((t) => t.identifier === id);
+
+  // https://codepen.io/cranes/pen/GvobwB (MASSIVE SHOUTOUT)
+  const isPointInPolygon = (point: Point, polygon: Point[]): boolean => {
+    if (polygon.length <= 1) return false;
+
+    let intersectionCount = 0;
+
+    for (let i = 1; i < polygon.length; i++) {
+      const start = polygon[i - 1];
+      const end = polygon[i];
+
+      const ray = {
+        Start: { x: point.x, y: point.y },
+        End: { x: 99999, y: point.y },
+      };
+      const segment = { Start: start, End: end };
+
+      const rayDistance = {
+        x: ray.End.x - ray.Start.x,
+        y: ray.End.y - ray.Start.y,
+      };
+
+      const segDistance = {
+        x: segment.End.x - segment.Start.x,
+        y: segment.End.y - segment.Start.y,
+      };
+
+      const rayLength = Math.sqrt(
+        Math.pow(rayDistance.x, 2) + Math.pow(rayDistance.y, 2)
+      );
+      const segLength = Math.sqrt(
+        Math.pow(segDistance.x, 2) + Math.pow(segDistance.y, 2)
+      );
+
+      if (
+        rayDistance.x / rayLength === segDistance.x / segLength &&
+        rayDistance.y / rayLength === segDistance.y / segLength
+      ) {
+        continue;
+      }
+
+      const T2 =
+        (rayDistance.x * (segment.Start.y - ray.Start.y) +
+          rayDistance.y * (ray.Start.x - segment.Start.x)) /
+        (segDistance.x * rayDistance.y - segDistance.y * rayDistance.x);
+      const T1 =
+        (segment.Start.x + segDistance.x * T2 - ray.Start.x) / rayDistance.x;
+
+      if (T1 < 0) continue;
+      if (T2 < 0 || T2 > 1) continue;
+      if (isNaN(T1)) continue;
+
+      intersectionCount++;
+    }
+
+    return (intersectionCount & 1) === 1;
+  };
+
+  const renderSelection = (
+    ctx: CanvasRenderingContext2D,
+    points: Point[],
+    start: Point | null
+  ) => {
+    if (points.length <= 1 || !start) return;
+
+    ctx.setLineDash([5, 3]);
+    ctx.strokeStyle = "black";
+    ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+
+    for (let i = 0; i < points.length; i++) {
+      const point = points[i];
+      if (i === 0) {
+        ctx.moveTo(point.x, point.y);
+      } else {
+        ctx.lineTo(point.x, point.y);
+      }
+    }
+
+    ctx.lineTo(start.x, start.y);
+    ctx.fill();
+    ctx.stroke();
+    ctx.closePath();
+    ctx.setLineDash([]);
+  };
+
+  const selectPixels = (points: Point[]) => {
+    if (!drawCanvasRef.current || points.length <= 1) return;
+
+    const canvas = drawCanvasRef.current;
+    selectedPixelsRef.current.clear();
+
+    // sample every 10th pixel instead of every pixel for perfomance boost :)
+    const steps = 10;
+    for (let x = 0; x < canvas.width; x += steps) {
+      for (let y = 0; y < canvas.height; y += steps) {
+        if (isPointInPolygon({ x, y }, points)) {
+          selectedPixelsRef.current.add(`${x},${y}`);
+        }
+      }
+    }
+  };
+
+  const renderCanvas = (ctx: CanvasRenderingContext2D) => {
+    if (!drawCanvasRef.current) return;
+
+    const canvas = drawCanvasRef.current;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    renderSelection(ctx, pointsRef.current, startPointRef.current);
+  };
 
   useEffect(() => {
     if (!imageCanvasRef.current || !drawCanvasRef.current || !src) return;
@@ -85,77 +178,80 @@ function Canvas({ src, ...props }: CanvasProps) {
     };
     img.src = objectURL;
 
-    const handleMouseDown = (e: MouseEvent) => {
+    const getCanvasCoordinates = (clientX: number, clientY: number) => {
       const rect = drawCanvas.getBoundingClientRect();
       const scaleX = drawCanvas.width / rect.width;
       const scaleY = drawCanvas.height / rect.height;
-
-      isDrawingRef.current = true;
-      drawOffsetRef.current = {
-        x: (e.clientX - rect.left) * scaleX,
-        y: (e.clientY - rect.top) * scaleY,
+      return {
+        x: Math.round((clientX - rect.left) * scaleX),
+        y: Math.round((clientY - rect.top) * scaleY),
       };
+    };
+
+    const handleMouseDown = (e: MouseEvent) => {
+      isDrawingRef.current = true;
+      selectedPixelsRef.current.clear();
+      const point = getCanvasCoordinates(e.clientX, e.clientY);
+      startPointRef.current = point;
+      pointsRef.current = [point];
+      if (drawCtxRef.current) {
+        renderCanvas(drawCtxRef.current);
+      }
     };
 
     const handleMouseMove = (e: MouseEvent) => {
       if (!isDrawingRef.current || !drawCtxRef.current) return;
 
-      const rect = drawCanvas.getBoundingClientRect();
-      const scaleX = drawCanvas.width / rect.width;
-      const scaleY = drawCanvas.height / rect.height;
-
-      const prev = drawOffsetRef.current;
-      const currentX = (e.clientX - rect.left) * scaleX;
-      const currentY = (e.clientY - rect.top) * scaleY;
-
-      drawLine(drawCtxRef.current, prev.x, prev.y, currentX, currentY);
-      drawOffsetRef.current = { x: currentX, y: currentY };
+      const point = getCanvasCoordinates(e.clientX, e.clientY);
+      pointsRef.current.push(point);
+      renderCanvas(drawCtxRef.current);
     };
 
-    const handleMouseUp = (e: MouseEvent) => {
+    const handleMouseUp = () => {
       if (!isDrawingRef.current || !drawCtxRef.current) return;
 
-      const rect = drawCanvas.getBoundingClientRect();
-      const scaleX = drawCanvas.width / rect.width;
-      const scaleY = drawCanvas.height / rect.height;
-
-      const prev = drawOffsetRef.current;
-      const currentX = (e.clientX - rect.left) * scaleX;
-      const currentY = (e.clientY - rect.top) * scaleY;
-
-      drawLine(drawCtxRef.current, prev.x, prev.y, currentX, currentY);
       isDrawingRef.current = false;
-      drawOffsetRef.current = { x: 0, y: 0 };
+      if (startPointRef.current) {
+        pointsRef.current.push(startPointRef.current);
+      }
+      selectPixels(pointsRef.current);
+      renderCanvas(drawCtxRef.current);
+
+      console.log(`Selected ${selectedPixelsRef.current.size} pixels`);
     };
 
     const handleTouchStart = (e: TouchEvent) => {
       e.preventDefault();
       const touches = e.changedTouches;
-      for (let i = 0; i < touches.length; i++) {
-        setOngoingTouches((prev) => [...prev, touches[i]]);
+      if (touches.length > 0) {
+        isDrawingRef.current = true;
+        selectedPixelsRef.current.clear();
+        const point = getCanvasCoordinates(
+          touches[0].clientX,
+          touches[0].clientY
+        );
+        startPointRef.current = point;
+        pointsRef.current = [point];
+        setOngoingTouches([touches[0]]);
+        if (drawCtxRef.current) {
+          renderCanvas(drawCtxRef.current);
+        }
       }
     };
 
     const handleTouchMove = (e: TouchEvent) => {
       e.preventDefault();
-      if (!drawCtxRef.current) return;
+      if (!isDrawingRef.current || !drawCtxRef.current) return;
 
-      const rect = drawCanvas.getBoundingClientRect();
-      const scaleX = drawCanvas.width / rect.width;
-      const scaleY = drawCanvas.height / rect.height;
       const touches = e.changedTouches;
-
       for (let i = 0; i < touches.length; i++) {
         const idx = getOngoingTouchById(touches[i].identifier);
         if (idx >= 0) {
-          const prev = ongoingTouches[idx];
-          drawLine(
-            drawCtxRef.current,
-            (prev.clientX - rect.left) * scaleX,
-            (prev.clientY - rect.top) * scaleY,
-            (touches[i].clientX - rect.left) * scaleX,
-            (touches[i].clientY - rect.top) * scaleY
+          const point = getCanvasCoordinates(
+            touches[i].clientX,
+            touches[i].clientY
           );
+          pointsRef.current.push(point);
           setOngoingTouches((prev) => {
             const updated = [...prev];
             updated.splice(idx, 1, touches[i]);
@@ -163,10 +259,13 @@ function Canvas({ src, ...props }: CanvasProps) {
           });
         }
       }
+      renderCanvas(drawCtxRef.current);
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
       e.preventDefault();
+      if (!isDrawingRef.current || !drawCtxRef.current) return;
+
       const touches = e.changedTouches;
       for (let i = 0; i < touches.length; i++) {
         const idx = getOngoingTouchById(touches[i].identifier);
@@ -174,6 +273,15 @@ function Canvas({ src, ...props }: CanvasProps) {
           setOngoingTouches((prev) => prev.filter((_, j) => j !== idx));
         }
       }
+
+      isDrawingRef.current = false;
+      if (startPointRef.current) {
+        pointsRef.current.push(startPointRef.current);
+      }
+      selectPixels(pointsRef.current);
+      renderCanvas(drawCtxRef.current);
+
+      console.log(`Selected ${selectedPixelsRef.current.size} pixels`);
     };
 
     const handleTouchCancel = (e: TouchEvent) => {
@@ -185,6 +293,7 @@ function Canvas({ src, ...props }: CanvasProps) {
           setOngoingTouches((prev) => prev.filter((_, j) => j !== idx));
         }
       }
+      isDrawingRef.current = false;
     };
 
     drawCanvas.addEventListener("mousedown", handleMouseDown);
