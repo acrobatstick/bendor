@@ -8,8 +8,7 @@ function App() {
   const [imgBuf, setImageBuf] = useState<ArrayBuffer>();
   const imageRef = useRef<HTMLInputElement>(null);
 
-  const onSubmitForm = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const onImageChange = () => {
     const files = imageRef.current?.files;
     if (!files || files?.length == 0) {
       return;
@@ -26,10 +25,13 @@ function App() {
 
   return (
     <StoreProvider>
-      <form onSubmit={onSubmitForm}>
-        <input ref={imageRef} name="image" type="file" accept="image/*" />
-        <button>Submit</button>
-      </form>
+      <input
+        onChange={onImageChange}
+        ref={imageRef}
+        name="image"
+        type="file"
+        accept="image/*"
+      />
       <div>
         <Selections />
         <Canvas src={imgBuf} />
