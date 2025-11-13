@@ -4,7 +4,7 @@ export enum Filter {
   None = "None"
 }
 
-export interface PSelection {
+export interface Layer {
   points: Point[];
   start: Point;
   filter: Filter;
@@ -13,8 +13,8 @@ export interface PSelection {
 
 export interface State {
   imgBuf: ArrayBuffer
-  selections: PSelection[];
-  currentSelection?: PSelection;
+  layers: Layer[];
+  currentLayer?: Layer;
   selectedSelectionIdx: number;
 }
 

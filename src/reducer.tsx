@@ -1,5 +1,5 @@
 import { initialState } from "./misc";
-import { Filter, type PSelection, type State } from "./types";
+import { Filter, type Layer, type State } from "./types";
 
 export enum ActionType {
   SetImageBuf,
@@ -7,8 +7,9 @@ export enum ActionType {
   SetPointsToLayer,
   SelectLayer,
   GetSelectedLayerPoint,
-  ClearSelections,
-  UpdateSelection,
+  ClearLayers,
+  UpdateLayer,
+  DeleteLayer,
 }
 
 interface SetImageBuf {
@@ -22,7 +23,7 @@ interface CreateNewLayer {
 
 interface SetPointsToLayer {
   type: ActionType.SetPointsToLayer;
-  payload: Pick<PSelection, "start" | "points">;
+  payload: Pick<Layer, "start" | "points">;
 }
 
 interface SelectLayer {
@@ -30,16 +31,21 @@ interface SelectLayer {
   payload: number;
 }
 
-interface ClearSelections {
-  type: ActionType.ClearSelections;
+interface ClearLayers {
+  type: ActionType.ClearLayers;
 }
 
-interface UpdateSelection {
-  type: ActionType.UpdateSelection;
+interface UpdateLayer {
+  type: ActionType.UpdateLayer;
   payload: {
     layerIdx: number;
-    pselection: Partial<PSelection>;
+    pselection: Partial<Layer>;
   };
+}
+
+interface DeleteLayer {
+  type: ActionType.DeleteLayer;
+  payload: number;
 }
 
 function isInBounds(arrLen: number, idx: number): boolean {
@@ -51,8 +57,9 @@ export type Action =
   | CreateNewLayer
   | SetPointsToLayer
   | SelectLayer
-  | ClearSelections
-  | UpdateSelection;
+  | ClearLayers
+  | UpdateLayer
+  | DeleteLayer;
 
 const reducer = (state: State, action: Action): State => {
   switch (action.type) {
@@ -63,27 +70,27 @@ const reducer = (state: State, action: Action): State => {
     }
 
     case ActionType.CreateNewLayer: {
-      const newLayer: PSelection = {
+      const newLayer: Layer = {
         points: [],
         start: { x: 0, y: 0 },
         filter: Filter.None,
         ctx: null,
       };
-      const nextSelections = [...state.selections, newLayer];
-      const nextIdx = nextSelections.length - 1;
+      const nextLayers = [...state.layers, newLayer];
+      const nextIdx = nextLayers.length - 1;
       return {
         ...state,
-        selections: nextSelections,
+        layers: nextLayers,
         selectedSelectionIdx: nextIdx,
-        currentSelection: nextSelections[nextIdx],
+        currentLayer: nextLayers[nextIdx],
       };
     }
 
     case ActionType.SetPointsToLayer: {
-      if (!isInBounds(state.selections.length, state.selectedSelectionIdx))
+      if (!isInBounds(state.layers.length, state.selectedSelectionIdx))
         return state;
 
-      const updated = [...state.selections];
+      const updated = [...state.layers];
       updated[state.selectedSelectionIdx] = {
         ...updated[state.selectedSelectionIdx],
         start: action.payload.start,
@@ -93,25 +100,25 @@ const reducer = (state: State, action: Action): State => {
 
       return {
         ...state,
-        selections: updated,
+        layers: updated,
       };
     }
 
     case ActionType.SelectLayer: {
       const idx = action.payload;
-      if (!isInBounds(state.selections.length, idx)) return { ...state };
+      if (!isInBounds(state.layers.length, idx)) return { ...state };
       return {
         ...state,
         selectedSelectionIdx: idx,
-        currentSelection: state.selections[idx],
+        currentLayer: state.layers[idx],
       };
     }
 
-    case ActionType.UpdateSelection: {
-      if (!isInBounds(state.selections.length, state.selectedSelectionIdx))
+    case ActionType.UpdateLayer: {
+      if (!isInBounds(state.layers.length, state.selectedSelectionIdx))
         return state;
 
-      const updated = [...state.selections];
+      const updated = [...state.layers];
       updated[action.payload.layerIdx] = {
         ...updated[action.payload.layerIdx],
         ...action.payload.pselection,
@@ -120,14 +127,14 @@ const reducer = (state: State, action: Action): State => {
 
       return {
         ...state,
-        selections: updated,
-        currentSelection: isCurrent
+        layers: updated,
+        currentLayer: isCurrent
           ? updated[action.payload.layerIdx]
-          : state.currentSelection,
+          : state.currentLayer,
       };
     }
 
-    case ActionType.ClearSelections:
+    case ActionType.ClearLayers:
       state = initialState;
       return state;
 

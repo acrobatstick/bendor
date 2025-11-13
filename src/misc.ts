@@ -2,7 +2,7 @@ import type { State } from "./types";
 
 export const initialState: State = {
   imgBuf: new ArrayBuffer(),
-  selections: [],
-  currentSelection: undefined,
+  layers: [],
+  currentLayer: undefined,
   selectedSelectionIdx: -1,
 };

@@ -11,19 +11,15 @@ function Selections() {
         Add new selection
       </button>
       <ul>
-        {state.selections.map((point, idx) => (
-          <li id={`${idx}`} key={idx}>
-            <span
-              onClick={() =>
-                dispatch({ type: ActionType.SelectLayer, payload: idx })
-              }
-            >
-              Point {idx}
-            </span>
+        {state.layers.map((point, idx) => (
+          <li
+            onClick={() => dispatch({ type: ActionType.SelectLayer, payload: idx })}
+            id={`${idx}`}
+            key={idx}>
             <select
               onChange={(event) =>
                 dispatch({
-                  type: ActionType.UpdateSelection,
+                  type: ActionType.UpdateLayer,
                   payload: {
                     layerIdx: idx,
                     pselection: {
@@ -38,6 +34,8 @@ function Selections() {
                 <option key={`filter-${idx}-${filter}`}>{filter}</option>
               ))}
             </select>
+            {" "}
+            {state.selectedSelectionIdx == idx && "(Active)"}
           </li>
         ))}
       </ul>

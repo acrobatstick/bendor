@@ -188,7 +188,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
       );
       if (!activeCanvas) return;
 
-      const drawingCanvasCtx = state.currentSelection?.ctx;
+      const drawingCanvasCtx = state.currentLayer?.ctx;
       if (!drawingCanvasCtx) {
         console.log("drawingCanvasCtx empty in register");
         return;
@@ -377,7 +377,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
   }, [
     ongoingTouches,
     state.selectedSelectionIdx,
-    state.currentSelection?.ctx,
+    state.currentLayer?.ctx,
     dispatch,
     getOngoingTouchById,
     selectPixels,
@@ -393,13 +393,13 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
     );
 
     // when user selects a layer, sync its points into refs
-    pointsRef.current = state.currentSelection?.points || [];
-    startPointRef.current = state.currentSelection?.start || null;
+    pointsRef.current = state.currentLayer?.points || [];
+    startPointRef.current = state.currentLayer?.start || null;
 
     // now redraw the overlay only if there is already a drawing canvas element for this layer
-    if (activeCanvas && state.currentSelection?.ctx) {
+    if (activeCanvas && state.currentLayer?.ctx) {
       renderSelection(
-        state.currentSelection.ctx,
+        state.currentLayer.ctx,
         activeCanvas,
         pointsRef.current,
         startPointRef.current
@@ -407,7 +407,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
     }
 
     // create drawing canvas on new layer creation
-    if (state.selectedSelectionIdx >= 0 && !state.currentSelection?.ctx) {
+    if (state.selectedSelectionIdx >= 0 && !state.currentLayer?.ctx) {
       const container = containerRef.current;
       if (!container) return;
       const img = imageCanvasRef.current;
@@ -432,14 +432,14 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
       container.appendChild(drawingCanvas);
       const ctx = drawingCanvas.getContext("2d");
       dispatch({
-        type: ActionType.UpdateSelection,
+        type: ActionType.UpdateLayer,
         payload: {
           layerIdx: state.selectedSelectionIdx,
           pselection: { ctx },
         },
       });
     }
-  }, [state.selectedSelectionIdx, state.currentSelection, dispatch]);
+  }, [state.selectedSelectionIdx, state.currentLayer, dispatch]);
 
   // Handle layers selection on selected index change
   useEffect(() => {
