@@ -15,7 +15,7 @@ export interface State {
   imgBuf: ArrayBuffer
   layers: Layer[];
   currentLayer?: Layer;
-  selectedSelectionIdx: number;
+  selectedLayerIdx: number;
 }
 
 export type Point = {

@@ -12,10 +12,7 @@ function Selections() {
       </button>
       <ul>
         {state.layers.map((point, idx) => (
-          <li
-            onClick={() => dispatch({ type: ActionType.SelectLayer, payload: idx })}
-            id={`${idx}`}
-            key={idx}>
+          <li id={`${idx}`} key={idx}>
             <select
               onChange={(event) =>
                 dispatch({
@@ -28,14 +25,17 @@ function Selections() {
                   },
                 })
               }
-              value={point.filter}
-            >
+              value={point.filter}>
               {filterList.map((filter) => (
                 <option key={`filter-${idx}-${filter}`}>{filter}</option>
               ))}
             </select>
-            {" "}
-            {state.selectedSelectionIdx == idx && "(Active)"}
+            <button onClick={() => dispatch({ type: ActionType.SelectLayer, payload: idx })}>
+              {state.selectedLayerIdx == idx ? "(Active)" : "Select"}
+            </button>
+            <button onClick={() => dispatch({ type: ActionType.DeleteLayer, payload: idx })}>
+              Delete
+            </button>
           </li>
         ))}
       </ul>

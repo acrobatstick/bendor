@@ -184,7 +184,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
     // use timeout to prevent from accessing the activeCanvas before it being created to the DOM
     const timeout = setTimeout(() => {
       const activeCanvas = container.querySelector<HTMLCanvasElement>(
-        `#drawing-canvas-${state.selectedSelectionIdx}`
+        `#drawing-canvas-${state.selectedLayerIdx}`
       );
       if (!activeCanvas) return;
 
@@ -206,7 +206,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
 
       const handleMouseDown = (e: MouseEvent) => {
         // dont do anything unless there is layer selected
-        if (state.selectedSelectionIdx < 0) {
+        if (state.selectedLayerIdx < 0) {
           return;
         }
         isDrawingRef.current = true;
@@ -376,7 +376,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
     return () => clearTimeout(timeout);
   }, [
     ongoingTouches,
-    state.selectedSelectionIdx,
+    state.selectedLayerIdx,
     state.currentLayer?.ctx,
     dispatch,
     getOngoingTouchById,
@@ -389,7 +389,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
     if (!container) return;
 
     const activeCanvas = container.querySelector<HTMLCanvasElement>(
-      `#drawing-canvas-${state.selectedSelectionIdx}`
+      `#drawing-canvas-${state.selectedLayerIdx}`
     );
 
     // when user selects a layer, sync its points into refs
@@ -407,7 +407,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
     }
 
     // create drawing canvas on new layer creation
-    if (state.selectedSelectionIdx >= 0 && !state.currentLayer?.ctx) {
+    if (state.selectedLayerIdx >= 0 && !state.currentLayer?.ctx) {
       const container = containerRef.current;
       if (!container) return;
       const img = imageCanvasRef.current;
@@ -419,7 +419,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
         drawingCanvas.height = img.height;
       }
 
-      drawingCanvas.id = `drawing-canvas-${state.selectedSelectionIdx}`;
+      drawingCanvas.id = `drawing-canvas-${state.selectedLayerIdx}`;
       Object.assign(drawingCanvas.style, {
         position: "absolute",
         top: "0",
@@ -434,12 +434,12 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
       dispatch({
         type: ActionType.UpdateLayer,
         payload: {
-          layerIdx: state.selectedSelectionIdx,
+          layerIdx: state.selectedLayerIdx,
           pselection: { ctx },
         },
       });
     }
-  }, [state.selectedSelectionIdx, state.currentLayer, dispatch]);
+  }, [state.selectedLayerIdx, state.currentLayer, dispatch]);
 
   // Handle layers selection on selected index change
   useEffect(() => {
@@ -455,7 +455,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
       // extract the numeric index from the id
       const idx = Number(canvas.id.replace("drawing-canvas-", ""));
 
-      if (idx === state.selectedSelectionIdx) {
+      if (idx === state.selectedLayerIdx) {
         canvas.classList.add("active");
         canvas.style.pointerEvents = "auto";
       } else {
@@ -467,7 +467,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
         canvas.style.pointerEvents = "none";
       }
     });
-  }, [state.selectedSelectionIdx]);
+  }, [state.selectedLayerIdx]);
 
   // TODO: should the image result rendered as:
   // - another canvas element as the preview canvas

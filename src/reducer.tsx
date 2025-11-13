@@ -81,21 +81,21 @@ const reducer = (state: State, action: Action): State => {
       return {
         ...state,
         layers: nextLayers,
-        selectedSelectionIdx: nextIdx,
+        selectedLayerIdx: nextIdx,
         currentLayer: nextLayers[nextIdx],
       };
     }
 
     case ActionType.SetPointsToLayer: {
-      if (!isInBounds(state.layers.length, state.selectedSelectionIdx))
+      if (!isInBounds(state.layers.length, state.selectedLayerIdx))
         return state;
 
       const updated = [...state.layers];
-      updated[state.selectedSelectionIdx] = {
-        ...updated[state.selectedSelectionIdx],
+      updated[state.selectedLayerIdx] = {
+        ...updated[state.selectedLayerIdx],
         start: action.payload.start,
         points: action.payload.points,
-        filter: updated[state.selectedSelectionIdx].filter,
+        filter: updated[state.selectedLayerIdx].filter,
       };
 
       return {
@@ -109,13 +109,13 @@ const reducer = (state: State, action: Action): State => {
       if (!isInBounds(state.layers.length, idx)) return { ...state };
       return {
         ...state,
-        selectedSelectionIdx: idx,
+        selectedLayerIdx: idx,
         currentLayer: state.layers[idx],
       };
     }
 
     case ActionType.UpdateLayer: {
-      if (!isInBounds(state.layers.length, state.selectedSelectionIdx))
+      if (!isInBounds(state.layers.length, state.selectedLayerIdx))
         return state;
 
       const updated = [...state.layers];
@@ -123,7 +123,7 @@ const reducer = (state: State, action: Action): State => {
         ...updated[action.payload.layerIdx],
         ...action.payload.pselection,
       };
-      const isCurrent = action.payload.layerIdx === state.selectedSelectionIdx;
+      const isCurrent = action.payload.layerIdx === state.selectedLayerIdx;
 
       return {
         ...state,
@@ -137,6 +137,25 @@ const reducer = (state: State, action: Action): State => {
     case ActionType.ClearLayers:
       state = initialState;
       return state;
+
+    case ActionType.DeleteLayer: {
+      let selectedLayerIdx = action.payload
+      const updated = [...state.layers].filter((_, idx) => idx != selectedLayerIdx);
+
+      // adjust selectedLayerIdx if updated layers are empty or overflowing the array length
+      if (updated.length === 0) {
+        selectedLayerIdx = -1
+      } else if (selectedLayerIdx >= updated.length) {
+        selectedLayerIdx = updated.length - 1
+      }
+
+      return {
+        ...state,
+        layers: updated,
+        selectedLayerIdx: selectedLayerIdx,
+        currentLayer: updated[selectedLayerIdx],
+      }
+    }
 
     default:
       return state;
