@@ -1,3 +1,8 @@
+export type Point = {
+  x: number;
+  y: number;
+};
+
 export enum Filter {
   Tint = "Tint",
   Grayscale = "Grayscale",
@@ -5,8 +10,11 @@ export enum Filter {
 }
 
 export interface Layer {
+  // The collections of points that define the selected area on the layer
   points: Point[];
+  // The starting point/position of the selection
   start: Point;
+  // The visual filter that applied to this layer
   filter: Filter;
   ctx: CanvasRenderingContext2D | null;
 }
@@ -17,10 +25,5 @@ export interface State {
   currentLayer?: Layer;
   selectedLayerIdx: number;
 }
-
-export type Point = {
-  x: number;
-  y: number;
-};
 
 export type ColorChannel = Uint8Array & { readonly length: 4 }

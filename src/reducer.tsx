@@ -10,6 +10,7 @@ export enum ActionType {
   ClearLayers,
   UpdateLayer,
   DeleteLayer,
+  MoveLayer,
 }
 
 interface SetImageBuf {
@@ -48,6 +49,14 @@ interface DeleteLayer {
   payload: number;
 }
 
+interface MoveLayer {
+  type: ActionType.MoveLayer;
+  payload: {
+    direction: "up" | "down";
+    layerIdx: number;
+  };
+}
+
 function isInBounds(arrLen: number, idx: number): boolean {
   return idx >= 0 && idx < arrLen;
 }
@@ -59,7 +68,8 @@ export type Action =
   | SelectLayer
   | ClearLayers
   | UpdateLayer
-  | DeleteLayer;
+  | DeleteLayer
+  | MoveLayer;
 
 const reducer = (state: State, action: Action): State => {
   switch (action.type) {
@@ -139,14 +149,16 @@ const reducer = (state: State, action: Action): State => {
       return state;
 
     case ActionType.DeleteLayer: {
-      let selectedLayerIdx = action.payload
-      const updated = [...state.layers].filter((_, idx) => idx != selectedLayerIdx);
+      let selectedLayerIdx = action.payload;
+      const updated = [...state.layers].filter(
+        (_, idx) => idx != selectedLayerIdx
+      );
 
       // adjust selectedLayerIdx if updated layers are empty or overflowing the array length
       if (updated.length === 0) {
-        selectedLayerIdx = -1
+        selectedLayerIdx = -1;
       } else if (selectedLayerIdx >= updated.length) {
-        selectedLayerIdx = updated.length - 1
+        selectedLayerIdx = updated.length - 1;
       }
 
       return {
@@ -154,7 +166,35 @@ const reducer = (state: State, action: Action): State => {
         layers: updated,
         selectedLayerIdx: selectedLayerIdx,
         currentLayer: updated[selectedLayerIdx],
-      }
+      };
+    }
+
+    case ActionType.MoveLayer: {
+      const fromIdx = action.payload.layerIdx;
+      const toIdx =
+        action.payload.direction === "up" ? fromIdx - 1 : fromIdx + 1;
+
+      // prevent moving out of bounds
+      if (toIdx < 0 || toIdx >= state.layers.length) return state;
+
+      const updated = state.layers.map((layer) => ({ ...layer }));
+      const [moved] = updated.splice(fromIdx, 1);
+      updated.splice(toIdx, 0, moved);
+
+      // swap the html canvas context
+      const ctxA = updated[toIdx].ctx;
+      const ctxB = updated[fromIdx].ctx;
+
+      updated[toIdx] = { ...updated[toIdx], ctx: ctxB };
+      updated[fromIdx] = { ...updated[fromIdx], ctx: ctxA };
+
+      const isCurrent = action.payload.layerIdx === state.selectedLayerIdx;
+      return {
+        ...state,
+        layers: updated,
+        selectedLayerIdx: isCurrent ? toIdx : state.selectedLayerIdx,
+        currentLayer: isCurrent ? updated[toIdx] : state.currentLayer,
+      };
     }
 
     default:

@@ -20,21 +20,50 @@ function Selections() {
                   payload: {
                     layerIdx: idx,
                     pselection: {
-                      filter: event.target.value as Filter
-                    }
+                      filter: event.target.value as Filter,
+                    },
                   },
                 })
               }
-              value={point.filter}>
+              value={point.filter}
+            >
               {filterList.map((filter) => (
                 <option key={`filter-${idx}-${filter}`}>{filter}</option>
               ))}
             </select>
-            <button onClick={() => dispatch({ type: ActionType.SelectLayer, payload: idx })}>
+            <button
+              onClick={() =>
+                dispatch({ type: ActionType.SelectLayer, payload: idx })
+              }
+            >
               {state.selectedLayerIdx == idx ? "(Active)" : "Select"}
             </button>
-            <button onClick={() => dispatch({ type: ActionType.DeleteLayer, payload: idx })}>
+            <button
+              onClick={() =>
+                dispatch({ type: ActionType.DeleteLayer, payload: idx })
+              }
+            >
               Delete
+            </button>
+            <button
+              onClick={() =>
+                dispatch({
+                  type: ActionType.MoveLayer,
+                  payload: { direction: "up", layerIdx: idx },
+                })
+              }
+            >
+              Up
+            </button>
+            <button
+              onClick={() =>
+                dispatch({
+                  type: ActionType.MoveLayer,
+                  payload: { direction: "down", layerIdx: idx },
+                })
+              }
+            >
+              Down
             </button>
           </li>
         ))}
