@@ -1,8 +1,9 @@
 import { initialState } from "./misc";
-import { Filter, type Layer, type State } from "./types";
+import { Filter, type Layer, type Point, type State } from "./types";
 
 export enum ActionType {
   SetImageBuf,
+  SetOriginalAreaData,
   CreateNewLayer,
   SetPointsToLayer,
   SelectLayer,
@@ -16,6 +17,11 @@ export enum ActionType {
 interface SetImageBuf {
   type: ActionType.SetImageBuf;
   payload: ArrayBuffer;
+}
+
+interface SetOriginalAreaData {
+  type: ActionType.SetOriginalAreaData;
+  payload: Point[];
 }
 
 interface CreateNewLayer {
@@ -63,6 +69,7 @@ function isInBounds(arrLen: number, idx: number): boolean {
 
 export type Action =
   | SetImageBuf
+  | SetOriginalAreaData
   | CreateNewLayer
   | SetPointsToLayer
   | SelectLayer
@@ -82,6 +89,7 @@ const reducer = (state: State, action: Action): State => {
     case ActionType.CreateNewLayer: {
       const newLayer: Layer = {
         points: [],
+        area: [],
         start: { x: 0, y: 0 },
         filter: Filter.None,
         ctx: null,
@@ -94,6 +102,13 @@ const reducer = (state: State, action: Action): State => {
         layers: nextLayers,
         selectedLayerIdx: nextIdx,
         currentLayer: nextLayers[nextIdx],
+      };
+    }
+
+    case ActionType.SetOriginalAreaData: {
+      return {
+        ...state,
+        originalAreaData: action.payload,
       };
     }
 
@@ -146,8 +161,10 @@ const reducer = (state: State, action: Action): State => {
     }
 
     case ActionType.ClearLayers:
-      state = initialState;
-      return state;
+      return {
+        ...initialState,
+        originalAreaData: []
+      };
 
     case ActionType.DeleteLayer: {
       let selectedLayerIdx = action.payload;

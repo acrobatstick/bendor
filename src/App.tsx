@@ -25,7 +25,7 @@ function App() {
       }
     };
     reader.readAsArrayBuffer(file);
-    dispatch({ type: ActionType.ClearSelections });
+    dispatch({ type: ActionType.ClearLayers });
   };
 
   return (

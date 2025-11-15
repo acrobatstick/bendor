@@ -13,6 +13,8 @@ export enum Filter {
 export interface Layer {
   // The collections of points that define the selected area on the layer
   points: Point[];
+  // The area inside the selection point
+  area: Point[];
   // The starting point/position of the selection
   start: Point;
   // The visual filter that applied to this layer
@@ -24,6 +26,7 @@ export interface Layer {
 
 export interface State {
   imgBuf: ArrayBuffer
+  originalAreaData: Point[];
   layers: Layer[];
   currentLayer?: Layer;
   selectedLayerIdx: number;
