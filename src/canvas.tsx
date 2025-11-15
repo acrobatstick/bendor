@@ -39,62 +39,27 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
     [ongoingTouches]
   );
 
-  // https://codepen.io/cranes/pen/GvobwB (MASSIVE SHOUTOUT)
-  const isPointInPolygon = (point: Point, polygon: Point[]): boolean => {
-    if (polygon.length <= 1) return false;
+  function isPointInPolygon(point: Point, polygon: Point[]): boolean {
+    let inside = false;
+    let j = polygon.length - 1;
 
-    let intersectionCount = 0;
+    for (let i = 0; i < polygon.length; i++) {
+      const xi = polygon[i].x;
+      const yi = polygon[i].y;
+      const xj = polygon[j].x;
+      const yj = polygon[j].y;
 
-    for (let i = 1; i < polygon.length; i++) {
-      const start = polygon[i - 1];
-      const end = polygon[i];
+      const intersects =
+        yi > point.y !== yj > point.y &&
+        point.x <
+        ((xj - xi) * (point.y - yi)) / (yj - yi) + xi;
 
-      const ray = {
-        Start: { x: point.x, y: point.y },
-        End: { x: 99999, y: point.y },
-      };
-      const segment = { Start: start, End: end };
-
-      const rayDistance = {
-        x: ray.End.x - ray.Start.x,
-        y: ray.End.y - ray.Start.y,
-      };
-
-      const segDistance = {
-        x: segment.End.x - segment.Start.x,
-        y: segment.End.y - segment.Start.y,
-      };
-
-      const rayLength = Math.sqrt(
-        Math.pow(rayDistance.x, 2) + Math.pow(rayDistance.y, 2)
-      );
-      const segLength = Math.sqrt(
-        Math.pow(segDistance.x, 2) + Math.pow(segDistance.y, 2)
-      );
-
-      if (
-        rayDistance.x / rayLength === segDistance.x / segLength &&
-        rayDistance.y / rayLength === segDistance.y / segLength
-      ) {
-        continue;
-      }
-
-      const T2 =
-        (rayDistance.x * (segment.Start.y - ray.Start.y) +
-          rayDistance.y * (ray.Start.x - segment.Start.x)) /
-        (segDistance.x * rayDistance.y - segDistance.y * rayDistance.x);
-      const T1 =
-        (segment.Start.x + segDistance.x * T2 - ray.Start.x) / rayDistance.x;
-
-      if (T1 < 0) continue;
-      if (T2 < 0 || T2 > 1) continue;
-      if (isNaN(T1)) continue;
-
-      intersectionCount++;
+      if (intersects) inside = !inside;
+      j = i;
     }
 
-    return (intersectionCount & 1) === 1;
-  };
+    return inside;
+  }
 
   const renderSelection = (
     ctx: CanvasRenderingContext2D,
