@@ -1,6 +1,7 @@
 export type Point = {
   x: number;
   y: number;
+  data?: ColorChannel;
 };
 
 export enum Filter {
