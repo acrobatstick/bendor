@@ -1,5 +1,5 @@
 import { initialState } from "./misc";
-import { Filter, type Layer, type State } from "./types";
+import { Filter, type Layer, type Point, type State } from "./types";
 
 export enum ActionType {
   SetOriginalAreaData,
@@ -11,7 +11,8 @@ export enum ActionType {
   UpdateLayer,
   DeleteLayer,
   MoveLayer,
-  GenerateFilters,
+  ResetImageCanvas,
+  GenerateResult,
   UpdateState,
 }
 
@@ -54,16 +55,20 @@ interface MoveLayer {
   };
 }
 
-interface GenerateFilters {
-  type: ActionType.GenerateFilters;
+interface GenerateResult {
+  type: ActionType.GenerateResult;
+}
+
+interface ResetImageCanvas {
+  type: ActionType.ResetImageCanvas;
 }
 
 interface UpdateState<K extends keyof State> {
-  type: ActionType.UpdateState
+  type: ActionType.UpdateState;
   payload: {
-    key: K
-    value: State[K]
-  }
+    key: K;
+    value: State[K];
+  };
 }
 
 function isInBounds(arrLen: number, idx: number): boolean {
@@ -78,8 +83,29 @@ export type Action =
   | UpdateLayer
   | DeleteLayer
   | MoveLayer
-  | GenerateFilters
+  | GenerateResult
+  | ResetImageCanvas
   | UpdateState<keyof State>;
+
+// to find the bounding dimension for the selected area since we odnt know the dimension
+// for the selected area/points
+const getDimension = (points: Point[]) => {
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+
+  for (const { x, y } of points) {
+    if (x < minX) minX = x;
+    if (y < minY) minY = y;
+    if (x > maxX) maxX = x;
+    if (y > maxY) maxY = y;
+  }
+
+  const width = maxX - minX + 1;
+  const height = maxY - minY + 1;
+  return [width, height, minX, minY];
+};
 
 const reducer = (state: State, action: Action): State => {
   switch (action.type) {
@@ -90,7 +116,9 @@ const reducer = (state: State, action: Action): State => {
         start: { x: 0, y: 0 },
         filter: Filter.None,
         ctx: null,
-        color: `# ${(Math.random() * 0xFFFFFF << 0).toString(16).padStart(6, '0')}`,
+        color: `# ${((Math.random() * 0xffffff) << 0)
+          .toString(16)
+          .padStart(6, "0")}`,
       };
       const nextLayers = [...state.layers, newLayer];
       const nextIdx = nextLayers.length - 1;
@@ -154,7 +182,7 @@ const reducer = (state: State, action: Action): State => {
       return {
         ...initialState,
         imgCtx: null,
-        originalAreaData: []
+        originalAreaData: [],
       };
 
     case ActionType.DeleteLayer: {
@@ -206,77 +234,86 @@ const reducer = (state: State, action: Action): State => {
       };
     }
 
-    case ActionType.GenerateFilters: {
+    case ActionType.GenerateResult: {
       // get all canvas from top to bottom
       const canvases = state.layers.map(({ area, filter }) => {
         return {
-          area, filter
-        }
+          area,
+          filter,
+        };
       });
 
       const imageCanvas = state.imgCtx;
       if (!imageCanvas) return state;
 
       canvases.forEach(({ area, filter }) => {
-        const points = area.filter(p => p.data)
-        if (points.length === 0) return;
-
-        // find the bounding area for the selected area since we odnt know the dimension
-        // for the selected area
-        let minX = Infinity
-        let minY = Infinity
-        let maxX = -Infinity
-        let maxY = -Infinity
-
-        for (const { x, y } of points) {
-          if (x < minX) minX = x
-          if (y < minY) minY = y
-          if (x > maxX) maxX = x
-          if (y > maxY) maxY = y
+        let points = area.filter((p) => p.data);
+        if (points.length === 0) {
+          points = state.originalAreaData;
         }
 
-        const width = maxX - minX + 1
-        const height = maxY - minY + 1
-
+        const [width, height, minX, minY] = getDimension(points);
         const original = imageCanvas.getImageData(minX, minY, width, height);
         const data = original.data;
 
         switch (filter) {
-          case (Filter.Tint):
+          case Filter.Tint:
             break;
           case Filter.Grayscale: {
             for (const { x, y, data: src } of points) {
               if (!src) continue;
-              const avg = (src[0] + src[1] + src[2]) / 3
-              const alpha = src[3]
+              const avg = (src[0] + src[1] + src[2]) / 3;
+              const alpha = src[3];
 
-              const localX = x - minX
-              const localY = y - minY
-              const index = (localY * width + localX) * 4
+              const localX = x - minX;
+              const localY = y - minY;
+              const index = (localY * width + localX) * 4;
 
-              data[index + 0] = avg
-              data[index + 1] = avg
-              data[index + 2] = avg
-              data[index + 3] = alpha
+              data[index + 0] = avg;
+              data[index + 1] = avg;
+              data[index + 2] = avg;
+              data[index + 3] = alpha;
             }
-            break
+            break;
           }
           default:
-            break
+            break;
         }
-        imageCanvas.putImageData(original, minX, minY)
-      })
+        imageCanvas.putImageData(original, minX, minY);
+      });
 
-      return { ...state }
+      return { ...state };
     }
 
+    case ActionType.ResetImageCanvas: {
+      const imageCanvas = state.imgCtx;
+      if (!imageCanvas) return state;
+
+      // revert back to the original image canvas
+      const [width, height, minX, minY] = getDimension(state.originalAreaData);
+      const original = imageCanvas.getImageData(minX, minY, width, height);
+      const data = original.data;
+
+      for (const { x, y, data: src } of state.originalAreaData) {
+        if (!src) continue;
+        const localX = x - minX;
+        const localY = y - minY;
+        const index = (localY * width + localX) * 4;
+        data[index + 0] = src[0];
+        data[index + 1] = src[1];
+        data[index + 2] = src[2];
+        data[index + 3] = src[3];
+      }
+      imageCanvas.putImageData(original, minX, minY);
+      return state;
+    }
 
     case ActionType.UpdateState: {
-      const { key, value } = action.payload
+      const { key, value } = action.payload;
       return {
         ...state,
-        [key]: value
-      }
+        [key]: value,
+      };
     }
 
     default:

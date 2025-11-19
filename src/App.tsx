@@ -18,12 +18,20 @@ function App() {
     const reader = new FileReader();
     reader.onload = (event) => {
       if (event.target && event.target.result instanceof ArrayBuffer) {
-        dispatch({ type: ActionType.UpdateState, payload: { key: "imgBuf", value: event.target.result } });
+        dispatch({
+          type: ActionType.UpdateState,
+          payload: { key: "imgBuf", value: event.target.result },
+        });
       }
     };
     reader.readAsArrayBuffer(file);
     // clear every layers whenever new image loaded
     dispatch({ type: ActionType.ClearLayers });
+  };
+
+  const generateResult = () => {
+    dispatch({ type: ActionType.ResetImageCanvas });
+    dispatch({ type: ActionType.GenerateResult });
   };
 
   return (
@@ -37,7 +45,7 @@ function App() {
       />
       <Selections />
       <Canvas />
-      <button onClick={() => dispatch({ type: ActionType.GenerateFilters })}>Generate</button>
+      <button onClick={generateResult}>Generate</button>
     </>
   );
 }
