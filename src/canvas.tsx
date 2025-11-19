@@ -128,7 +128,8 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
       imageCanvas.height = img.naturalHeight;
       imageCtx.drawImage(img, 0, 0);
       // default selection is set to whole image
-      const data = imageCtx.getImageData(0, 0, imageCanvas.width, imageCanvas.height).data;
+      const imageData = imageCtx.getImageData(0, 0, imageCanvas.width, imageCanvas.height);
+      const data = imageData.data;
       areaRef.current = [];
       for (let i = 0; i < data.length; i += 4) {
         const pixelIndex = i / 4;
@@ -136,8 +137,10 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
         const y = Math.floor(pixelIndex / imageCanvas.width);
         areaRef.current.push({ x, y });
       }
-      const area = getArea(imageCtx, areaRef.current)
-      dispatch({ type: ActionType.SetOriginalAreaData, payload: area });
+      const area = getArea(imageCtx, areaRef.current);
+      dispatch({ type: ActionType.UpdateState, payload: { key: "imgCtx", value: imageCtx } });
+      // keep originalAreaData in case no layer selection, so we can use the whole image as the selected area
+      dispatch({ type: ActionType.UpdateState, payload: { key: "originalAreaData", value: area } });
     };
 
     img.src = url;
@@ -383,7 +386,6 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
     // now redraw the overlay only if there is already a drawing canvas element for this layer
     if (activeCanvas && state.currentLayer?.ctx) {
       areaRef.current = state.currentLayer.area;
-      console.log(areaRef.current);
       renderSelection(
         state.currentLayer.ctx,
         activeCanvas,

@@ -2,6 +2,7 @@ import type { State } from "./types";
 
 export const initialState: State = {
   imgBuf: new ArrayBuffer(),
+  imgCtx: null,
   originalAreaData: [],
   layers: [],
   currentLayer: undefined,

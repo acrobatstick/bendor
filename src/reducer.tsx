@@ -1,8 +1,7 @@
 import { initialState } from "./misc";
-import { Filter, type Layer, type Point, type State } from "./types";
+import { Filter, type Layer, type State } from "./types";
 
 export enum ActionType {
-  SetImageBuf,
   SetOriginalAreaData,
   CreateNewLayer,
   SetPointsToLayer,
@@ -12,16 +11,8 @@ export enum ActionType {
   UpdateLayer,
   DeleteLayer,
   MoveLayer,
-}
-
-interface SetImageBuf {
-  type: ActionType.SetImageBuf;
-  payload: ArrayBuffer;
-}
-
-interface SetOriginalAreaData {
-  type: ActionType.SetOriginalAreaData;
-  payload: Point[];
+  GenerateFilters,
+  UpdateState,
 }
 
 interface CreateNewLayer {
@@ -63,29 +54,35 @@ interface MoveLayer {
   };
 }
 
+interface GenerateFilters {
+  type: ActionType.GenerateFilters;
+}
+
+interface UpdateState<K extends keyof State> {
+  type: ActionType.UpdateState
+  payload: {
+    key: K
+    value: State[K]
+  }
+}
+
 function isInBounds(arrLen: number, idx: number): boolean {
   return idx >= 0 && idx < arrLen;
 }
 
 export type Action =
-  | SetImageBuf
-  | SetOriginalAreaData
   | CreateNewLayer
   | SetPointsToLayer
   | SelectLayer
   | ClearLayers
   | UpdateLayer
   | DeleteLayer
-  | MoveLayer;
+  | MoveLayer
+  | GenerateFilters
+  | UpdateState<keyof State>;
 
 const reducer = (state: State, action: Action): State => {
   switch (action.type) {
-    case ActionType.SetImageBuf: {
-      let imgBuf = state.imgBuf;
-      imgBuf = action.payload;
-      return { ...state, imgBuf };
-    }
-
     case ActionType.CreateNewLayer: {
       const newLayer: Layer = {
         points: [],
@@ -93,7 +90,7 @@ const reducer = (state: State, action: Action): State => {
         start: { x: 0, y: 0 },
         filter: Filter.None,
         ctx: null,
-        color: `# ${(Math.random() * 0xFFFFFF << 0).toString(16).padStart(6, '0')}`
+        color: `# ${(Math.random() * 0xFFFFFF << 0).toString(16).padStart(6, '0')}`,
       };
       const nextLayers = [...state.layers, newLayer];
       const nextIdx = nextLayers.length - 1;
@@ -102,13 +99,6 @@ const reducer = (state: State, action: Action): State => {
         layers: nextLayers,
         selectedLayerIdx: nextIdx,
         currentLayer: nextLayers[nextIdx],
-      };
-    }
-
-    case ActionType.SetOriginalAreaData: {
-      return {
-        ...state,
-        originalAreaData: action.payload,
       };
     }
 
@@ -163,6 +153,7 @@ const reducer = (state: State, action: Action): State => {
     case ActionType.ClearLayers:
       return {
         ...initialState,
+        imgCtx: null,
         originalAreaData: []
       };
 
@@ -213,6 +204,79 @@ const reducer = (state: State, action: Action): State => {
         selectedLayerIdx: isCurrent ? toIdx : state.selectedLayerIdx,
         currentLayer: isCurrent ? updated[toIdx] : state.currentLayer,
       };
+    }
+
+    case ActionType.GenerateFilters: {
+      // get all canvas from top to bottom
+      const canvases = state.layers.map(({ area, filter }) => {
+        return {
+          area, filter
+        }
+      });
+
+      const imageCanvas = state.imgCtx;
+      if (!imageCanvas) return state;
+
+      canvases.forEach(({ area, filter }) => {
+        const points = area.filter(p => p.data)
+        if (points.length === 0) return;
+
+        // find the bounding area for the selected area since we odnt know the dimension
+        // for the selected area
+        let minX = Infinity
+        let minY = Infinity
+        let maxX = -Infinity
+        let maxY = -Infinity
+
+        for (const { x, y } of points) {
+          if (x < minX) minX = x
+          if (y < minY) minY = y
+          if (x > maxX) maxX = x
+          if (y > maxY) maxY = y
+        }
+
+        const width = maxX - minX + 1
+        const height = maxY - minY + 1
+
+        const original = imageCanvas.getImageData(minX, minY, width, height);
+        const data = original.data;
+
+        switch (filter) {
+          case (Filter.Tint):
+            break;
+          case Filter.Grayscale: {
+            for (const { x, y, data: src } of points) {
+              if (!src) continue;
+              const avg = (src[0] + src[1] + src[2]) / 3
+              const alpha = src[3]
+
+              const localX = x - minX
+              const localY = y - minY
+              const index = (localY * width + localX) * 4
+
+              data[index + 0] = avg
+              data[index + 1] = avg
+              data[index + 2] = avg
+              data[index + 3] = alpha
+            }
+            break
+          }
+          default:
+            break
+        }
+        imageCanvas.putImageData(original, minX, minY)
+      })
+
+      return { ...state }
+    }
+
+
+    case ActionType.UpdateState: {
+      const { key, value } = action.payload
+      return {
+        ...state,
+        [key]: value
+      }
     }
 
     default:

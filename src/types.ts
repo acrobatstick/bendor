@@ -26,6 +26,7 @@ export interface Layer {
 
 export interface State {
   imgBuf: ArrayBuffer
+  imgCtx: CanvasRenderingContext2D | null;
   originalAreaData: Point[];
   layers: Layer[];
   currentLayer?: Layer;
