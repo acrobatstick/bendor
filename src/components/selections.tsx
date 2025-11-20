@@ -16,7 +16,7 @@ function Selections() {
             <select
               onChange={(event) =>
                 dispatch({
-                  type: ActionType.UpdateLayer,
+                  type: ActionType.UpdateLayerSelection,
                   payload: {
                     layerIdx: idx,
                     pselection: {
@@ -25,7 +25,7 @@ function Selections() {
                   },
                 })
               }
-              value={point.filter}
+              value={point.selection.filter}
             >
               {filterList.map((filter) => (
                 <option key={`filter-${idx}-${filter}`}>{filter}</option>

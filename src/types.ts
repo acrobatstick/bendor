@@ -10,7 +10,7 @@ export enum Filter {
   None = "None"
 }
 
-export interface Layer {
+export interface LSelection {
   // The collections of points that define the selected area on the layer
   points: Point[];
   // The area inside the selection point
@@ -19,9 +19,14 @@ export interface Layer {
   start: Point;
   // The visual filter that applied to this layer
   filter: Filter;
-  ctx: CanvasRenderingContext2D | null;
+}
+
+export interface Layer {
+  selection: LSelection;
   // Color to differentiate current layer with other layers
   color: `#${string}`;
+  // To store every user action on the stack so that it can be reverted back or forward
+  ctx: CanvasRenderingContext2D | null;
 }
 
 export interface State {

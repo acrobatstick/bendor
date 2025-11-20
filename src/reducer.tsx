@@ -1,5 +1,5 @@
 import { initialState } from "./misc";
-import { Filter, type Layer, type Point, type State } from "./types";
+import { Filter, type Layer, type LSelection, type Point, type State } from "./types";
 
 export enum ActionType {
   SetOriginalAreaData,
@@ -9,6 +9,7 @@ export enum ActionType {
   GetSelectedLayerPoint,
   ClearLayers,
   UpdateLayer,
+  UpdateLayerSelection,
   DeleteLayer,
   MoveLayer,
   ResetImageCanvas,
@@ -22,7 +23,7 @@ interface CreateNewLayer {
 
 interface SetPointsToLayer {
   type: ActionType.SetPointsToLayer;
-  payload: Pick<Layer, "start" | "points">;
+  payload: Pick<LSelection, "start" | "points">;
 }
 
 interface SelectLayer {
@@ -39,6 +40,14 @@ interface UpdateLayer {
   payload: {
     layerIdx: number;
     pselection: Partial<Layer>;
+  };
+}
+
+interface UpdateLayerSelection {
+  type: ActionType.UpdateLayerSelection;
+  payload: {
+    layerIdx: number;
+    pselection: Partial<LSelection>;
   };
 }
 
@@ -81,6 +90,7 @@ export type Action =
   | SelectLayer
   | ClearLayers
   | UpdateLayer
+  | UpdateLayerSelection
   | DeleteLayer
   | MoveLayer
   | GenerateResult
@@ -111,10 +121,12 @@ const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case ActionType.CreateNewLayer: {
       const newLayer: Layer = {
-        points: [],
-        area: [],
-        start: { x: 0, y: 0 },
-        filter: Filter.None,
+        selection: {
+          points: [],
+          area: [],
+          start: { x: 0, y: 0 },
+          filter: Filter.None,
+        },
         ctx: null,
         color: `# ${((Math.random() * 0xffffff) << 0)
           .toString(16)
@@ -137,9 +149,12 @@ const reducer = (state: State, action: Action): State => {
       const updated = [...state.layers];
       updated[state.selectedLayerIdx] = {
         ...updated[state.selectedLayerIdx],
-        start: action.payload.start,
-        points: action.payload.points,
-        filter: updated[state.selectedLayerIdx].filter,
+        selection: {
+          ...updated[state.selectedLayerIdx].selection,
+          start: action.payload.start,
+          points: action.payload.points,
+          filter: updated[state.selectedLayerIdx].selection.filter,
+        }
       };
 
       return {
@@ -166,6 +181,29 @@ const reducer = (state: State, action: Action): State => {
       updated[action.payload.layerIdx] = {
         ...updated[action.payload.layerIdx],
         ...action.payload.pselection,
+      };
+      const isCurrent = action.payload.layerIdx === state.selectedLayerIdx;
+
+      return {
+        ...state,
+        layers: updated,
+        currentLayer: isCurrent
+          ? updated[action.payload.layerIdx]
+          : state.currentLayer,
+      };
+    }
+
+    case ActionType.UpdateLayerSelection: {
+      if (!isInBounds(state.layers.length, state.selectedLayerIdx))
+        return state;
+
+      const updated = [...state.layers];
+      updated[action.payload.layerIdx] = {
+        ...updated[action.payload.layerIdx],
+        selection: {
+          ...updated[action.payload.layerIdx].selection,
+          ...action.payload.pselection,
+        }
       };
       const isCurrent = action.payload.layerIdx === state.selectedLayerIdx;
 
@@ -236,7 +274,7 @@ const reducer = (state: State, action: Action): State => {
 
     case ActionType.GenerateResult: {
       // get all canvas from top to bottom
-      const canvases = state.layers.map(({ area, filter }) => {
+      const canvases = state.layers.map(({ selection: { area, filter } }) => {
         return {
           area,
           filter,
@@ -244,7 +282,9 @@ const reducer = (state: State, action: Action): State => {
       });
 
       const imageCanvas = state.imgCtx;
-      if (!imageCanvas) return state;
+      if (!imageCanvas) {
+        return state
+      };
 
       canvases.forEach(({ area, filter }) => {
         let points = area.filter((p) => p.data);
