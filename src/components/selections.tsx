@@ -14,6 +14,12 @@ function Selections() {
     }
   }
 
+  const onDeleteLayer = (idx: number) => {
+    dispatch({ type: StoreActionType.DeleteLayer, payload: idx });
+    dispatch({ type: StoreActionType.ResetImageCanvas });
+    dispatch({ type: StoreActionType.GenerateResult });
+  }
+
   return (
     <div>
       <button onClick={onAddLayer}>
@@ -48,11 +54,7 @@ function Selections() {
             >
               {state.selectedLayerIdx == idx ? "(Active)" : "Select"}
             </button>
-            <button
-              onClick={() =>
-                dispatch({ type: StoreActionType.DeleteLayer, payload: idx })
-              }
-            >
+            <button onClick={() => onDeleteLayer(idx)}>
               Delete
             </button>
             <button
