@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { ColorChannel, Layer, Point } from "../types";
 import { useStore } from "../hooks/useStore";
 import { StoreActionType } from "../providers/store/reducer";
+import { useLoading } from "../hooks/useLoading";
 
 // retrieve pixel data from area inside the selection points
 function getAreaData(ctx: CanvasRenderingContext2D, selection: Point[]): Point[] {
@@ -89,6 +90,7 @@ const renderSelection = (
 };
 
 function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
+  const { loading, start, stop } = useLoading();
   const { state, dispatch } = useStore();
 
   const imageCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -141,6 +143,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
       canvas.remove();
     });
 
+    start()
     // load image
     const blob = new Blob([state.imgBuf]);
     const url = URL.createObjectURL(blob);
@@ -156,8 +159,14 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
         imageCanvas.width,
         imageCanvas.height
       );
+      dispatch({
+        type: StoreActionType.UpdateState,
+        payload: { key: "imgCtx", value: imageCtx },
+      });
+      // keep originalAreaData in case no layer selection, so we can use the whole image as the selected area
       const data = imageData.data;
       areaRef.current = [];
+      // push whole image coordinates to the areaRef
       for (let i = 0; i < data.length; i += 4) {
         const pixelIndex = i / 4;
         const x = pixelIndex % imageCanvas.width;
@@ -167,16 +176,16 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
       const area = getAreaData(imageCtx, areaRef.current);
       dispatch({
         type: StoreActionType.UpdateState,
-        payload: { key: "imgCtx", value: imageCtx },
-      });
-      // keep originalAreaData in case no layer selection, so we can use the whole image as the selected area
-      dispatch({
-        type: StoreActionType.UpdateState,
         payload: { key: "originalAreaData", value: area },
       });
+      stop();
+    };
+    img.onerror = () => {
+      stop();
+      console.error("Failed to load image");
     };
     img.src = url;
-  }, [state.imgBuf, dispatch]);
+  }, [state.imgBuf, dispatch, start, stop]);
 
   // To register mouse events to the drawing canvas
   useEffect(() => {
@@ -259,14 +268,13 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
           startPointRef.current,
           state.currentLayer!.color
         );
-
-        (async function() {
+        start();
+        requestIdleCallback(() => {
           selectArea(pointsRef.current, activeCanvas);
           dispatch({
             type: StoreActionType.SetPointsToLayer,
             payload: { points: pointsRef.current, start: startPointRef.current! },
           });
-
           const imageCanvas = imageCanvasRef.current;
           const imageCtx = imageCanvas?.getContext("2d");
           if (!imageCtx) return;
@@ -281,7 +289,8 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
               withUpdateInitialPresent: true,
             },
           });
-        })().then(() => { });
+          stop();
+        })
       };
 
       const handleTouchStart = (e: TouchEvent) => {
@@ -403,6 +412,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
     dispatch,
     getOngoingTouchById,
     selectArea,
+    start, stop
   ]);
 
   // Handle selection render on layer index change
@@ -526,6 +536,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
       style={{ position: "relative", display: "inline-block", lineHeight: 0 }}
       {...props}
     >
+      {loading ? 'Loading' : 'None'}
       <canvas
         ref={imageCanvasRef}
         style={{

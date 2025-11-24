@@ -1,6 +1,6 @@
 import { createContext, type Dispatch } from "react";
 import type { State } from "../../types";
-import { initialStoreState } from "./initialState";
+import { initialStoreState } from "./storeState";
 import type { Action } from "./reducer";
 
 export const StoreContext = createContext<{

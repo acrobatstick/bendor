@@ -41,4 +41,9 @@ export interface State {
   selectedLayerIdx: number;
 }
 
+export interface LoadingState {
+  loading: boolean;
+  setLoading: unknown;
+}
+
 export type ColorChannel = Uint8Array & { readonly length: 4 };

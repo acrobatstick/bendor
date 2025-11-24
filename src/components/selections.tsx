@@ -1,13 +1,22 @@
+import { useLoading } from "../hooks/useLoading";
 import { useStore } from "../hooks/useStore";
 import { StoreActionType } from "../providers/store/reducer";
 import { Filter } from "../types";
 
 function Selections() {
+  const { loading } = useLoading();
   const { state, dispatch } = useStore();
   const filterList = Object.keys(Filter);
+
+  const onAddLayer = () => {
+    if (!loading) {
+      dispatch({ type: StoreActionType.CreateNewLayer })
+    }
+  }
+
   return (
     <div>
-      <button onClick={() => dispatch({ type: StoreActionType.CreateNewLayer })}>
+      <button onClick={onAddLayer}>
         Add new selection
       </button>
       <ul>

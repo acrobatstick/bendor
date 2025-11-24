@@ -1,6 +1,6 @@
 import { Filter, type Layer, type LSelection, type Point, type State } from "../../types";
 import Commands from "../../utils/commands";
-import { initialStoreState } from "./initialState";
+import { initialStoreState } from "./storeState";
 
 export enum StoreActionType {
   SetOriginalAreaData,

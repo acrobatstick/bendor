@@ -4,6 +4,7 @@ import Selections from "./components/selections";
 import { useStore } from "./hooks/useStore";
 import { StoreActionType } from "./providers/store/reducer";
 import Canvas from "./components/canvas";
+import { LoadingProvider } from "./providers/loading/loadingProvider";
 
 function App() {
   const { dispatch } = useStore();
@@ -34,7 +35,7 @@ function App() {
   };
 
   return (
-    <>
+    <LoadingProvider>
       <input
         onChange={onImageChange}
         ref={imageRef}
@@ -59,7 +60,7 @@ function App() {
         Redo
       </button>
       <button onClick={generateResult}>Generate</button>
-    </>
+    </LoadingProvider>
   );
 }
 
