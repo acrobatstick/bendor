@@ -7,6 +7,7 @@ export type Point = {
 };
 
 export enum Filter {
+  AsSound = "AsSound",
   Tint = "Tint",
   Grayscale = "Grayscale",
   None = "None",

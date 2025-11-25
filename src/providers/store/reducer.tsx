@@ -1,5 +1,22 @@
-import { Filter, type Layer, type LSelection, type Point, type State } from "../../types";
+import {
+  Filter,
+  type ColorChannel,
+  type Layer,
+  type LSelection,
+  type Point,
+  type State,
+} from "../../types";
 import Commands from "../../utils/commands";
+import {
+  applyAudioDistortions,
+  audioSamplesToWAV,
+  DEFAULT_DURATION,
+  DEFAULT_RGB_FREQUENCY_RANGES,
+  DEFAULT_SAMPLE_RATE,
+  generateAsSineWave,
+  mapFrequencies,
+  normalizeRGB,
+} from "../../utils/sound";
 import { initialStoreState } from "./storeState";
 
 export enum StoreActionType {
@@ -349,6 +366,78 @@ const storeReducer = (state: State, action: Action): State => {
         const data = original.data;
 
         switch (filter) {
+          case Filter.AsSound: {
+            const freqs: number[] = [];
+            const amps: number[] = [];
+            // some shit i dont fucking understand, but from what I understand it takes the
+            // normalized RGB value and treat it as an amplitude
+            // https://github.com/RecursiveVoid/pixeltonejs/blob/main/src/core/mappers/PixelToFrequencyMapper.ts
+            for (const { x, y, data: src } of points) {
+              if (!src) continue;
+              const localX = x - minX;
+              const localY = y - minY;
+              const index = (localY * width + localX) * 4;
+              const rgb = normalizeRGB(
+                new Uint8Array([
+                  data[index],
+                  data[index + 1],
+                  data[index + 2],
+                ]) as ColorChannel
+              );
+              mapFrequencies([
+                {
+                  value: rgb[0],
+                  range: DEFAULT_RGB_FREQUENCY_RANGES.r,
+                },
+                {
+                  value: rgb[1],
+                  range: DEFAULT_RGB_FREQUENCY_RANGES.g,
+                },
+                {
+                  value: rgb[2],
+                  range: DEFAULT_RGB_FREQUENCY_RANGES.b,
+                },
+              ]).forEach((value) => amps.push(value));
+              freqs.push(rgb[0], rgb[1], rgb[2]);
+            }
+
+            const audioSamples = generateAsSineWave(
+              freqs,
+              amps,
+              DEFAULT_DURATION,
+              DEFAULT_SAMPLE_RATE
+            );
+            if (!audioSamples) return;
+            const distortedSamples = applyAudioDistortions(audioSamples);
+            const wavBytes = audioSamplesToWAV(
+              distortedSamples,
+              DEFAULT_SAMPLE_RATE
+            );
+            const glitchedData = new Uint8ClampedArray(width * height * 4);
+            for (let i = 0; i < glitchedData.length; i++) {
+              glitchedData[i] = wavBytes[i % wavBytes.length];
+            }
+
+            // re-apply back the distorted data and also blend it by 50/50 so we can still
+            // see the original image just a bit
+            const bitRateBlend = 0.5;
+            for (const { x, y, data: src } of points) {
+              if (!src) continue;
+              const localX = x - minX;
+              const localY = y - minY;
+              const index = (localY * width + localX) * 4;
+              data[index] =
+                data[index] * (1 - bitRateBlend) +
+                glitchedData[index] * bitRateBlend; // R
+              data[index + 1] =
+                data[index + 1] * (1 - bitRateBlend) +
+                glitchedData[index + 1] * bitRateBlend; // G
+              data[index + 2] =
+                data[index + 2] * (1 - bitRateBlend) +
+                glitchedData[index + 2] * bitRateBlend; // B
+            }
+            break;
+          }
           case Filter.Tint:
             break;
           case Filter.Grayscale: {
