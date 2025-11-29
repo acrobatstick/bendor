@@ -8,6 +8,7 @@ export type Point = {
 
 export enum Filter {
   AsSound = "AsSound",
+  FractalPixelSort = "FractalPixelSort",
   Brightness = "Brightness",
   Tint = "Tint",
   Grayscale = "Grayscale",
@@ -26,6 +27,12 @@ interface BrightnessConfig {
   intensity: number;
 }
 
+interface FractalPixelSortConfig {
+  // TODO: cache the temp distortation image to save up performance
+  // and can be regenerated if the user wants to
+  intensity: number;
+}
+
 interface TintConfig {
   r: number
   g: number
@@ -38,6 +45,7 @@ interface NoConfig {
 
 export type FilterConfigMap = {
   [Filter.AsSound]: AsSoundConfig;
+  [Filter.FractalPixelSort]: FractalPixelSortConfig;
   [Filter.Brightness]: BrightnessConfig;
   [Filter.Tint]: TintConfig;
   [Filter.Grayscale]: GrayscaleConfig;

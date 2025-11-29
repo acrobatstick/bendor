@@ -1,7 +1,7 @@
 import { useRef, type JSX } from "react";
 import { useStore } from "../hooks/useStore";
 import { Filter, type LSelection } from "../types";
-import { BRIGHTNESS_INTENSITY_RANGE, GRAYSCALE_INTENSITY_RANGE, SOUND_BIT_RATE_BLEND_RANGE } from "../constants";
+import { BRIGHTNESS_INTENSITY_RANGE, FRACTAL_SORT_DISTORTION_RANGE, GRAYSCALE_INTENSITY_RANGE, SOUND_BIT_RATE_BLEND_RANGE } from "../constants";
 import { StoreActionType } from "../providers/store/reducer";
 
 interface RangeInputProps {
@@ -104,6 +104,24 @@ const AsSoundConfig = () => {
   );
 };
 
+const FractalPixelSortConfig = () => {
+  const { state } = useStore();
+  const { min, max } = FRACTAL_SORT_DISTORTION_RANGE;
+  const currSelection = state.currentLayer?.selection as LSelection<Filter.FractalPixelSort>;
+  const conf = currSelection.config;
+
+  return (
+    <RangeInput
+      label="Distortion Intensity"
+      id="distortionIntensity"
+      min={min}
+      max={max}
+      configKey="intensity"
+      defaultValue={conf.intensity}
+    />
+  );
+};
+
 const ConfigElements = (filter?: Filter): JSX.Element => {
   if (!filter) {
     return <div></div>;
@@ -118,6 +136,8 @@ const ConfigElements = (filter?: Filter): JSX.Element => {
       return <BrightnessConfig />;
     case Filter.AsSound:
       return <AsSoundConfig />;
+    case Filter.FractalPixelSort:
+      return <FractalPixelSortConfig />
   }
 };
 
