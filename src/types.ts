@@ -28,8 +28,7 @@ interface BrightnessConfig {
 }
 
 interface FractalPixelSortConfig {
-  // TODO: cache the temp distortation image to save up performance
-  // and can be regenerated if the user wants to
+  distortedData: Uint8ClampedArray<ArrayBuffer>;
   intensity: number;
 }
 

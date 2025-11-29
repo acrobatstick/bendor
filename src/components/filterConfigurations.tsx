@@ -11,14 +11,14 @@ interface RangeInputProps {
   max: number;
   configKey: 'intensity' | 'blend';
   defaultValue: number;
+  refresh?: boolean;
 }
 
-const RangeInput = ({ label, id, min, max, configKey, defaultValue }: RangeInputProps) => {
+const RangeInput = ({ label, id, min, max, configKey, defaultValue, refresh = false }: RangeInputProps) => {
   const { state, dispatch } = useStore();
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const onApply = () => {
-    console.log(state.currentLayer?.selection.filter, configKey);
     const value = parseFloat(inputRef.current?.value ?? defaultValue.toString());
     dispatch({
       type: StoreActionType.UpdateLayerSelection,
@@ -29,7 +29,7 @@ const RangeInput = ({ label, id, min, max, configKey, defaultValue }: RangeInput
       },
     });
     dispatch({ type: StoreActionType.ResetImageCanvas });
-    dispatch({ type: StoreActionType.GenerateResult });
+    dispatch({ type: StoreActionType.GenerateResult, payload: { refresh } });
   };
 
   return (
@@ -118,6 +118,7 @@ const FractalPixelSortConfig = () => {
       max={max}
       configKey="intensity"
       defaultValue={conf.intensity}
+      refresh
     />
   );
 };

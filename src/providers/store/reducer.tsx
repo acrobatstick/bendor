@@ -94,6 +94,9 @@ interface MoveLayer {
 
 interface GenerateResult {
   type: StoreActionType.GenerateResult;
+  payload?: {
+    refresh: boolean;
+  }
 }
 
 interface ResetImageCanvas {
@@ -153,7 +156,7 @@ const defaultConfig = <F extends Filter>(filter: F): FilterConfigMap[F] => {
     case Filter.AsSound:
       return { blend: 0.50 } as FilterConfigMap[F];
     case Filter.FractalPixelSort:
-      return { intensity: 6.0 } as FilterConfigMap[F];
+      return { intensity: 6.0, distortedData: new Uint8ClampedArray() } as FilterConfigMap[F];
     case Filter.Brightness:
       return { intensity: 1.0 } as FilterConfigMap[F];
     case Filter.Tint:
@@ -253,7 +256,11 @@ const storeReducer = (state: State, action: Action): State => {
       const selection = {
         ...updated[action.payload.layerIdx].selection,
         ...action.payload.pselection,
-      } satisfies LSelection
+        config: {
+          ...updated[action.payload.layerIdx].selection.config,
+          ...(action.payload.pselection.config || {})
+        }
+      } satisfies LSelection;
 
       // update filter config to it's default value whenever we change filter
       if (action.payload.pselection.filter
@@ -470,77 +477,92 @@ const storeReducer = (state: State, action: Action): State => {
             const selection = state.layers[idx].selection as LSelection<Filter.FractalPixelSort>;
             const distortionAmount = selection.config.intensity;
 
-            const tempData = new Uint8ClampedArray(data);
-            // distort whole image and store it inside temp
-            for (let i = tempData.length - 1; i > 0; i--) {
-              if (tempData[(i * distortionAmount) % tempData.length] < tempData[i]) {
-                tempData[i] = tempData[(i * distortionAmount) % tempData.length];
+            let tempData: Uint8ClampedArray<ArrayBuffer>;
+
+            if (selection.config.distortedData.length === 0 || action.payload?.refresh) {
+              // draw previous mutated image data from applied filters
+              imageCanvas.putImageData(original, minX, minY);
+              // get the new whole image data in order it to get distorted
+              const wholeImage = imageCanvas.getImageData(0, 0, imageCanvas.canvas.width, imageCanvas.canvas.height);
+              const wiData = wholeImage.data;
+              tempData = new Uint8ClampedArray(wiData);
+              // distort whole image and store it inside temp
+              for (let i = tempData.length - 1; i > 0; i--) {
+                if (tempData[(i * distortionAmount) % tempData.length] < tempData[i]) {
+                  tempData[i] = tempData[(i * distortionAmount) % tempData.length];
+                }
               }
-            }
 
-            // shifts pixel data
-            const leftSide = Math.round(Math.random() * (width - 10) + 10);
-            const rightSide = Math.round(Math.random() * (width - 10) + leftSide);
+              const fullWidth = imageCanvas.canvas.width;
+              const fullHeight = imageCanvas.canvas.height;
+              // shifts pixel data
+              const leftSide = Math.round(Math.random() * (fullWidth - 10) + 10);
+              const rightSide = Math.round(Math.random() * (fullWidth - 10) + leftSide);
+              for (let i = 0; i < fullHeight; i++) {
+                for (let j = 0; j < fullWidth; j++) {
+                  const pixelCanvasPosition = (j + i * fullWidth) * 4;
 
-            for (let i = 0; i < height; i++) {
-              for (let j = 0; j < width; j++) {
-                const pixelCanvasPosition = (j + i * width) * 4;
+                  const currentR = tempData[pixelCanvasPosition];
+                  const currentG = tempData[pixelCanvasPosition + 1];
+                  const currentB = tempData[pixelCanvasPosition + 2];
 
-                const currentR = tempData[pixelCanvasPosition];
-                const currentG = tempData[pixelCanvasPosition + 1];
-                const currentB = tempData[pixelCanvasPosition + 2];
+                  const shiftDirection = Math.floor(Math.random() * 2);
 
-                const shiftDirection = Math.floor(Math.random() * 2);
-
-                if (shiftDirection === 0) {
-                  if (pixelCanvasPosition + leftSide + 1 > tempData.length - 1) {
-                    continue;
-                  }
-                  if (rightSide % 3 === 0) {
-                    tempData[pixelCanvasPosition] = currentB;
-                    tempData[pixelCanvasPosition + leftSide] = currentR;
-                    tempData[pixelCanvasPosition + leftSide + 1] = currentG;
-                  } else if (rightSide % 3 === 1) {
-                    tempData[pixelCanvasPosition] = currentR;
-                    tempData[pixelCanvasPosition + leftSide] = currentB;
-                    tempData[pixelCanvasPosition + leftSide + 1] = currentG;
+                  if (shiftDirection === 0) {
+                    if (pixelCanvasPosition + leftSide + 1 > tempData.length - 1) {
+                      continue;
+                    }
+                    if (rightSide % 3 === 0) {
+                      tempData[pixelCanvasPosition] = currentB;
+                      tempData[pixelCanvasPosition + leftSide] = currentR;
+                      tempData[pixelCanvasPosition + leftSide + 1] = currentG;
+                    } else if (rightSide % 3 === 1) {
+                      tempData[pixelCanvasPosition] = currentR;
+                      tempData[pixelCanvasPosition + leftSide] = currentB;
+                      tempData[pixelCanvasPosition + leftSide + 1] = currentG;
+                    } else {
+                      tempData[pixelCanvasPosition] = currentR;
+                      tempData[pixelCanvasPosition + leftSide] = currentB;
+                    }
                   } else {
-                    tempData[pixelCanvasPosition] = currentR;
-                    tempData[pixelCanvasPosition + leftSide] = currentB;
-                  }
-                } else {
-                  if (pixelCanvasPosition - leftSide < 0) {
-                    continue;
-                  }
-                  if (rightSide % 3 === 0) {
-                    tempData[pixelCanvasPosition] = currentB;
-                    tempData[pixelCanvasPosition - leftSide] = currentG;
-                    tempData[pixelCanvasPosition - leftSide + 1] = currentR;
-                  } else if (rightSide % 3 === 1) {
-                    tempData[pixelCanvasPosition + 1] = currentB;
-                    tempData[pixelCanvasPosition - leftSide] = currentB;
-                  } else {
-                    tempData[pixelCanvasPosition] = currentG;
-                    tempData[pixelCanvasPosition - leftSide] = currentB;
-                    tempData[pixelCanvasPosition - leftSide + 1] = currentR;
+                    if (pixelCanvasPosition - leftSide < 0) {
+                      continue;
+                    }
+                    if (rightSide % 3 === 0) {
+                      tempData[pixelCanvasPosition] = currentB;
+                      tempData[pixelCanvasPosition - leftSide] = currentG;
+                      tempData[pixelCanvasPosition - leftSide + 1] = currentR;
+                    } else if (rightSide % 3 === 1) {
+                      tempData[pixelCanvasPosition + 1] = currentB;
+                      tempData[pixelCanvasPosition - leftSide] = currentB;
+                    } else {
+                      tempData[pixelCanvasPosition] = currentG;
+                      tempData[pixelCanvasPosition - leftSide] = currentB;
+                      tempData[pixelCanvasPosition - leftSide + 1] = currentR;
+                    }
                   }
                 }
               }
+              selection.config.distortedData = tempData;
+            } else {
+              tempData = selection.config.distortedData;
             }
 
             // copy pixel data from the shifted pixel data temp to the selected pixel
             // inbound coordinate
+            const fullWidth = imageCanvas.canvas.width;
             for (const { x, y } of points) {
               const localX = x - minX;
               const localY = y - minY;
               if (localX < 0 || localX >= width || localY < 0 || localY >= height) continue;
-
               const index = (localY * width + localX) * 4;
-              data[index] = tempData[index];         // R
-              data[index + 1] = tempData[index + 1]; // G
-              data[index + 2] = tempData[index + 2]; // B
-            }
+              const absIdx = (y * fullWidth + x) * 4;
 
+              // take the pixel data from the distorted image data
+              data[index] = tempData[absIdx];         // R
+              data[index + 1] = tempData[absIdx + 1]; // G
+              data[index + 2] = tempData[absIdx + 2]; // B
+            }
             break;
           }
 
@@ -585,7 +607,6 @@ const storeReducer = (state: State, action: Action): State => {
             }
             break;
           }
-
           default:
             break;
         }
