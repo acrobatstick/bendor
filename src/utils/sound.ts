@@ -83,7 +83,7 @@ export const applyAudioDistortions = (samples: Float32Array): Float32Array => {
   return distorted
 }
 
-const audioSamplesToWAV = (samples: Float32Array, sampleRate: number): Uint8Array => {
+const audioSamplesToWAV = (samples: Float32Array, sampleRate: number): Uint8Array<ArrayBuffer> => {
   const numChannels = 1
   const bitsPerSample = 8
   const bytesPerSample = bitsPerSample / 8

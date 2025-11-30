@@ -106,14 +106,17 @@ const AsSoundConfig = () => {
   const conf = currSelection.config
 
   return (
-    <RangeInput
-      label="Blend Intensity"
-      id="blendIntensity"
-      min={min}
-      max={max}
-      configKey="blend"
-      defaultValue={conf.blend}
-    />
+    <div>
+      <RangeInput
+        label="Blend Intensity"
+        id="blendIntensity"
+        min={min}
+        max={max}
+        configKey="blend"
+        defaultValue={conf.blend}
+        refresh
+      />
+    </div>
   )
 }
 

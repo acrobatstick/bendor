@@ -16,6 +16,7 @@ export enum Filter {
 }
 
 interface AsSoundConfig {
+  cache: Uint8ClampedArray<ArrayBuffer>
   blend: number
 }
 
@@ -28,7 +29,7 @@ interface BrightnessConfig {
 }
 
 interface FractalPixelSortConfig {
-  distortedData: Uint8ClampedArray<ArrayBuffer>
+  cache: Uint8ClampedArray<ArrayBuffer>
   intensity: number
 }
 
