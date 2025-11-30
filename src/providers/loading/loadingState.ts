@@ -1,4 +1,4 @@
 export const initialLoadingState = {
-	loading: false,
-	setLoading: null,
+  loading: false,
+  setLoading: null
 }

@@ -1,0 +1,83 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.3.8/schema.json",
+
+  // Code modification
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  },
+
+  // use .gitignore files
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+
+  // Modern monitor configuration
+  "formatter": {
+    "lineWidth": 100,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineEnding": "lf"
+  },
+
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double",
+      "trailingCommas": "none",
+      "semicolons": "asNeeded"
+    }
+  },
+
+  // Some configuration files allows comments
+  "json": {
+    "parser": {
+      "allowComments": true,
+      "allowTrailingCommas": true
+    }
+  },
+
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "suspicious": {
+        "noExplicitAny": "off"
+      },
+
+      "style": {
+        "noNonNullAssertion": "off",
+
+        // Reduces variable declaration verbosity
+        "noParameterAssign": "off"
+      },
+
+      // Some frameworks require the use of static-only classes
+      "complexity": {
+        "noThisInStatic": "off"
+      },
+
+      "a11y": {
+        "noSvgWithoutTitle": "off"
+      }
+    }
+  },
+
+  // Common files present inside a JavaScript project's .gitignore file
+  "files": {
+    "includes": [
+      "**",
+      "!**/dist/**/*",
+      "!**/.next/**/*",
+      "!**/coverage/**/*",
+      "!**/node_modules/**/*",
+      "!**/pnpm-lock.json",
+      "!**/*.min.css",
+      "!**/*.min.js"
+    ]
+  }
+}

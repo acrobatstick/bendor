@@ -1,10 +1,10 @@
-import type { State } from "../../types";
+import type { State } from "../../types"
 
 export const initialStoreState: State = {
-	imgBuf: new ArrayBuffer(),
-	imgCtx: null,
-	originalAreaData: [],
-	layers: [],
-	currentLayer: undefined,
-	selectedLayerIdx: -1,
-};
+  imgBuf: new ArrayBuffer(),
+  imgCtx: null,
+  originalAreaData: [],
+  layers: [],
+  currentLayer: undefined,
+  selectedLayerIdx: -1
+}

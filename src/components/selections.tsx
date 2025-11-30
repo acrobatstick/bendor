@@ -1,24 +1,24 @@
-import { useLoading } from "../hooks/useLoading";
-import { useStore } from "../hooks/useStore";
-import { StoreActionType } from "../providers/store/reducer";
-import { Filter } from "../types";
+import { useLoading } from "../hooks/useLoading"
+import { useStore } from "../hooks/useStore"
+import { StoreActionType } from "../providers/store/reducer"
+import { Filter } from "../types"
 
 function Selections() {
-  const { loading } = useLoading();
-  const { state, dispatch } = useStore();
-  const filterList = Object.keys(Filter);
+  const { loading } = useLoading()
+  const { state, dispatch } = useStore()
+  const filterList = Object.keys(Filter)
 
   const onAddLayer = () => {
     if (!loading) {
-      dispatch({ type: StoreActionType.CreateNewLayer });
+      dispatch({ type: StoreActionType.CreateNewLayer })
     }
-  };
+  }
 
   const onDeleteLayer = (idx: number) => {
-    dispatch({ type: StoreActionType.DeleteLayer, payload: idx });
-    dispatch({ type: StoreActionType.ResetImageCanvas });
-    dispatch({ type: StoreActionType.GenerateResult });
-  };
+    dispatch({ type: StoreActionType.DeleteLayer, payload: idx })
+    dispatch({ type: StoreActionType.ResetImageCanvas })
+    dispatch({ type: StoreActionType.GenerateResult })
+  }
 
   const onChangeFilter = (idx: number, value: Filter) => {
     dispatch({
@@ -26,30 +26,30 @@ function Selections() {
       payload: {
         layerIdx: idx,
         pselection: {
-          filter: value,
+          filter: value
         },
-        withUpdateInitialPresent: false,
-      },
-    });
-  };
+        withUpdateInitialPresent: false
+      }
+    })
+  }
 
   // clear selection by reverting back to selecting whole image as the area data
   const onClearSelection = () => {
     dispatch({
       type: StoreActionType.SetPointsToLayer,
-      payload: { points: [], start: { x: 0, y: 0 } },
-    });
+      payload: { points: [], start: { x: 0, y: 0 } }
+    })
     dispatch({
       type: StoreActionType.UpdateLayerSelection,
       payload: {
         layerIdx: state.selectedLayerIdx,
         pselection: { area: state.originalAreaData },
-        withUpdateInitialPresent: false,
-      },
-    });
-    dispatch({ type: StoreActionType.ResetImageCanvas });
-    dispatch({ type: StoreActionType.GenerateResult });
-  };
+        withUpdateInitialPresent: false
+      }
+    })
+    dispatch({ type: StoreActionType.ResetImageCanvas })
+    dispatch({ type: StoreActionType.GenerateResult })
+  }
 
   return (
     <div>
@@ -58,20 +58,14 @@ function Selections() {
         {state.layers.map((point, idx) => (
           <li id={`${idx}`} key={idx}>
             <select
-              onChange={(event) =>
-                onChangeFilter(idx, event.target.value as Filter)
-              }
+              onChange={(event) => onChangeFilter(idx, event.target.value as Filter)}
               value={point.selection.filter}
             >
               {filterList.map((filter) => (
                 <option key={`filter-${idx}-${filter}`}>{filter}</option>
               ))}
             </select>
-            <button
-              onClick={() =>
-                dispatch({ type: StoreActionType.SelectLayer, payload: idx })
-              }
-            >
+            <button onClick={() => dispatch({ type: StoreActionType.SelectLayer, payload: idx })}>
               {state.selectedLayerIdx == idx ? "(Active)" : "Select"}
             </button>
             <button onClick={onClearSelection}>Clear Selection</button>
@@ -80,7 +74,7 @@ function Selections() {
               onClick={() =>
                 dispatch({
                   type: StoreActionType.MoveLayer,
-                  payload: { direction: "up", layerIdx: idx },
+                  payload: { direction: "up", layerIdx: idx }
                 })
               }
             >
@@ -90,7 +84,7 @@ function Selections() {
               onClick={() =>
                 dispatch({
                   type: StoreActionType.MoveLayer,
-                  payload: { direction: "down", layerIdx: idx },
+                  payload: { direction: "down", layerIdx: idx }
                 })
               }
             >
@@ -100,7 +94,7 @@ function Selections() {
         ))}
       </ul>
     </div>
-  );
+  )
 }
 
-export default Selections;
+export default Selections
