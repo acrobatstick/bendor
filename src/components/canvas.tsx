@@ -123,9 +123,9 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
         type: StoreActionType.UpdateState,
         payload: { key: "imgCtx", value: imageCtx }
       })
-      areaRef.current = new Uint8Array(img.naturalWidth * img.naturalHeight)
-      areaRef.current.fill(1)
-      const area = getAreaData(imageCtx, areaRef.current)
+      const wholeImageArea = new Uint8Array(img.naturalWidth * img.naturalHeight)
+      wholeImageArea.fill(1)
+      const area = getAreaData(imageCtx, wholeImageArea)
       dispatch({
         type: StoreActionType.UpdateState,
         payload: { key: "originalAreaData", value: area }
@@ -435,7 +435,8 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
       const imageCanvas = imageCanvasRef.current
       const imageCtx = imageCanvas?.getContext("2d")
       if (!imageCtx) return
-      const area = getAreaData(imageCtx, areaRef.current!)
+      const emptySelection = new Uint8Array()
+      const area = getAreaData(imageCtx, emptySelection)
 
       dispatch({
         type: StoreActionType.UpdateLayerSelection,
