@@ -114,23 +114,16 @@ export type Action =
   | UpdateState<keyof State>
 
 const defaultConfig = <F extends Filter>(filter: F): FilterConfigMap[F] => {
-  switch (filter) {
-    case Filter.None:
-      return { _empty: true } as FilterConfigMap[F]
-    case Filter.AsSound:
-      return { blend: 0.5, cache: new Uint8ClampedArray() } as FilterConfigMap[F]
-    case Filter.FractalPixelSort:
-      return {
-        intensity: 6.0,
-        cache: new Uint8ClampedArray()
-      } as FilterConfigMap[F]
-    case Filter.Brightness:
-      return { intensity: 1.0 } as FilterConfigMap[F]
-    case Filter.Tint:
-      return { r: 255, g: 255, b: 255 } as FilterConfigMap[F]
-    case Filter.Grayscale:
-      return { intensity: 1.0 } as FilterConfigMap[F]
-  }
+  const configs = {
+    [Filter.None]: { _empty: true },
+    [Filter.AsSound]: { blend: 0.5, cache: new Uint8ClampedArray() },
+    [Filter.FractalPixelSort]: { intensity: 6.0, cache: new Uint8ClampedArray() },
+    [Filter.Brightness]: { intensity: 1.0 },
+    [Filter.RGBShift]: { intensity: 5.0, effect: "Vibrance" },
+    [Filter.Grayscale]: { intensity: 1.0 }
+  } satisfies FilterConfigMap;
+
+  return configs[filter];
 }
 
 const storeReducer = (state: State, action: Action): State => {

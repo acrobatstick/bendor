@@ -1,3 +1,4 @@
+import type { RGB_SHIFT_OPTIONS } from "./constants"
 import type Commands from "./utils/commands"
 
 export type Point = {
@@ -10,7 +11,7 @@ export enum Filter {
   AsSound = "AsSound",
   FractalPixelSort = "FractalPixelSort",
   Brightness = "Brightness",
-  Tint = "Tint",
+  RGBShift = "RGBShift",
   Grayscale = "Grayscale",
   None = "None"
 }
@@ -33,10 +34,9 @@ interface FractalPixelSortConfig {
   intensity: number
 }
 
-interface TintConfig {
-  r: number
-  g: number
-  b: number
+export interface RGBShiftConfig {
+  effect: (typeof RGB_SHIFT_OPTIONS)[number]
+  intensity: number
 }
 
 interface NoConfig {
@@ -47,7 +47,7 @@ export type FilterConfigMap = {
   [Filter.AsSound]: AsSoundConfig
   [Filter.FractalPixelSort]: FractalPixelSortConfig
   [Filter.Brightness]: BrightnessConfig
-  [Filter.Tint]: TintConfig
+  [Filter.RGBShift]: RGBShiftConfig
   [Filter.Grayscale]: GrayscaleConfig
   [Filter.None]: NoConfig
 }

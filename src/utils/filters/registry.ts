@@ -3,6 +3,7 @@ import { asSoundFilter } from "./asSound"
 import { brightnessFilter } from "./brightness"
 import { fractalPixelSortFilter } from "./fractalPixelSort"
 import { grayscaleFilter } from "./grayscale"
+import { rgbShift } from "./rgbShift"
 
 // a placeholder if filter is not yet implemented or just do nothing
 const noop: FilterFunction = ({ layer }) => {
@@ -14,7 +15,7 @@ export const filterNameRegistry: Record<Filter, string> = {
   [Filter.FractalPixelSort]: "Fractal Pixel Sort",
   [Filter.Brightness]: "Brightness",
   [Filter.Grayscale]: "Grayscale",
-  [Filter.Tint]: "Tint",
+  [Filter.RGBShift]: "RGB Shift",
   [Filter.None]: "No Filter"
 }
 
@@ -23,6 +24,6 @@ export const filterFnRegistry: Record<Filter, FilterFunction> = {
   [Filter.FractalPixelSort]: fractalPixelSortFilter,
   [Filter.Brightness]: brightnessFilter,
   [Filter.Grayscale]: grayscaleFilter,
-  [Filter.Tint]: noop,
+  [Filter.RGBShift]: rgbShift,
   [Filter.None]: noop
 }

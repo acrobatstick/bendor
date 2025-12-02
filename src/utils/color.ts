@@ -1,6 +1,7 @@
 export class Color {
   channel: Uint8ClampedArray
-  constructor(channel: Uint8ClampedArray) {
+  startingIdx: number
+  constructor(channel: Uint8ClampedArray, startingIdx: number = 0) {
     if (channel.length !== 4) {
       throw new Error("color channel must have 4 length (R,G,B,A)")
     }
@@ -12,8 +13,8 @@ export class Color {
         throw new Error("value range must be within 0..255")
       }
     })
-
     this.channel = channel
+    this.startingIdx = startingIdx
   }
 
   get red() {
@@ -30,5 +31,9 @@ export class Color {
 
   get alpha() {
     return this.channel[3]
+  }
+
+  normalizeRGBValue = (n: number) => {
+    return Math.min(255, Math.max(0, n))
   }
 }
