@@ -10,7 +10,8 @@
     "format": "biome format --write .",
     "lint": "biome check .",
     "lint:ci": "biome ci .",
-    "lint:fix": "biome check --write --unsafe ."
+    "lint:fix": "biome check --write --unsafe .",
+    "preview": "vite preview"
   },
   "dependencies": {
     "react": "^19.1.1",
