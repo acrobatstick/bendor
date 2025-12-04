@@ -121,7 +121,8 @@ const defaultConfig = <F extends Filter>(filter: F): FilterConfigMap[F] => {
     [Filter.Brightness]: { intensity: 1.0 },
     [Filter.RGBShift]: { intensity: 5.0, effect: "Vibrance" },
     [Filter.Grayscale]: { intensity: 1.0 },
-    [Filter.PixelSort]: { cache: new Uint8ClampedArray(), intensity: 1.0, direction: "Vertical" }
+    [Filter.PixelSort]: { cache: new Uint8ClampedArray(), intensity: 1.0, direction: "Vertical" },
+    [Filter.Slice]: { intensity: -100.0 }
   } satisfies FilterConfigMap
 
   return configs[filter]

@@ -8,3 +8,5 @@ export const RGB_SHIFT_OPTIONS = ["Vibrance", "Red", "Green", "Blue"] as const
 
 export const PIXEL_SORT_DIRECTIONS = ["Vertical", "Horizontal"] as const
 export const PIXEL_SORT_INTENSITY = { min: 1.0, max: 100.0 }
+
+export const SLICE_INTENSITY_RANGE = { min: -100.0, max: 0.0 }

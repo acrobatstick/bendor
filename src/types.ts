@@ -14,7 +14,8 @@ export enum Filter {
   FractalPixelSort = "FractalPixelSort",
   Brightness = "Brightness",
   RGBShift = "RGBShift",
-  Grayscale = "Grayscale"
+  Grayscale = "Grayscale",
+  Slice = "Slice"
 }
 
 interface AsSoundConfig {
@@ -46,6 +47,10 @@ interface PixelSortConfig {
   intensity: number
 }
 
+interface SliceConfig {
+  intensity: number
+}
+
 interface NoConfig {
   _empty?: true
 }
@@ -58,6 +63,7 @@ export type FilterConfigMap = {
   [Filter.Grayscale]: GrayscaleConfig
   [Filter.None]: NoConfig
   [Filter.PixelSort]: PixelSortConfig
+  [Filter.Slice]: SliceConfig
 }
 
 export interface LSelection<F extends Filter = Filter> {

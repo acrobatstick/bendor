@@ -5,6 +5,7 @@ import { fractalPixelSortFilter } from "./fractalPixelSort"
 import { grayscaleFilter } from "./grayscale"
 import { rgbShift } from "./rgbShift"
 import { pixelSort } from "./pixelSort"
+import { slice } from "./slice"
 
 // a placeholder if filter is not yet implemented or just do nothing
 const noop: FilterFunction = ({ layer }) => {
@@ -18,7 +19,8 @@ export const filterNameRegistry: Record<Filter, string> = {
   [Filter.Grayscale]: "Grayscale",
   [Filter.RGBShift]: "RGB Shift",
   [Filter.None]: "No Filter",
-  [Filter.PixelSort]: "Pixel Sort"
+  [Filter.PixelSort]: "Pixel Sort",
+  [Filter.Slice]: "Slice"
 }
 
 export const filterFnRegistry: Record<Filter, FilterFunction> = {
@@ -28,5 +30,6 @@ export const filterFnRegistry: Record<Filter, FilterFunction> = {
   [Filter.Grayscale]: grayscaleFilter,
   [Filter.RGBShift]: rgbShift,
   [Filter.None]: noop,
-  [Filter.PixelSort]: pixelSort
+  [Filter.PixelSort]: pixelSort,
+  [Filter.Slice]: slice
 }

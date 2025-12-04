@@ -9,13 +9,14 @@ import {
   PIXEL_SORT_INTENSITY,
   RGB_SHIFT_INTENSITY_RANGE,
   RGB_SHIFT_OPTIONS,
+  SLICE_INTENSITY_RANGE,
   SOUND_BIT_RATE_BLEND_RANGE
 } from "~/constants"
 import { StoreActionType } from "~/providers/store/reducer"
 import { useLoading } from "~/hooks/useLoading"
 import { flushSync } from "react-dom"
 
-interface RangeInputProps {
+interface RangeInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string
   id: string
   min: number
@@ -43,7 +44,8 @@ const RangeInput = ({
   max,
   configKey,
   defaultValue,
-  refresh = false
+  refresh = false,
+  ...rest
 }: RangeInputProps) => {
   const { loading, start, stop } = useLoading()
   const { state, dispatch } = useStore()
@@ -59,7 +61,8 @@ const RangeInput = ({
       type: StoreActionType.UpdateLayerSelection,
       payload: {
         layerIdx: state.selectedLayerIdx,
-        pselection: { config: { [configKey]: value } },
+        // use Math.abs to handle reversed slider value
+        pselection: { config: { [configKey]: Math.abs(value) } },
         withUpdateInitialPresent: false
       }
     })
@@ -71,6 +74,7 @@ const RangeInput = ({
     <div>
       <label htmlFor={id}>{label}</label>
       <input
+        {...rest}
         disabled={loading}
         ref={inputRef}
         onMouseUp={onApply}
@@ -296,6 +300,24 @@ const PixelSortConfig = () => {
   )
 }
 
+const SliceConfig = () => {
+  const { state } = useStore()
+  const { min, max } = SLICE_INTENSITY_RANGE
+  const currSelection = state.currentLayer?.selection as LSelection<Filter.Slice>
+  const conf = currSelection.config
+
+  return (
+    <RangeInput
+      label="Intensity"
+      id="sliceDistortionIntensity"
+      min={min}
+      max={max}
+      configKey="intensity"
+      defaultValue={conf.intensity}
+    />
+  )
+}
+
 const ConfigElements = (filter?: Filter): JSX.Element => {
   if (!filter) {
     return <div></div>
@@ -315,6 +337,8 @@ const ConfigElements = (filter?: Filter): JSX.Element => {
       return <FractalPixelSortConfig />
     case Filter.PixelSort:
       return <PixelSortConfig />
+    case Filter.Slice:
+      return <SliceConfig />
   }
 }
 

@@ -437,7 +437,6 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
       document.removeEventListener("mousemove", handleMouseMoveOutside)
       document.removeEventListener("mouseup", handleMouseUpOutside)
     }
-
   }, [
     ongoingTouches,
     state.selectedLayerIdx,
@@ -446,7 +445,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
     getOngoingTouchById,
     selectArea,
     start,
-    stop,
+    stop
   ])
 
   // Handle selection render on layer index change
