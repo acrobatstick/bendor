@@ -15,7 +15,8 @@ export enum Filter {
   Brightness = "Brightness",
   RGBShift = "RGBShift",
   Grayscale = "Grayscale",
-  Slice = "Slice"
+  Slice = "Slice",
+  OffsetPixelSort = "OffsetPixelSort"
 }
 
 interface AsSoundConfig {
@@ -47,6 +48,11 @@ interface PixelSortConfig {
   intensity: number
 }
 
+interface OffsetPixelSort {
+  cache: ImageDataArray
+  intensity: number
+}
+
 interface SliceConfig {
   intensity: number
 }
@@ -64,6 +70,7 @@ export type FilterConfigMap = {
   [Filter.None]: NoConfig
   [Filter.PixelSort]: PixelSortConfig
   [Filter.Slice]: SliceConfig
+  [Filter.OffsetPixelSort]: OffsetPixelSort
 }
 
 export interface LSelection<F extends Filter = Filter> {

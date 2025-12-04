@@ -2,8 +2,11 @@ export class Color {
   channel: Uint8ClampedArray
   startingIdx: number
   constructor(channel: Uint8ClampedArray, startingIdx: number = 0) {
+    // fill with zeroes to empty array indexes
     if (channel.length !== 4) {
-      throw new Error("color channel must have 4 length (R,G,B,A)")
+      for (let i = channel.length; i < 4; i++) {
+        channel[i] = 0
+      }
     }
     channel.forEach((ch) => {
       if (!Number.isInteger(ch)) {

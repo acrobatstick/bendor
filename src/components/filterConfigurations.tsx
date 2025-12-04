@@ -5,6 +5,7 @@ import {
   BRIGHTNESS_INTENSITY_RANGE,
   FRACTAL_SORT_DISTORTION_RANGE,
   GRAYSCALE_INTENSITY_RANGE,
+  OFFSET_PIXEL_DISTORTION_RANGE,
   PIXEL_SORT_DIRECTIONS,
   PIXEL_SORT_INTENSITY,
   RGB_SHIFT_INTENSITY_RANGE,
@@ -21,7 +22,7 @@ interface RangeInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   id: string
   min: number
   max: number
-  configKey: "intensity" | "blend"
+  configKey: "intensity" | "blend" | "brightness" | "distortion"
   defaultValue: number
   refresh?: boolean
 }
@@ -74,7 +75,6 @@ const RangeInput = ({
     <div>
       <label htmlFor={id}>{label}</label>
       <input
-        {...rest}
         disabled={loading}
         ref={inputRef}
         onMouseUp={onApply}
@@ -83,8 +83,9 @@ const RangeInput = ({
         type="range"
         min={min}
         max={max}
-        step={0.01}
+        step={rest.step ?? 0.01}
         defaultValue={defaultValue}
+        {...rest}
       />
     </div>
   )
@@ -237,7 +238,7 @@ const FractalPixelSortConfig = () => {
           })
         }}
       >
-        Refresh Distortions
+        Refresh Patterns
       </button>
     </div>
   )
@@ -318,6 +319,38 @@ const SliceConfig = () => {
   )
 }
 
+const OffsetPixelSortConfig = () => {
+  const { state, dispatch } = useStore()
+  const distortion = OFFSET_PIXEL_DISTORTION_RANGE
+  const currSelection = state.currentLayer?.selection as LSelection<Filter.OffsetPixelSort>
+  const conf = currSelection.config
+  return (
+    <div>
+      <RangeInput
+        label="Distortion"
+        id="sliceDistortionIntensity"
+        min={distortion.min}
+        max={distortion.max}
+        step={distortion.step}
+        configKey="intensity"
+        defaultValue={conf.intensity}
+        refresh
+      />
+      <button
+        onClick={() => {
+          dispatch({ type: StoreActionType.ResetImageCanvas })
+          dispatch({
+            type: StoreActionType.GenerateResult,
+            payload: { refresh: true }
+          })
+        }}
+      >
+        Refresh Patterns
+      </button>
+    </div>
+  )
+}
+
 const ConfigElements = (filter?: Filter): JSX.Element => {
   if (!filter) {
     return <div></div>
@@ -339,6 +372,8 @@ const ConfigElements = (filter?: Filter): JSX.Element => {
       return <PixelSortConfig />
     case Filter.Slice:
       return <SliceConfig />
+    case Filter.OffsetPixelSort:
+      return <OffsetPixelSortConfig />
   }
 }
 
