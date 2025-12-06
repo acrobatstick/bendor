@@ -6,6 +6,7 @@ import { StoreActionType } from "./providers/store/reducer"
 import Canvas from "./components/canvas"
 import { LoadingProvider } from "./providers/loading/loadingProvider"
 import FilterConfigurations from "./components/filterConfigurations"
+import Exports from "./components/exports"
 
 function App() {
   const { dispatch } = useStore()
@@ -60,6 +61,7 @@ function App() {
         <button onClick={generateResult}>Generate</button>
       </div>
       <FilterConfigurations />
+      <Exports />
     </LoadingProvider>
   )
 }

@@ -569,6 +569,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
       {...props}
     >
       <canvas
+        id="imageCanvas"
         ref={imageCanvasRef}
         style={{
           display: "block",
