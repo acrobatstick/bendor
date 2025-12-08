@@ -11,7 +11,7 @@ import {
 } from "~/utils/image"
 import { flushSync } from "react-dom"
 
-function isPointInPolygon(point: Point, polygon: Point[]): boolean {
+const isPointInPolygon = (point: Point, polygon: Point[]): boolean => {
   let inside = false
   let j = polygon.length - 1
 
@@ -237,6 +237,8 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
             withUpdateInitialPresent: true
           }
         })
+        const [, , minX, minY] = getPointsBoundingBox(pointsRef.current)
+        mouseStartRef.current = { x: minX, y: minY }
         dispatch({ type: StoreActionType.GenerateResult })
         stop()
       })
@@ -581,11 +583,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
     if (!activeCanvas) return
     if (!state.currentLayer?.selection) return
 
-    const { points } = state.currentLayer.selection
-
     if (state.mode === "move") {
-      const [width, height, minX, minY] = getPointsBoundingBox(points)
-
       const drawingCanvasCtx = state.currentLayer?.ctx
       if (!drawingCanvasCtx) {
         return
@@ -596,8 +594,21 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
         return
       }
 
-      ctx.fillStyle = state.currentLayer.color
-      ctx.fillRect(minX, minY, width, height)
+      const renderBoundingBox = () => {
+        renderSelection(
+          drawingCanvasCtx,
+          activeCanvas,
+          pointsRef.current,
+          startPointRef.current,
+          state.currentLayer!.color
+        )
+        const [width, height, minX, minY] = getPointsBoundingBox(pointsRef.current)
+        ctx.fillStyle = state.currentLayer!.color
+        ctx.fillRect(minX, minY, width, height)
+      }
+
+      // render initial bounding box 
+      renderBoundingBox()
 
       // to determine if the cursor is inside the drawing bounding box or not
       const onMouseDown = (e: MouseEvent) => {
@@ -607,6 +618,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
           e.clientX,
           e.clientY
         )
+        const [width, height, minX, minY] = getPointsBoundingBox(pointsRef.current)
         const isInBound = cursorInBoundingBox({
           drawing: {
             width,
@@ -619,11 +631,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
             y: mouseY
           }
         })
-
-        if (!isInBound) {
-          console.log("is outside")
-          return
-        }
+        if (!isInBound) return
         // if so we can start moving the drawing
         setMovable(true)
         mouseStartRef.current = { x: mouseX, y: mouseY }
@@ -658,6 +666,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
               withUpdateInitialPresent: true
             }
           })
+          renderBoundingBox()
           dispatch({ type: StoreActionType.GenerateResult })
           stop()
         })
