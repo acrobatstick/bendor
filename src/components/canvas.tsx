@@ -314,7 +314,6 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
       if (startPointRef.current) {
         pointsRef.current.push(startPointRef.current)
       }
-      selectArea(pointsRef.current, activeCanvas)
       renderSelection(
         drawingCanvasCtx,
         activeCanvas,
@@ -322,6 +321,36 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
         startPointRef.current,
         state.currentLayer!.color
       )
+      flushSync(() => start())
+      requestIdleCallback(() => {
+        dispatch({ type: StoreActionType.ResetImageCanvas })
+        selectArea(pointsRef.current, activeCanvas)
+        dispatch({
+          type: StoreActionType.SetPointsToLayer,
+          payload: {
+            points: pointsRef.current,
+            start: startPointRef.current!
+          }
+        })
+        const imageCanvas = imageCanvasRef.current
+        const imageCtx = imageCanvas?.getContext("2d")
+        if (!imageCtx) return
+        const area = getAreaData(imageCtx, areaRef.current!)
+        dispatch({
+          type: StoreActionType.UpdateLayerSelection,
+          payload: {
+            layerIdx: state.selectedLayerIdx,
+            pselection: {
+              area
+            },
+            withUpdateInitialPresent: true
+          }
+        })
+        const [, , minX, minY] = getPointsBoundingBox(pointsRef.current)
+        mouseStartRef.current = { x: minX, y: minY }
+        dispatch({ type: StoreActionType.GenerateResult })
+        stop()
+      })
     }
 
     const handleTouchCancel = (e: TouchEvent) => {
