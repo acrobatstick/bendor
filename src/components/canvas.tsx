@@ -636,7 +636,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
         ctx.fillRect(minX, minY, width, height)
       }
 
-      // render initial bounding box 
+      // render initial bounding box
       renderBoundingBox()
 
       // to determine if the cursor is inside the drawing bounding box or not

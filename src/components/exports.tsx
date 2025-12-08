@@ -5,6 +5,15 @@ import { useLoading } from "~/hooks/useLoading"
 import { useStore } from "~/hooks/useStore"
 import { StoreActionType } from "~/providers/store/reducer"
 
+// randomize filename by using the hash of the canvas blob
+const generateFilename = async (buf: ArrayBuffer) => {
+  const hashBuffer = await crypto.subtle.digest("SHA-256", buf)
+  const hashArray = Array.from(new Uint8Array(hashBuffer))
+  const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("")
+  const hash = hashHex.substring(0, 12)
+  return hash
+}
+
 const Exports = () => {
   const ffmpegRef = useRef(new FFmpeg())
   const { loading, start, stop } = useLoading()
@@ -19,7 +28,7 @@ const Exports = () => {
       setLoadingFfmpeg(false)
       return
     }
-    ;(async () => {
+    ; (async () => {
       const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm"
       console.log("loading ffmpeg...")
       await ffmpegRef.current.load({
@@ -33,15 +42,23 @@ const Exports = () => {
 
   if (!state.imgCtx) return <div></div>
 
-  const onExportImage = () => {
+  const onExportImage = async () => {
     if (!state.imgCtx) return
-    let dt = state.imgCtx.canvas.toDataURL()
-    dt = dt.replace(/^data:image\/[^;]*/, "data:application/octet-stream")
-    dt = dt.replace(
-      /^data:application\/octet-stream/,
-      "data:application/octet-stream;headers=Content-Disposition%3A%20attachment%3B%20filename=result.png"
-    )
-    window.open(dt, "_blank")
+
+    const blob = await new Promise<Blob>((resolve) => {
+      state.imgCtx!.canvas.toBlob((blob) => {
+        resolve(blob!)
+      }, "image/png")
+    })
+
+    const filename = await generateFilename(await blob.arrayBuffer())
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `${filename}.png`
+    a.click()
+
+    URL.revokeObjectURL(url)
   }
 
   const onExportGIF = async () => {
@@ -92,15 +109,15 @@ const Exports = () => {
     ])
 
     const data = await ffmpeg.readFile("output.gif")
-
     const blob = new Blob([data.slice(0)], { type: "image/gif" })
+
+    const filename = await generateFilename(await blob.arrayBuffer())
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")
     a.href = url
-    a.download = "output.gif"
+    a.download = `${filename}.gif`
     a.click()
     URL.revokeObjectURL(url)
-
     stop()
 
     // cleanups
