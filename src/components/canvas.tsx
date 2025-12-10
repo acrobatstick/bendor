@@ -576,32 +576,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
     selectArea
   ])
 
-  // Handle layers selection on selected index change
-  useEffect(() => {
-    const container = containerRef.current
-    if (!container) return
-
-    // find all canvases with id starting with "drawing-canvas-"
-    const canvases = container.querySelectorAll<HTMLCanvasElement>('[id^="drawing-canvas-"]')
-
-    canvases.forEach((canvas) => {
-      // extract the numeric index from the id
-      const idx = Number(canvas.id.replace("drawing-canvas-", ""))
-
-      if (idx === state.selectedLayerIdx) {
-        canvas.classList.add("active")
-        canvas.style.pointerEvents = "auto"
-      } else {
-        const ctx = canvas.getContext("2d")
-        if (ctx) {
-          ctx.clearRect(0, 0, canvas.width, canvas.height)
-        }
-        canvas.classList.remove("active")
-        canvas.style.pointerEvents = "none"
-      }
-    })
-  }, [state.selectedLayerIdx])
-
+  // to handle drawing movement
   useEffect(() => {
     const container = containerRef.current
     if (!container) return
@@ -755,6 +730,11 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
     start,
     stop
   ])
+
+  // auto select layer whenever seletedLayerIdx changes
+  useEffect(() => {
+    dispatch({ type: StoreActionType.SelectLayer, payload: state.selectedLayerIdx })
+  }, [state.selectedLayerIdx, dispatch])
 
   return (
     <div

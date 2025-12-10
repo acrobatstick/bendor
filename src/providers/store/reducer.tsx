@@ -181,6 +181,23 @@ const storeReducer = (state: State, action: Action): State => {
     case StoreActionType.SelectLayer: {
       const idx = action.payload
       if (!isInBounds(state.layers.length, idx)) return { ...state }
+
+      // move active status over to the newly selected canvas idx
+      for (let i = 0; i < state.layers.length; i++) {
+        const ctx = state.layers[i].ctx
+        if (!ctx) continue
+        const currIdx = Number(ctx.canvas.id.replace("drawing-canvas-", ""))
+
+        if (idx === currIdx) {
+          ctx.canvas.classList.add("active")
+          ctx.canvas.style.pointerEvents = "auto"
+        } else {
+          ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+          ctx.canvas.classList.remove("active")
+          ctx.canvas.style.pointerEvents = "none"
+        }
+      }
+
       return {
         ...state,
         selectedLayerIdx: idx,
@@ -284,7 +301,21 @@ const storeReducer = (state: State, action: Action): State => {
 
     case StoreActionType.DeleteLayer: {
       let selectedLayerIdx = action.payload
-      const updated = [...state.layers].filter((_, idx) => idx != selectedLayerIdx)
+      const layerToDelete = state.layers[selectedLayerIdx]
+
+      // remove current canvas from the DOM
+      if (layerToDelete?.ctx?.canvas) {
+        layerToDelete.ctx.canvas.remove()
+      }
+
+      const updated = [...state.layers].filter((_, idx) => idx !== selectedLayerIdx)
+
+      // re-index the canvas id
+      for (let i = 0; i < updated.length; i++) {
+        const ctx = updated[i].ctx
+        if (!ctx?.canvas) continue
+        ctx.canvas.id = `drawing-canvas-${i}`
+      }
 
       // adjust selectedLayerIdx if updated layers are empty or overflowing the array length
       if (updated.length === 0) {
