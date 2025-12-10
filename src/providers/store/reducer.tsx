@@ -357,7 +357,8 @@ const storeReducer = (state: State, action: Action): State => {
 
         return {
           ...layer,
-          selection: updatedSelection
+          selection: updatedSelection,
+          area: updatedArea
         }
       })
 

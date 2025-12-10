@@ -22,6 +22,8 @@ export const grayscaleFilter: FilterFunction = ({ imageCanvas, layer, area }) =>
     data[index + 2] = blue * (1 - selection.config.intensity) + avg * selection.config.intensity
   }
 
+  console.log("asdkljf")
+
   imageCanvas.putImageData(wholeImage, 0, 0)
 
   return { updatedSelection: layer.selection }

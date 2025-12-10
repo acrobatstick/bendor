@@ -36,7 +36,7 @@ export const pixelSort: FilterFunction = ({ imageCanvas, layer, area, refresh })
   imageCanvas.putImageData(img, 0, 0)
 
   return {
-    updatedSelection: layer.selection
+    updatedSelection: selection
   }
 }
 
