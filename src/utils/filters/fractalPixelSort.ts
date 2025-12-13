@@ -21,16 +21,8 @@ export const fractalPixelSortFilter: FilterFunction = ({ imageCanvas, layer, are
   }
 }
 
-const generateFractalCache = (
-  imageCanvas: CanvasRenderingContext2D,
-  intensity: number
-): Uint8ClampedArray => {
-  const wholeImage = imageCanvas.getImageData(
-    0,
-    0,
-    imageCanvas.canvas.width,
-    imageCanvas.canvas.height
-  )
+const generateFractalCache = (imageCanvas: CanvasRenderingContext2D, intensity: number): Uint8ClampedArray => {
+  const wholeImage = imageCanvas.getImageData(0, 0, imageCanvas.canvas.width, imageCanvas.canvas.height)
   const cache = new Uint8ClampedArray(wholeImage.data)
 
   // sort by intensity pass
@@ -102,17 +94,8 @@ const applyColorShift = (
   }
 }
 
-const applyFilter = (
-  imageCanvas: CanvasRenderingContext2D,
-  cache: Uint8ClampedArray,
-  area: Point[]
-) => {
-  const wholeImage = imageCanvas.getImageData(
-    0,
-    0,
-    imageCanvas.canvas.width,
-    imageCanvas.canvas.height
-  )
+const applyFilter = (imageCanvas: CanvasRenderingContext2D, cache: Uint8ClampedArray, area: Point[]) => {
+  const wholeImage = imageCanvas.getImageData(0, 0, imageCanvas.canvas.width, imageCanvas.canvas.height)
   const data = wholeImage.data
   const fullWidth = imageCanvas.canvas.width
 

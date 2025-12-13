@@ -29,10 +29,7 @@ export const offsetPixelSort: FilterFunction = ({ layer, imageCanvas, area, refr
     // offsetting the distorted image
     for (let i = 0; i < distortion * 2; i++) {
       const distortionY = randInt(0, height)
-      const offsetDistortionHeight = Math.min(
-        randInt(1, Math.floor(height / 4)),
-        height - distortionY
-      )
+      const offsetDistortionHeight = Math.min(randInt(1, Math.floor(height / 4)), height - distortionY)
       const offsetRenderDist = randInt(-maxOffsetMarker, maxOffsetMarker)
 
       if (offsetRenderDist === 0) {
@@ -69,17 +66,7 @@ export const offsetPixelSort: FilterFunction = ({ layer, imageCanvas, area, refr
       } else if (offsetRenderDist > 0) {
         // Positive offset: shift right with wrap
         // Draw main section (shifted right)
-        tempCtx.drawImage(
-          originalCanvas,
-          0,
-          distortionY,
-          width,
-          offsetDistortionHeight,
-          offsetRenderDist,
-          distortionY,
-          width,
-          offsetDistortionHeight
-        )
+        tempCtx.drawImage(originalCanvas, 0, distortionY, width, offsetDistortionHeight, offsetRenderDist, distortionY, width, offsetDistortionHeight)
 
         tempCtx.drawImage(
           originalCanvas,
@@ -109,24 +96,15 @@ export const offsetPixelSort: FilterFunction = ({ layer, imageCanvas, area, refr
         const distortionStartColumnX = distortionStartPointColumn + j
         const distortionStartRowY = distortionStartPointRow + i
 
-        if (
-          distortionStartColumnX < 0 ||
-          distortionStartColumnX >= width ||
-          distortionStartRowY < 0 ||
-          distortionStartRowY >= height
-        ) {
+        if (distortionStartColumnX < 0 || distortionStartColumnX >= width || distortionStartRowY < 0 || distortionStartRowY >= height) {
           continue
         }
 
         const pixelCanvasPosition = (distortionStartColumnX + distortionStartRowY * width) * 4
         const inputIdx = (j + i * width) * 4
 
-        const inputImageRGBColor = new Color(
-          bufferedImageInputRGBArray.slice(inputIdx, inputIdx + 4)
-        )
-        const outputRGBColor = new Color(
-          bufferedImageOutputRGBArray.slice(pixelCanvasPosition, pixelCanvasPosition + 4)
-        )
+        const inputImageRGBColor = new Color(bufferedImageInputRGBArray.slice(inputIdx, inputIdx + 4))
+        const outputRGBColor = new Color(bufferedImageOutputRGBArray.slice(pixelCanvasPosition, pixelCanvasPosition + 4))
 
         let copyColorOutput: { red: number; green: number; blue: number; alpha: number }
 
@@ -153,10 +131,7 @@ export const offsetPixelSort: FilterFunction = ({ layer, imageCanvas, area, refr
           }
         }
 
-        if (
-          pixelCanvasPosition < 0 ||
-          pixelCanvasPosition + 4 > bufferedImageOutputRGBArray.length
-        ) {
+        if (pixelCanvasPosition < 0 || pixelCanvasPosition + 4 > bufferedImageOutputRGBArray.length) {
           continue
         }
 

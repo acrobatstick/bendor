@@ -1,4 +1,4 @@
-declare module 'gifsicle-wasm-browser' {
+declare module "gifsicle-wasm-browser" {
   interface GifsicleInputFile {
     file: File | Blob
     name: string

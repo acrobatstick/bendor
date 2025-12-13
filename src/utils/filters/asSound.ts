@@ -41,12 +41,7 @@ export const asSoundFilter: FilterFunction = ({ imageCanvas, layer, area }) => {
   }
 }
 
-const generateSoundCache = (
-  data: Uint8ClampedArray,
-  area: Point[],
-  width: number,
-  height: number
-): Uint8ClampedArray => {
+const generateSoundCache = (data: Uint8ClampedArray, area: Point[], width: number, height: number): Uint8ClampedArray => {
   const freqs: number[] = []
   const amps: number[] = []
   // some shit i dont fucking understand, but from what I understand it takes the
@@ -84,13 +79,7 @@ const generateSoundCache = (
   return cache
 }
 
-const applyFilter = (
-  data: Uint8ClampedArray,
-  cache: Uint8ClampedArray,
-  area: Point[],
-  width: number,
-  blend: number
-) => {
+const applyFilter = (data: Uint8ClampedArray, cache: Uint8ClampedArray, area: Point[], width: number, blend: number) => {
   for (const { x, y } of area) {
     const index = (y * width + x) * 4
     data[index] = data[index] * (1 - blend) + cache[index] * blend

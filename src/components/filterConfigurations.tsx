@@ -38,16 +38,7 @@ interface ListSelectionProps<T, V = T> {
   getItemValue?: (item: T) => V
 }
 
-const RangeInput = ({
-  label,
-  id,
-  min,
-  max,
-  configKey,
-  defaultValue,
-  refresh = false,
-  ...rest
-}: RangeInputProps) => {
+const RangeInput = ({ label, id, min, max, configKey, defaultValue, refresh = false, ...rest }: RangeInputProps) => {
   const { loading, start, stop } = useLoading()
   const { state, dispatch } = useStore()
   const inputRef = useRef<HTMLInputElement | null>(null)
@@ -162,16 +153,7 @@ const GrayscaleConfig = () => {
   const currSelection = state.currentLayer?.selection as LSelection<Filter.Grayscale>
   const conf = currSelection.config
 
-  return (
-    <RangeInput
-      label="Intensity"
-      id="grayscaleIntensity"
-      min={min}
-      max={max}
-      configKey="intensity"
-      defaultValue={conf.intensity}
-    />
-  )
+  return <RangeInput label="Intensity" id="grayscaleIntensity" min={min} max={max} configKey="intensity" defaultValue={conf.intensity} />
 }
 
 const BrightnessConfig = () => {
@@ -180,16 +162,7 @@ const BrightnessConfig = () => {
   const currSelection = state.currentLayer?.selection as LSelection<Filter.Brightness>
   const conf = currSelection.config
 
-  return (
-    <RangeInput
-      label="Intensity"
-      id="brightnessIntensity"
-      min={min}
-      max={max}
-      configKey="intensity"
-      defaultValue={conf.intensity}
-    />
-  )
+  return <RangeInput label="Intensity" id="brightnessIntensity" min={min} max={max} configKey="intensity" defaultValue={conf.intensity} />
 }
 
 const AsSoundConfig = () => {
@@ -200,14 +173,7 @@ const AsSoundConfig = () => {
 
   return (
     <div>
-      <RangeInput
-        label="Blend Intensity"
-        id="blendIntensity"
-        min={min}
-        max={max}
-        configKey="blend"
-        defaultValue={conf.blend}
-      />
+      <RangeInput label="Blend Intensity" id="blendIntensity" min={min} max={max} configKey="blend" defaultValue={conf.blend} />
     </div>
   )
 }
@@ -259,15 +225,7 @@ const RGBShiftConfig = () => {
         defaultValue="Vibrance"
         getItemValue={(item) => item}
       />
-      <RangeInput
-        label="Intensity"
-        id="rgbShiftIntensity"
-        min={min}
-        max={max}
-        configKey="intensity"
-        defaultValue={conf.intensity}
-        refresh
-      />
+      <RangeInput label="Intensity" id="rgbShiftIntensity" min={min} max={max} configKey="intensity" defaultValue={conf.intensity} refresh />
     </div>
   )
 }
@@ -288,15 +246,7 @@ const PixelSortConfig = () => {
         getItemValue={(item) => item}
         refresh
       />
-      <RangeInput
-        label="Intensity"
-        id="pixelSortIntensity"
-        min={min}
-        max={max}
-        configKey="intensity"
-        defaultValue={conf.intensity}
-        refresh
-      />
+      <RangeInput label="Intensity" id="pixelSortIntensity" min={min} max={max} configKey="intensity" defaultValue={conf.intensity} refresh />
     </div>
   )
 }
@@ -307,16 +257,7 @@ const SliceConfig = () => {
   const currSelection = state.currentLayer?.selection as LSelection<Filter.Slice>
   const conf = currSelection.config
 
-  return (
-    <RangeInput
-      label="Intensity"
-      id="sliceDistortionIntensity"
-      min={min}
-      max={max}
-      configKey="intensity"
-      defaultValue={conf.intensity}
-    />
-  )
+  return <RangeInput label="Intensity" id="sliceDistortionIntensity" min={min} max={max} configKey="intensity" defaultValue={conf.intensity} />
 }
 
 const OffsetPixelSortConfig = () => {

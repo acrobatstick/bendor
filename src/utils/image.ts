@@ -13,12 +13,7 @@ export const getAreaData = (ctx: CanvasRenderingContext2D, selectionMask: Uint8A
     const y = Math.floor(index / width)
 
     const pixelOffset = index * 4
-    const channel = new Uint8Array([
-      data[pixelOffset],
-      data[pixelOffset + 1],
-      data[pixelOffset + 2],
-      data[pixelOffset + 3]
-    ])
+    const channel = new Uint8Array([data[pixelOffset], data[pixelOffset + 1], data[pixelOffset + 2], data[pixelOffset + 3]])
 
     result.push({
       x,
@@ -29,11 +24,7 @@ export const getAreaData = (ctx: CanvasRenderingContext2D, selectionMask: Uint8A
 
   return result
 }
-export const getMouseCanvasCoordinates = (
-  canvas: HTMLCanvasElement,
-  clientX: number,
-  clientY: number
-) => {
+export const getMouseCanvasCoordinates = (canvas: HTMLCanvasElement, clientX: number, clientY: number) => {
   const rect = canvas.getBoundingClientRect()
   const scaleX = canvas.width / rect.width
   const scaleY = canvas.height / rect.height
@@ -41,24 +32,6 @@ export const getMouseCanvasCoordinates = (
     x: Math.round((clientX - rect.left) * scaleX),
     y: Math.round((clientY - rect.top) * scaleY)
   }
-}
-
-export const getPointsBoundingBox = (points: Point[]) => {
-  let minX = Infinity
-  let minY = Infinity
-  let maxX = -Infinity
-  let maxY = -Infinity
-
-  for (const { x, y } of points) {
-    if (x < minX) minX = x
-    if (y < minY) minY = y
-    if (x > maxX) maxX = x
-    if (y > maxY) maxY = y
-  }
-
-  const width = maxX - minX + 1
-  const height = maxY - minY + 1
-  return [width, height, minX, minY]
 }
 
 interface ICursorInBoundingBox {

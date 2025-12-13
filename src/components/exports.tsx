@@ -32,11 +32,7 @@ const Exports = () => {
   return (
     <div>
       <p>Export options</p>
-      <select
-        onChange={(e) => setExportType(e.currentTarget.value as typeof exportType)}
-        value={exportType}
-        disabled={loading}
-      >
+      <select onChange={(e) => setExportType(e.currentTarget.value as typeof exportType)} value={exportType} disabled={loading}>
         {EXPORT_TYPES.map((t, idx) => (
           <option key={idx} value={t}>
             {t}

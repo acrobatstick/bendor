@@ -35,6 +35,8 @@ function Selections() {
         withUpdateInitialPresent: false
       }
     })
+    dispatch({ type: StoreActionType.ResetImageCanvas })
+    dispatch({ type: StoreActionType.GenerateResult })
     stop()
   }
 
@@ -85,10 +87,7 @@ function Selections() {
       <ul>
         {state.layers.map((point, idx) => (
           <li id={`${idx}`} key={idx}>
-            <select
-              onChange={(event) => onChangeFilter(idx, event.target.value as Filter)}
-              value={point.selection.filter}
-            >
+            <select onChange={(event) => onChangeFilter(idx, event.target.value as Filter)} value={point.selection.filter}>
               {filterList.map((filter) => (
                 <option value={filter} key={`filter-${idx}-${filter}`}>
                   {filterNameRegistry[filter as Filter]}

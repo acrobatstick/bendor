@@ -40,12 +40,7 @@ export const pixelSort: FilterFunction = ({ imageCanvas, layer, area, refresh })
   }
 }
 
-const sortVertically = (
-  sortedData: Uint8ClampedArray,
-  width: number,
-  height: number,
-  intensity: number
-) => {
+const sortVertically = (sortedData: Uint8ClampedArray, width: number, height: number, intensity: number) => {
   for (let x = 0; x < width; x++) {
     let pixelsToSort: { color: Color; y: number }[] = []
     let newVerticalPixelColumn: boolean = true
@@ -105,12 +100,7 @@ const sortVertically = (
   }
 }
 
-const sortHorizontally = (
-  sortedData: Uint8ClampedArray,
-  width: number,
-  height: number,
-  intensity: number
-) => {
+const sortHorizontally = (sortedData: Uint8ClampedArray, width: number, height: number, intensity: number) => {
   for (let y = 0; y < height; y++) {
     let pixelsToSort: { color: Color; y: number }[] = []
     let newHorizontalPixelRow: boolean = true

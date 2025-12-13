@@ -26,12 +26,7 @@ const mapFrequencies = (freqOptions: FrequencyMapperOptions[]) => {
   })
 }
 
-const generateAsSineWave = (
-  freqs: number[],
-  amps: number[],
-  duration: number,
-  sampleRate: number
-) => {
+const generateAsSineWave = (freqs: number[], amps: number[], duration: number, sampleRate: number) => {
   const totalSamples = Math.floor(freqs.length / 3) * Math.floor(sampleRate * duration)
   const audioSamples = new Float32Array(totalSamples)
   let sampleIndex = 0
@@ -41,10 +36,7 @@ const generateAsSineWave = (
     for (let t = 0; t < sampleRate * duration; t++) {
       const time = t / sampleRate
       const sample =
-        (ampR * Math.sin(2 * Math.PI * freqR * time) +
-          ampG * Math.sin(2 * Math.PI * freqG * time) +
-          ampB * Math.sin(2 * Math.PI * freqB * time)) /
-        3
+        (ampR * Math.sin(2 * Math.PI * freqR * time) + ampG * Math.sin(2 * Math.PI * freqG * time) + ampB * Math.sin(2 * Math.PI * freqB * time)) / 3
       audioSamples[sampleIndex++] = sample
     }
     return audioSamples
@@ -71,8 +63,7 @@ export const applyAudioDistortions = (samples: Float32Array): Float32Array => {
     sample += (Math.random() - 0.5) * 0.15
 
     const muLaw = 255
-    const compressed =
-      (Math.sign(sample) * Math.log(1 + muLaw * Math.abs(sample))) / Math.log(1 + muLaw)
+    const compressed = (Math.sign(sample) * Math.log(1 + muLaw * Math.abs(sample))) / Math.log(1 + muLaw)
     sample = compressed
 
     distorted[i] = sample

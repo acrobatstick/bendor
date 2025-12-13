@@ -28,23 +28,8 @@ const RangeInput = ({ label, id, min, max, value, onChange, step = 1 }: RangeInp
   return (
     <div>
       <label htmlFor={id}>{label}</label>
-      <input
-        type="number"
-        id={id}
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={handleChange}
-      />
-      <input type="range"
-        id={`${id}Slider`}
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={handleChange}
-      />
+      <input type="number" id={id} min={min} max={max} step={step} value={value} onChange={handleChange} />
+      <input type="range" id={`${id}Slider`} min={min} max={max} step={step} value={value} onChange={handleChange} />
     </div>
   )
 }
@@ -58,7 +43,7 @@ interface GIFOpts {
 const initialGIFOpts = {
   framerate: 15,
   compressionQuality: 0,
-  colorRange: 80,
+  colorRange: 80
 } as GIFOpts
 
 export const ExportGIF = ({ ffmpegRef }: IExportGIF) => {
@@ -77,7 +62,7 @@ export const ExportGIF = ({ ffmpegRef }: IExportGIF) => {
         "temp.gif",
         "-o",
         "/out/compressed.gif",
-        '--no-warnings'
+        "--no-warnings"
       ]
 
       // had to do this or else it'll spit junk in the console since the author of
@@ -85,15 +70,17 @@ export const ExportGIF = ({ ffmpegRef }: IExportGIF) => {
       const originalLog = console.log
       const originalWarn = console.warn
       if (import.meta.env.MODE === "production") {
-        console.log = () => { }
-        console.warn = () => { }
+        console.log = () => {}
+        console.warn = () => {}
       }
 
       const result = await gifsicle.run({
-        input: [{
-          file: gifFile,
-          name: "temp.gif"
-        }],
+        input: [
+          {
+            file: gifFile,
+            name: "temp.gif"
+          }
+        ],
         command: [commands.join(" ")]
       })
 
@@ -143,10 +130,7 @@ export const ExportGIF = ({ ffmpegRef }: IExportGIF) => {
 
     for (let i = 0; i < frames.length; i++) {
       const arrayBuffer = await frames[i].arrayBuffer()
-      await ffmpeg.writeFile(
-        `frame${i.toString().padStart(3, "0")}.png`,
-        new Uint8Array(arrayBuffer)
-      )
+      await ffmpeg.writeFile(`frame${i.toString().padStart(3, "0")}.png`, new Uint8Array(arrayBuffer))
     }
 
     await ffmpeg.exec([

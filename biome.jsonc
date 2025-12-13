@@ -19,7 +19,7 @@
 
   // Modern monitor configuration
   "formatter": {
-    "lineWidth": 100,
+    "lineWidth": 150,
     "indentStyle": "space",
     "indentWidth": 2,
     "lineEnding": "lf"

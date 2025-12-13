@@ -3,12 +3,7 @@ import { Color } from "../color"
 
 export const grayscaleFilter: FilterFunction = ({ imageCanvas, layer, area }) => {
   const selection = layer.selection as LSelection<Filter.Grayscale>
-  const wholeImage = imageCanvas.getImageData(
-    0,
-    0,
-    imageCanvas.canvas.width,
-    imageCanvas.canvas.height
-  )
+  const wholeImage = imageCanvas.getImageData(0, 0, imageCanvas.canvas.width, imageCanvas.canvas.height)
   const data = wholeImage.data
   const fullWidth = imageCanvas.canvas.width
 

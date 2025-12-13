@@ -236,10 +236,7 @@ const storeReducer = (state: State, action: Action): State => {
       } satisfies LSelection
 
       // update filter config to it's default value whenever we change filter
-      if (
-        action.payload.pselection.filter &&
-        action.payload.pselection.filter != updated[action.payload.layerIdx].selection.filter
-      ) {
+      if (action.payload.pselection.filter && action.payload.pselection.filter != updated[action.payload.layerIdx].selection.filter) {
         selection.config = defaultConfig(selection.filter)
       }
 
@@ -401,12 +398,7 @@ const storeReducer = (state: State, action: Action): State => {
       const imageCanvas = state.imgCtx
       if (!imageCanvas) return state
 
-      const original = imageCanvas.getImageData(
-        0,
-        0,
-        imageCanvas.canvas.width,
-        imageCanvas.canvas.height
-      )
+      const original = imageCanvas.getImageData(0, 0, imageCanvas.canvas.width, imageCanvas.canvas.height)
       const data = original.data
 
       for (const { x, y, data: src } of state.originalAreaData) {

@@ -61,14 +61,7 @@ export const ExportImage = () => {
   return (
     <div>
       <label>Image Quality</label>
-      <input
-        ref={imageQualitySliderRef}
-        type="range"
-        step={1}
-        min={10}
-        max={100}
-        defaultValue={100}
-      />
+      <input ref={imageQualitySliderRef} type="range" step={1} min={10} max={100} defaultValue={100} />
       <button onClick={() => onExportImage(Number(imageQualitySliderRef.current))}>Export</button>
     </div>
   )
