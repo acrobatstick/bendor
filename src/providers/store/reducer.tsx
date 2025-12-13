@@ -1,7 +1,6 @@
 import { Filter, type FilterConfigMap, type Layer, type LSelection, type State } from "~/types"
 import Commands from "~/utils/commands"
 import { filterFnRegistry } from "~/utils/filters/registry"
-import { getAreaData } from "~/utils/image"
 import { initialStoreState } from "./storeState"
 
 export enum StoreActionType {
@@ -364,29 +363,19 @@ const storeReducer = (state: State, action: Action): State => {
 
       const updatedLayers = state.layers.map((layer) => {
         const { area, filter } = layer.selection
-        let updatedArea = area
-        // had to do this, because when user clicked on the image itself, it will counts as drawing
-        // but it dont provide the image area, so fallback to using whole image data (again)
-        if (area.length === 0) {
-          const selections = new Uint8Array(imageCanvas.canvas.width * imageCanvas.canvas.height)
-          selections.fill(1)
-          updatedArea = getAreaData(imageCanvas, selections)
-        }
-
         const filterFn = filterFnRegistry[filter]
         if (!filterFn) return layer
 
         const { updatedSelection } = filterFn({
           imageCanvas,
-          layer: { ...layer, selection: { ...layer.selection, area: updatedArea } },
-          area: updatedArea,
+          layer: { ...layer, selection: { ...layer.selection } },
+          area,
           refresh: action.payload?.refresh
         })
 
         return {
           ...layer,
           selection: updatedSelection,
-          area: updatedArea
         }
       })
 

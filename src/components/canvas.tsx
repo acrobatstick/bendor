@@ -83,10 +83,6 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
     }
 
     const handleMouseDown = (e: MouseEvent) => {
-      // dont do anything unless there is layer selected
-      if (state.selectedLayerIdx < 0) {
-        return
-      }
       const point = getMouseCanvasCoordinates(activeCanvas, e.clientX, e.clientY)
       drawManagerRef.current.reset()
       drawManagerRef.current.begin(point)
@@ -361,11 +357,21 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
         }
       })
 
+      drawManagerRef.current.selectAllArea()
+      drawManagerRef.current.getSelectArea()
+      const { points, startPoint, selectionArea } = drawManagerRef.current
+      dispatch({
+        type: StoreActionType.SetPointsToLayer,
+        payload: {
+          points: points,
+          start: startPoint!
+        }
+      })
+
       const imageCanvas = imageCanvasRef.current
       const imageCtx = imageCanvas?.getContext("2d")
       if (!imageCtx) return
-      const emptySelection = new Uint8Array()
-      const area = getAreaData(imageCtx, emptySelection)
+      const area = getAreaData(imageCtx, selectionArea!)
 
       dispatch({
         type: StoreActionType.UpdateLayerSelection,

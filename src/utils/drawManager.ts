@@ -32,6 +32,9 @@ class DrawManager {
 
   finish() {
     if (!this.isDrawing) return
+    if (this.points.length <= 1) {
+      this.selectAllArea()
+    }
     this.isDrawing = false
   }
 
@@ -47,6 +50,17 @@ class DrawManager {
     this.startPoint = startPoint
   }
 
+  selectAllArea() {
+    // use the canvas edges as the selection points
+    this.points = [
+      { x: 0, y: 0 },
+      { x: this.cwidth - 1, y: 0 },
+      { x: this.cwidth - 1, y: this.cheight - 1 },
+      { x: 0, y: this.cheight - 1 }
+    ]
+    this.startPoint = this.points[0]
+  }
+
   fillSelectionArea(area: Point[]) {
     this.selectionArea = new Uint8Array(this.cwidth * this.cheight)
     for (const a of area) {
@@ -58,6 +72,7 @@ class DrawManager {
   // get selection area that are inside the drawing points
   getSelectArea() {
     if (this.points.length <= 1) return
+    // reset the selection area so we get fresh new result on the drawing canvas
     this.selectionArea = new Uint8Array(this.cwidth * this.cheight)
     for (let x = 0; x < this.cwidth; x++) {
       for (let y = 0; y < this.cheight; y++) {
@@ -121,7 +136,9 @@ class DrawManager {
   }
 
   renderSelection(ctx: CanvasRenderingContext2D, element: HTMLCanvasElement, color: Layer["color"]) {
-    if (this.points.length <= 1 || !this.startPoint) return
+    if (!this.startPoint) {
+      return
+    }
     ctx.clearRect(0, 0, element.width, element.height)
     ctx.setLineDash([5, 3])
     ctx.strokeStyle = color
