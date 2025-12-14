@@ -82,20 +82,20 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
       return
     }
 
-    const handleMouseDown = (e: MouseEvent) => {
+    const onMouseDown = (e: MouseEvent) => {
       const point = getMouseCanvasCoordinates(activeCanvas, e.clientX, e.clientY)
       drawManagerRef.current.reset()
       drawManagerRef.current.begin(point)
       drawManagerRef.current.renderSelection(drawingCanvasCtx, activeCanvas, state.currentLayer!.color)
     }
 
-    const handleMouseMove = (e: MouseEvent) => {
+    const onMouseMove = (e: MouseEvent) => {
       const point = getMouseCanvasCoordinates(activeCanvas, e.clientX, e.clientY)
       drawManagerRef.current.update(point)
       drawManagerRef.current.renderSelection(drawingCanvasCtx, activeCanvas, state.currentLayer!.color)
     }
 
-    const handleMouseUp = () => {
+    const onMouseUp = () => {
       drawManagerRef.current.finish()
       drawingCanvasCtx.clearRect(0, 0, activeCanvas.width, activeCanvas.height)
       drawManagerRef.current.renderSelection(drawingCanvasCtx, activeCanvas, state.currentLayer!.color)
@@ -132,7 +132,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
       })
     }
 
-    const handleTouchStart = (e: TouchEvent) => {
+    const onTouchStart = (e: TouchEvent) => {
       e.preventDefault()
       const touches = e.changedTouches
       if (touches.length > 0) {
@@ -143,7 +143,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
       }
     }
 
-    const handleTouchMove = (e: TouchEvent) => {
+    const onTouchMove = (e: TouchEvent) => {
       const touches = e.changedTouches
       for (let i = 0; i < touches.length; i++) {
         const idx = getOngoingTouchById(touches[i].identifier)
@@ -160,7 +160,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
       drawManagerRef.current.renderSelection(drawingCanvasCtx, activeCanvas, state.currentLayer!.color)
     }
 
-    const handleTouchEnd = (e: TouchEvent) => {
+    const onTouchEnd = (e: TouchEvent) => {
       e.preventDefault()
       drawManagerRef.current.finish()
       const touches = e.changedTouches
@@ -204,7 +204,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
       })
     }
 
-    const handleTouchCancel = (e: TouchEvent) => {
+    const onTouchCancel = (e: TouchEvent) => {
       e.preventDefault()
       const touches = e.changedTouches
       for (let i = 0; i < touches.length; i++) {
@@ -216,7 +216,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
       drawManagerRef.current.finish()
     }
 
-    const handleMouseOut = () => {
+    const onMouseOut = () => {
       if (!drawManagerRef.current.isDrawing) return
       document.addEventListener("mousemove", handleMouseMoveOutside)
       document.addEventListener("mouseup", handleMouseUpOutside)
@@ -284,14 +284,14 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
 
     const ctrl = new AbortController()
     if (state.mode === "edit") {
-      activeCanvas.addEventListener("mousedown", handleMouseDown, ctrl)
-      activeCanvas.addEventListener("mousemove", handleMouseMove, ctrl)
-      activeCanvas.addEventListener("mouseup", handleMouseUp, ctrl)
-      activeCanvas.addEventListener("touchstart", handleTouchStart, ctrl)
-      activeCanvas.addEventListener("touchmove", handleTouchMove, ctrl)
-      activeCanvas.addEventListener("touchend", handleTouchEnd, ctrl)
-      activeCanvas.addEventListener("touchcancel", handleTouchCancel, ctrl)
-      activeCanvas.addEventListener("mouseout", handleMouseOut, ctrl)
+      activeCanvas.addEventListener("mousedown", onMouseDown, ctrl)
+      activeCanvas.addEventListener("mousemove", onMouseMove, ctrl)
+      activeCanvas.addEventListener("mouseup", onMouseUp, ctrl)
+      activeCanvas.addEventListener("touchstart", onTouchStart, ctrl)
+      activeCanvas.addEventListener("touchmove", onTouchMove, ctrl)
+      activeCanvas.addEventListener("touchend", onTouchEnd, ctrl)
+      activeCanvas.addEventListener("touchcancel", onTouchCancel, ctrl)
+      activeCanvas.addEventListener("mouseout", onMouseOut, ctrl)
     }
 
     return () => {
@@ -485,10 +485,90 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
         drawManagerRef.current.renderSelection(drawingCanvasCtx, activeCanvas, state.currentLayer!.color)
       }
 
+      const onTouchStart = (e: TouchEvent) => {
+        e.preventDefault()
+        const touches = e.changedTouches
+        if (touches.length > 0) {
+          const { x: mouseX, y: mouseY } = getMouseCanvasCoordinates(activeCanvas, touches[0].clientX, touches[0].clientY)
+          const [width, height, minX, minY] = drawManagerRef.current.getPointsBoundingBox()
+          const isInBound = cursorInBoundingBox({
+            drawing: {
+              width,
+              height,
+              minX,
+              minY
+            },
+            mouse: {
+              x: mouseX,
+              y: mouseY
+            }
+          })
+          if (!isInBound) return
+          // if so we can start moving the drawing
+          setSelectionMovable(true)
+          drawManagerRef.current.mouseStartPos = { x: mouseX, y: mouseY }
+        }
+      }
+
+      const onTouchMove = (e: TouchEvent) => {
+        e.preventDefault()
+        const touches = e.changedTouches
+        if (touches.length === 0) return
+        const { x: mouseX, y: mouseY } = getMouseCanvasCoordinates(activeCanvas, touches[0].clientX, touches[0].clientY)
+        const mousestart = drawManagerRef.current.mouseStartPos
+        if (!mousestart || !selectionMovable) {
+          return
+        }
+        const dx = mouseX - mousestart.x
+        const dy = mouseY - mousestart.y
+        drawManagerRef.current.moveSelection(dx, dy)
+        drawManagerRef.current.mouseStartPos = { x: mouseX, y: mouseY }
+        drawManagerRef.current.renderSelection(drawingCanvasCtx, activeCanvas, state.currentLayer!.color)
+      }
+
+      const onTouchEnd = (e: TouchEvent) => {
+        if (!selectionMovable) return
+        e.preventDefault()
+        setSelectionMovable(false)
+        flushSync(() => start())
+        requestIdleCallback(() => {
+          dispatch({ type: StoreActionType.ResetImageCanvas })
+          drawManagerRef.current.getSelectArea()
+          const { points, startPoint, selectionArea } = drawManagerRef.current
+          dispatch({
+            type: StoreActionType.SetPointsToLayer,
+            payload: {
+              points: points,
+              start: startPoint!
+            }
+          })
+          const imageCanvas = imageCanvasRef.current
+          const imageCtx = imageCanvas?.getContext("2d", { willReadFrequently: true })
+          if (!imageCtx) return
+          const area = getAreaData(imageCtx, selectionArea!)
+          dispatch({
+            type: StoreActionType.UpdateLayerSelection,
+            payload: {
+              layerIdx: state.selectedLayerIdx,
+              pselection: {
+                area
+              },
+              withUpdateInitialPresent: true
+            }
+          })
+          renderBoundingBox()
+          dispatch({ type: StoreActionType.GenerateResult })
+          stop()
+        })
+      }
+
       const ctrl = new AbortController()
       activeCanvas.addEventListener("mousedown", onMouseDown, ctrl)
       activeCanvas.addEventListener("mouseup", onMouseUp, ctrl)
       activeCanvas.addEventListener("mousemove", onMouseMove, ctrl)
+      activeCanvas.addEventListener("touchstart", onTouchStart, ctrl)
+      activeCanvas.addEventListener("touchmove", onTouchMove, ctrl)
+      activeCanvas.addEventListener("touchend", onTouchEnd, ctrl)
 
       return () => {
         ctrl.abort()
