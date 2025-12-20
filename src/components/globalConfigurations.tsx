@@ -2,9 +2,26 @@ import styled from "styled-components"
 import { H5, Text } from "./reusables/typography"
 import Switch from "./reusables/switch"
 import { FlexEnd, FlexGap } from "~/styles/global"
+import { useStore } from "~/hooks/useStore"
+import { StoreActionType } from "~/providers/store/reducer"
 
-// TODO: make this whole thing work
 const GlobalConfiguration = () => {
+  const { dispatch, state } = useStore()
+
+  const onChangeMode = () => {
+    let mode: "edit" | "move" = "move"
+    if (state.mode === "edit") {
+      mode = "move"
+    } else {
+      mode = "edit"
+    }
+    dispatch({ type: StoreActionType.UpdateState, payload: { key: "mode", value: mode } })
+  }
+
+  const onHideOverlay = () => {
+    dispatch({ type: StoreActionType.UpdateState, payload: { key: "hideSelectionOverlay", value: !state.hideSelectionOverlay } })
+  }
+
   return (
     <Container>
       <H5 style={{ marginBottom: "12px" }}>Global Configurations</H5>
@@ -13,13 +30,13 @@ const GlobalConfiguration = () => {
           <Text size="small" variant="secondary">
             Enable move mode
           </Text>
-          <Switch defaultChecked />
+          <Switch onClick={onChangeMode} />
         </FlexEnd>
         <FlexEnd>
           <Text size="small" variant="secondary">
             Hide Selection Overlay
           </Text>
-          <Switch />
+          <Switch onClick={onHideOverlay} />
         </FlexEnd>
       </FlexGap>
     </Container>

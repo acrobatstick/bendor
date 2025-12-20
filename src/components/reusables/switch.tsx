@@ -1,11 +1,23 @@
+import { useRef, type MouseEvent } from "react"
 import styled from "styled-components"
 
 interface SwitchProps extends React.InputHTMLAttributes<HTMLInputElement> {}
 
 const Switch = ({ ...rest }: SwitchProps) => {
+  const checkboxRef = useRef<HTMLInputElement>(null)
+
+  const onClick = (e: MouseEvent<HTMLInputElement>) => {
+    if (rest.onClick) {
+      rest?.onClick(e)
+    }
+    const ref = checkboxRef.current
+    if (!ref) return
+    ref.checked = !ref.checked
+  }
+
   return (
-    <Container>
-      <Checkbox type="checkbox" {...rest} />
+    <Container onClick={onClick}>
+      <Checkbox ref={checkboxRef} type="checkbox" />
       <Label />
     </Container>
   )

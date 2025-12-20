@@ -284,7 +284,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
     return () => {
       ctrl.abort()
     }
-  }, [ongoingTouches, state.selectedLayerIdx, state.currentLayer, state.mode, dispatch, getOngoingTouchById, start, stop])
+  }, [state.selectedLayerIdx, state.currentLayer, state.mode, dispatch, getOngoingTouchById, start, stop])
 
   // Handle selection render on layer index change
   useEffect(() => {
@@ -343,10 +343,6 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
           pselection: { ctx }
         }
       })
-
-      const imageCanvas = imageCanvasRef.current
-      const imageCtx = imageCanvas?.getContext("2d", { willReadFrequently: true })
-      if (!imageCtx) return
     }
   }, [state.selectedLayerIdx, state.currentLayer, state.currentLayer?.commands.present, dispatch])
 
@@ -356,28 +352,20 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
     if (!container) return
 
     const activeCanvas = container.querySelector<HTMLCanvasElement>(`#drawing-canvas-${state.selectedLayerIdx}`)
-    if (!activeCanvas) return
-    if (!state.currentLayer?.selection) return
+    const currentLayer = state.currentLayer
+    if (!currentLayer) return
+    if (!activeCanvas || !currentLayer.ctx) return
 
     if (state.mode === "move") {
-      const drawingCanvasCtx = state.currentLayer?.ctx
+      const drawingCanvasCtx = currentLayer.ctx
       if (!drawingCanvasCtx) {
         return
       }
 
-      const ctx = activeCanvas?.getContext("2d")
+      const ctx = activeCanvas.getContext("2d")
       if (!ctx) {
         return
       }
-
-      const renderBoundingBox = () => {
-        drawManagerRef.current.renderSelection(drawingCanvasCtx, activeCanvas, state.currentLayer!.color)
-        const [width, height, minX, minY] = drawManagerRef.current.getPointsBoundingBox()
-        ctx.fillStyle = state.currentLayer!.color
-        ctx.fillRect(minX, minY, width, height)
-      }
-
-      renderBoundingBox()
 
       // to determine if the cursor is inside the drawing bounding box or not
       const onMouseDown = (e: MouseEvent) => {
@@ -432,7 +420,6 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
               withUpdateInitialPresent: true
             }
           })
-          renderBoundingBox()
           dispatch({ type: StoreActionType.GenerateResult })
           stop()
         })
@@ -448,7 +435,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
         const dy = mouseY - mousestart.y
         drawManagerRef.current.moveSelection(dx, dy)
         drawManagerRef.current.mouseStartPos = { x: mouseX, y: mouseY }
-        drawManagerRef.current.renderSelection(drawingCanvasCtx, activeCanvas, state.currentLayer!.color)
+        drawManagerRef.current.renderSelection(drawingCanvasCtx, activeCanvas, currentLayer!.color)
       }
 
       const onTouchStart = (e: TouchEvent) => {
@@ -522,7 +509,6 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
               withUpdateInitialPresent: true
             }
           })
-          renderBoundingBox()
           dispatch({ type: StoreActionType.GenerateResult })
           stop()
         })
@@ -546,6 +532,21 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
   useEffect(() => {
     dispatch({ type: StoreActionType.SelectLayer, payload: state.selectedLayerIdx })
   }, [state.selectedLayerIdx, dispatch])
+
+  // to handle hide/unhide selection points
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container) return
+    const activeCanvas = container.querySelector<HTMLCanvasElement>(`#drawing-canvas-${state.selectedLayerIdx}`)
+    const currentLayer = state.currentLayer
+    if (!currentLayer) return
+    if (!activeCanvas || !currentLayer.ctx) return
+    if (state.hideSelectionOverlay) {
+      currentLayer.ctx.clearRect(0, 0, activeCanvas.width, activeCanvas.height)
+    } else {
+      drawManagerRef.current.renderSelection(currentLayer.ctx, activeCanvas, state.currentLayer!.color)
+    }
+  }, [state.hideSelectionOverlay, state.currentLayer, state.selectedLayerIdx])
 
   return (
     <div ref={containerRef} style={{ position: "relative", display: "inline-block", lineHeight: 0 }} {...props}>

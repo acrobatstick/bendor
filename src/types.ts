@@ -104,6 +104,7 @@ export interface State {
   currentLayer?: Layer
   selectedLayerIdx: number
   mode: "edit" | "move"
+  hideSelectionOverlay: boolean
 }
 
 export interface LoadingState {
