@@ -1,6 +1,5 @@
-import type { FFmpeg } from "@ffmpeg/ffmpeg"
-import { useState, type RefObject } from "react"
-import gifsicle from "gifsicle-wasm-browser"
+import { FFmpeg } from "@ffmpeg/ffmpeg"
+import { useEffect, useRef, useState } from "react"
 import { useLoading } from "~/hooks/useLoading"
 import { useStore } from "~/hooks/useStore"
 import { StoreActionType } from "~/providers/store/reducer"
@@ -8,10 +7,7 @@ import { generateFilename } from "~/utils/etc"
 import Button from "../reusables/buttons"
 import { FlexGap } from "~/styles/global"
 import { Slider } from "../reusables/slider"
-
-interface IExportGIF {
-  ffmpegRef: RefObject<FFmpeg>
-}
+import { toBlobURL } from "@ffmpeg/util"
 
 interface GIFOpts {
   framerate: number
@@ -25,13 +21,48 @@ const initialGIFOpts = {
   colorRange: 80
 } as GIFOpts
 
-export const ExportGIF = ({ ffmpegRef }: IExportGIF) => {
+const ExportGIF = () => {
+  const ffmpegRef = useRef(new FFmpeg())
+  const gifsicleRef = useRef<any>(null)
+  const isLoadedRef = useRef(false)
+
   const { state, dispatch } = useStore()
   const { start, stop } = useLoading()
 
   const [exportOpts, setExportOpts] = useState<GIFOpts>(initialGIFOpts)
 
+  useEffect(() => {
+    if (isLoadedRef.current) return
+
+    start()
+    ;(async () => {
+      try {
+        const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm"
+        await ffmpegRef.current.load({
+          coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
+          wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm")
+        })
+        console.info("ffmpeg loaded")
+
+        const gifsicleModule = await import("gifsicle-wasm-browser")
+        gifsicleRef.current = gifsicleModule.default
+        console.info("gifsicle loaded")
+
+        isLoadedRef.current = true
+      } catch (error) {
+        console.error("Failed to load libraries:", error)
+      } finally {
+        stop()
+      }
+    })()
+  }, [start, stop])
+
   const compressGIF = async (gifBlob: Blob): Promise<Blob> => {
+    if (!gifsicleRef.current) {
+      console.warn("gifsicle not loaded, skipping compression")
+      return gifBlob
+    }
+
     try {
       const gifFile = new File([gifBlob], "temp.gif", { type: "image/gif" })
       const commands = [
@@ -44,16 +75,7 @@ export const ExportGIF = ({ ffmpegRef }: IExportGIF) => {
         "--no-warnings"
       ]
 
-      // had to do this or else it'll spit junk in the console since the author of
-      // the library didnt remove the console.log entires in the run() function
-      const originalLog = console.log
-      const originalWarn = console.warn
-      if (import.meta.env.MODE === "production") {
-        console.log = () => {}
-        console.warn = () => {}
-      }
-
-      const result = await gifsicle.run({
+      const result = await gifsicleRef.current.run({
         input: [
           {
             file: gifFile,
@@ -62,9 +84,6 @@ export const ExportGIF = ({ ffmpegRef }: IExportGIF) => {
         ],
         command: [commands.join(" ")]
       })
-
-      console.log = originalLog
-      console.warn = originalWarn
 
       if (result && result.length > 0) {
         return result[0]
@@ -78,6 +97,11 @@ export const ExportGIF = ({ ffmpegRef }: IExportGIF) => {
   }
 
   const onExportGIF = async () => {
+    if (!isLoadedRef.current) {
+      console.warn("Libraries not loaded yet")
+      return
+    }
+
     start()
     if (!state.imgCtx) return
 
@@ -174,9 +198,11 @@ export const ExportGIF = ({ ffmpegRef }: IExportGIF) => {
         value={exportOpts.compressionQuality}
         onChange={(evt) => setExportOpts((prev) => ({ ...prev, compressionQuality: parseFloat(evt.target.value) }))}
       />
-      <Button $full onClick={onExportGIF}>
-        Export
+      <Button $full onClick={onExportGIF} disabled={!isLoadedRef.current}>
+        {isLoadedRef.current ? "Export" : "Loading..."}
       </Button>
     </FlexGap>
   )
 }
+
+export default ExportGIF

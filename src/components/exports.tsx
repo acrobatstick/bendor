@@ -1,34 +1,17 @@
-import { FFmpeg } from "@ffmpeg/ffmpeg"
-import { toBlobURL } from "@ffmpeg/util"
-import { useEffect, useRef, useState } from "react"
-import { useLoading } from "~/hooks/useLoading"
+import { lazy, Suspense, useState } from "react"
 import { useStore } from "~/hooks/useStore"
 import { ExportImage } from "./exports/image"
-import { ExportGIF } from "./exports/gif"
 import { H5, Text } from "./reusables/typography"
 import styled from "styled-components"
 import { FlexEnd } from "~/styles/global"
 
 const EXPORT_TYPES = ["Image", "GIF"] as const
 
+const ExportGIF = lazy(() => import("~/components/exports/gif"))
+
 const Exports = () => {
-  const ffmpegRef = useRef(new FFmpeg())
-  const { start, stop } = useLoading()
   const { state } = useStore()
   const [exportType, setExportType] = useState<(typeof EXPORT_TYPES)[number]>("Image")
-
-  useEffect(() => {
-    start()
-    ;(async () => {
-      const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm"
-      await ffmpegRef.current.load({
-        coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
-        wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm")
-      })
-      stop()
-      console.info("ffmpeg loaded")
-    })()
-  }, [start, stop])
 
   if (!state.imgCtx) return <div></div>
 
@@ -63,7 +46,7 @@ const Exports = () => {
           </Text>
         </ExportOptionsContainer>
       </FlexEnd>
-      {exportType === "Image" ? <ExportImage /> : <ExportGIF ffmpegRef={ffmpegRef} />}
+      <Suspense fallback={"Loading..."}>{exportType === "Image" ? <ExportImage /> : <ExportGIF />}</Suspense>
     </Container>
   )
 }

@@ -1,10 +1,27 @@
 import { defineConfig } from "vite"
 import react from "@vitejs/plugin-react"
 import tsconfigPaths from "vite-tsconfig-paths"
+import { visualizer } from "rollup-plugin-visualizer"
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   return {
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes("src/components/exports/gif")) {
+              return "gif-export" // Separate chunk for GIF export
+            }
+
+            // Group other components together (excluding lazy-loaded ones)
+            if (id.includes("src/components/") && !id.includes("src/components/exports/gif")) {
+              return "components"
+            }
+          }
+        }
+      }
+    },
     optimizeDeps: { exclude: ["@ffmpeg/ffmpeg", "@ffmpeg/util"] },
     server: {
       headers: {
@@ -18,7 +35,8 @@ export default defineConfig(({ mode }) => {
         babel: {
           plugins: [["babel-plugin-react-compiler"]]
         }
-      })
+      }),
+      visualizer()
     ],
     base: mode === "development" ? "/" : "/bendor/"
   }
