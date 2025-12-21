@@ -1,10 +1,13 @@
-import { useState } from "react"
+import { Fragment, useRef, useState } from "react"
+import { HexColorInput, HexColorPicker } from "react-colorful"
 import styled from "styled-components"
 import { DUOTONE_CONFIG } from "~/constants"
 import { useStore } from "~/hooks/useStore"
 import { StoreActionType } from "~/providers/store/reducer"
+import { FlexEnd } from "~/styles/global"
 import type { Duotone, Filter, LSelection } from "~/types"
-import { Label } from "../reusables/typography"
+import { generateRandomHex } from "~/utils/etc"
+import { Label, Text } from "../reusables/typography"
 import { RangeInput } from "./reusables"
 
 type Preset = Pick<Duotone, "highlightsColor" | "shadowsColor">
@@ -22,7 +25,6 @@ const presets: ColorPresets = [
   { highlightsColor: "#ffefb3", shadowsColor: "#290900" },
   { highlightsColor: "#acd49d", shadowsColor: "#602457" },
   { highlightsColor: "#f00e2e", shadowsColor: "#0a0505" },
-  { highlightsColor: "#ef009e", shadowsColor: "#5062d6" },
   { highlightsColor: "#defcfe", shadowsColor: "#8682d9" },
   { highlightsColor: "#fdd9e2", shadowsColor: "#65b7d6" },
   { highlightsColor: "#01ab6d", shadowsColor: "#241a5f" },
@@ -32,15 +34,19 @@ const presets: ColorPresets = [
 
 const DuotoneConfig = () => {
   const { state, dispatch } = useStore()
+  const [color, setColor] = useState<string>("#ffffff")
+  const [usingCustom, setUsingCustom] = useState<boolean>(false)
+  const [customType, setCustomType] = useState<keyof Preset>("highlightsColor")
   const [selectedPreset, setSelectedPreset] = useState<number>(0)
+
+  // to persist custom preset
+  const customColor = useRef<Preset>(null)
 
   const { BRIGHTNESS_RANGE } = DUOTONE_CONFIG
   const currSelection = state.currentLayer?.selection as LSelection<Filter.Duotone>
   const conf = currSelection.config
 
-  const onClickPreset = (idx: number) => {
-    setSelectedPreset(idx)
-    const preset = presets[idx]
+  const updateCanvas = (preset: Preset) => {
     dispatch({
       type: StoreActionType.UpdateLayerSelection,
       payload: {
@@ -51,6 +57,70 @@ const DuotoneConfig = () => {
     })
     dispatch({ type: StoreActionType.ResetImageCanvas })
     dispatch({ type: StoreActionType.GenerateResult, payload: { refreshIdx: state.selectedLayerIdx } })
+  }
+
+  const onClickPreset = (idx: number) => {
+    // reset custom preset state values
+    setUsingCustom(false)
+    setCustomType("highlightsColor")
+
+    setSelectedPreset(idx)
+    updateCanvas(presets[idx])
+  }
+
+  const onClickUsingCustom = () => {
+    if (!customColor.current) {
+      customColor.current = randomizePreset()
+    }
+    // load latest custom color iteration
+    const { highlightsColor, shadowsColor } = customColor.current
+    updateCanvas({ highlightsColor, shadowsColor })
+    setUsingCustom(true)
+    // since the default custom type selection was highlightsColor we set the color picker to highlights's color
+    setColor(highlightsColor)
+  }
+
+  const onChangeColor = (color: string) => {
+    setColor(color)
+  }
+
+  const onMouseUpColor = () => {
+    const hexColor = color as `#${string}`
+    const preset: Preset = {
+      highlightsColor: customType === "highlightsColor" ? hexColor : conf.highlightsColor,
+      shadowsColor: customType === "shadowsColor" ? hexColor : conf.shadowsColor
+    }
+    customColor.current = preset
+    updateCanvas(preset)
+  }
+
+  const onChangeCustomType = (type: keyof Preset) => {
+    setCustomType(type)
+    let changeColor: string
+    if (type === "highlightsColor") {
+      changeColor = conf.highlightsColor
+    } else {
+      changeColor = conf.shadowsColor
+    }
+    setColor(changeColor)
+  }
+
+  const randomizePreset = () => {
+    const highlightsColor = generateRandomHex()
+    const shadowsColor = generateRandomHex()
+    return { highlightsColor, shadowsColor }
+  }
+
+  const onRandomizePreset = () => {
+    customColor.current = randomizePreset()
+    let changeColor: string
+    if (customType === "highlightsColor") {
+      changeColor = customColor.current.highlightsColor
+    } else {
+      changeColor = customColor.current.shadowsColor
+    }
+    setColor(changeColor)
+    updateCanvas(customColor.current)
   }
 
   return (
@@ -64,15 +134,46 @@ const DuotoneConfig = () => {
         defaultValue={conf.brightness}
         refresh
       />
-      <Scrollable>
-        <Label>Color Presets</Label>
-        <ColorPresetContainer>
-          {presets.map((preset, idx) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: dont care, dont give a shit
-            <PresetItem preset={preset} key={idx} onClick={() => onClickPreset(idx)} selected={selectedPreset === idx}></PresetItem>
-          ))}
-        </ColorPresetContainer>
-      </Scrollable>
+      <Label>Color Presets</Label>
+      <ColorPresetContainer>
+        {presets.map((preset, idx) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: dont care, dont give a shit
+          <PresetItem preset={preset} key={idx} onClick={() => onClickPreset(idx)} selected={selectedPreset === idx}></PresetItem>
+        ))}
+        <PresetItem onClick={onClickUsingCustom} selected={usingCustom}>
+          Custom
+        </PresetItem>
+      </ColorPresetContainer>
+      {usingCustom && (
+        <Fragment>
+          <FlexEnd>
+            <Label variant="primary">Custom Tone</Label>
+            <Text onClick={onRandomizePreset} variant="secondary" size="small" style={{ cursor: "pointer" }}>
+              Randomize
+            </Text>
+          </FlexEnd>
+          <FlexEnd>
+            <Text
+              onClick={() => onChangeCustomType("highlightsColor")}
+              style={{ cursor: "pointer" }}
+              size="small"
+              variant={customType === "highlightsColor" ? "primary" : "secondary"}
+            >
+              Highlights
+            </Text>
+            <Text
+              onClick={() => onChangeCustomType("shadowsColor")}
+              style={{ cursor: "pointer" }}
+              size="small"
+              variant={customType === "shadowsColor" ? "primary" : "secondary"}
+            >
+              Shadows
+            </Text>
+          </FlexEnd>
+          <HexColorPicker color={color} onChange={(t) => onChangeColor(t)} onMouseUp={onMouseUpColor} onTouchEnd={onMouseUpColor} />
+          <HexColorInput color={color} onChange={(t) => onChangeColor(t)} />
+        </Fragment>
+      )}
     </Container>
   )
 }
@@ -81,39 +182,43 @@ const Container = styled.div`
   display: flex;
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
+  overflow-y: hidden;
   flex-direction: column;
   gap: 12px;
-`
-
-const Scrollable = styled.div`
-  overflow-y: auto;
-  flex: 1; 
-  min-height: 0;
 `
 
 const ColorPresetContainer = styled.div`
   display: grid;
   gap: 8px;
   grid-template-columns: 1fr 1fr;
+  margin-bottom: 12px;
 `
 
 interface PresetProp {
-  preset: Preset
+  preset?: Preset
   selected?: boolean
 }
 
 const PresetItem = styled.div<PresetProp>`
   height: 90px;
   cursor: pointer;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  display: flex;
   border: 1px solid ${({ theme, selected }) => (selected ? theme.colors.primary : "black")};
-  background: linear-gradient(
-    to right, 
-    ${(props) => props.preset.shadowsColor} 0%, 
-    ${(props) => props.preset.shadowsColor} 50%, 
-    ${(props) => props.preset.highlightsColor} 50%, 
-    ${(props) => props.preset.highlightsColor} 100%
-  );
+  ${(props) =>
+    props.preset
+      ? `
+    background: linear-gradient(
+      to right,
+      ${props.preset.shadowsColor} 0%,
+      ${props.preset.shadowsColor} 50%,
+      ${props.preset.highlightsColor} 50%,
+      ${props.preset.highlightsColor} 100%
+    );
+  `
+      : "background: transparent;"}
   position: relative;
   
   ${({ theme, selected }) =>

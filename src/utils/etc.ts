@@ -6,3 +6,7 @@ export const generateFilename = async (buf: ArrayBuffer) => {
   const hash = hashHex.substring(0, 12)
   return hash
 }
+
+export const generateRandomHex = () => {
+  return `# ${((Math.random() * 0xffffff) << 0).toString(16).padStart(6, "0")}` as `#${string}`
+}

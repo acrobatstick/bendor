@@ -167,6 +167,18 @@ export const GlobalStyles = createGlobalStyle`
   select::-ms-expand {
     display: none;
   }
+
+  .react-colorful__saturation {
+    border-radius: 0px !important;
+  }
+
+  .react-colorful__hue {
+    border-radius: 0px !important;
+  }
+
+  .react-colorful__last-control {
+    border-radius: 0px !important;
+  }
 `
 
 export const PushTop = styled.div`

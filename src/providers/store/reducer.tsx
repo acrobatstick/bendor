@@ -1,5 +1,6 @@
 import { Filter, type FilterConfigMap, type Layer, type LSelection, type State } from "~/types"
 import Commands from "~/utils/commands"
+import { generateRandomHex } from "~/utils/etc"
 import { filterFnRegistry } from "~/utils/filters/registry"
 import { initialStoreState } from "./storeState"
 
@@ -145,7 +146,7 @@ const storeReducer = (state: State, action: Action): State => {
       const newLayer: Layer = {
         selection,
         ctx: null,
-        color: `# ${((Math.random() * 0xffffff) << 0).toString(16).padStart(6, "0")}`,
+        color: generateRandomHex(),
         commands: new Commands(selection)
       }
       const nextLayers = [...state.layers, newLayer]
