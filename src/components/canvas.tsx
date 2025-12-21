@@ -87,12 +87,14 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
     }
 
     const onMouseMove = (e: MouseEvent) => {
+      if (!drawManagerRef.current.isDrawing) return
       const point = getMouseCanvasCoordinates(activeCanvas, e.clientX, e.clientY)
       drawManagerRef.current.update(point)
       drawManagerRef.current.renderSelection(drawingCanvasCtx, activeCanvas, state.currentLayer!.color)
     }
 
     const onMouseUp = () => {
+      if (!drawManagerRef.current.isDrawing) return
       drawManagerRef.current.finish()
       drawingCanvasCtx.clearRect(0, 0, activeCanvas.width, activeCanvas.height)
       drawManagerRef.current.renderSelection(drawingCanvasCtx, activeCanvas, state.currentLayer!.color)
@@ -142,6 +144,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
     }
 
     const onTouchMove = (e: TouchEvent) => {
+      if (!drawManagerRef.current.isDrawing) return
       const touches = e.changedTouches
       for (let i = 0; i < touches.length; i++) {
         const idx = getOngoingTouchById(touches[i].identifier)
@@ -159,6 +162,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
     }
 
     const onTouchEnd = (e: TouchEvent) => {
+      if (!drawManagerRef.current.isDrawing) return
       e.preventDefault()
       drawManagerRef.current.finish()
       const touches = e.changedTouches
@@ -242,6 +246,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
 
     // same as the in element mouse up event handler
     const handleMouseUpOutside = () => {
+      if (!drawManagerRef.current.isDrawing) return
       document.removeEventListener("mousemove", handleMouseMoveOutside)
       document.removeEventListener("mouseup", handleMouseUpOutside)
 
