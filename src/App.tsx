@@ -8,6 +8,7 @@ import LayerList from "./components/layerList"
 import LayerSettings from "./components/layerSettings"
 import Button from "./components/reusables/buttons"
 import { H1, Link, Paragraph } from "./components/reusables/typography"
+import UploadArea from "./components/uploadArea"
 import { useStore } from "./hooks/useStore"
 import { LoadingProvider } from "./providers/loading/loadingProvider"
 import { StoreActionType } from "./providers/store/reducer"
@@ -54,6 +55,25 @@ function App() {
 
   const hasActiveLayer = () => {
     return hasImage() && state.selectedLayerIdx !== -1
+  }
+
+  if (!hasImage()) {
+    return (
+      <Layout style={{ minHeight: "100vh" }}>
+        <EmptyImageContainer>
+          <LogoContainer>
+            <H1>bendor</H1>
+            <Paragraph variant="secondary">
+              Built as an open source project. Any contributions are welcome on{" "}
+              <Link href="https://github.com/acrobatstick/bendor" target="_blank">
+                GitHub.
+              </Link>
+            </Paragraph>
+          </LogoContainer>
+          <UploadArea ref={imageRef} onChange={onImageChange} />
+        </EmptyImageContainer>
+      </Layout>
+    )
   }
 
   return (
@@ -110,6 +130,18 @@ const Layout = styled.div<{ columns?: number }>`
     grid-template-columns: 1fr;
     min-height: auto;
   }
+`
+
+const EmptyImageContainer = styled.div`
+ grid-column: 1 / -1; /* Spans all columns */
+  justify-self: center;
+  align-self: center;
+  width: 330px;
+  max-width: inherit;
+  background-color: white;
+  border: solid black 1px;
+  border-style: dashed;
+  box-sizing: border-box;
 `
 
 const LeftColumn = styled.div`
