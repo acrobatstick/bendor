@@ -5,17 +5,17 @@ import { FlexEnd } from "~/styles/global"
 import { ExportImage } from "./exports/image"
 import { H5, Text } from "./reusables/typography"
 
-const EXPORT_TYPES = ["Image", "GIF"] as const
+type ExportTypes = "Image" | "GIF"
 
 const ExportGIF = lazy(() => import("~/components/exports/gif"))
 
 const Exports = () => {
   const { state } = useStore()
-  const [exportType, setExportType] = useState<(typeof EXPORT_TYPES)[number]>("Image")
+  const [exportType, setExportType] = useState<ExportTypes>("Image")
 
   if (!state.imgCtx) return <div></div>
 
-  const onChangeExportType = (type: (typeof EXPORT_TYPES)[number]) => {
+  const onChangeExportType = (type: ExportTypes) => {
     setExportType(type)
   }
 

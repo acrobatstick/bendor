@@ -113,6 +113,7 @@ export type Action =
   | ResetImageCanvas
   | UpdateState<keyof State>
 
+// TODO: should i use values from consts or just set it up right here?
 const defaultConfig = <F extends Filter>(filter: F): FilterConfigMap[F] => {
   const configs = {
     [Filter.None]: { _empty: true },
@@ -123,7 +124,9 @@ const defaultConfig = <F extends Filter>(filter: F): FilterConfigMap[F] => {
     [Filter.Grayscale]: { intensity: 1.0 },
     [Filter.PixelSort]: { cache: new Uint8ClampedArray(), intensity: 1.0, direction: "Vertical" },
     [Filter.Slice]: { intensity: -100.0 },
-    [Filter.OffsetPixelSort]: { intensity: 1, cache: new Uint8ClampedArray() }
+    [Filter.OffsetPixelSort]: { intensity: 1, cache: new Uint8ClampedArray() },
+    // TODO: change color using available presets
+    [Filter.Duotone]: { brightness: 1.0, contrast: 1.0, highlightsColor: "#ffefb3", shadowsColor: "#290900" }
   } satisfies FilterConfigMap
 
   return configs[filter]

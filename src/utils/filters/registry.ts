@@ -1,6 +1,7 @@
 import { Filter, type FilterFunction } from "~/types"
 import { asSoundFilter } from "./asSound"
 import { brightnessFilter } from "./brightness"
+import { duotoneFilter } from "./duotone"
 import { fractalPixelSortFilter } from "./fractalPixelSort"
 import { grayscaleFilter } from "./grayscale"
 import { offsetPixelSort } from "./offsetPixelSort"
@@ -16,13 +17,16 @@ const noop: FilterFunction = ({ layer }) => {
 export const filterNameRegistry: Record<Filter, string> = {
   [Filter.AsSound]: "Data-as-Sound",
   [Filter.FractalPixelSort]: "Fractal Pixel Sort",
+  // TODO: brightness should not only be avaiable as it own filter layer.
+  // It should be a shared configuration that other filters can adjust internally
   [Filter.Brightness]: "Brightness",
   [Filter.Grayscale]: "Grayscale",
   [Filter.RGBShift]: "RGB Shift",
   [Filter.None]: "No Filter",
   [Filter.PixelSort]: "Pixel Sort",
   [Filter.Slice]: "Slice",
-  [Filter.OffsetPixelSort]: "Offset Pixel Sort"
+  [Filter.OffsetPixelSort]: "Offset Pixel Sort",
+  [Filter.Duotone]: "Duotone Filter"
 }
 
 export const filterFnRegistry: Record<Filter, FilterFunction> = {
@@ -34,5 +38,6 @@ export const filterFnRegistry: Record<Filter, FilterFunction> = {
   [Filter.None]: noop,
   [Filter.PixelSort]: pixelSort,
   [Filter.Slice]: slice,
-  [Filter.OffsetPixelSort]: offsetPixelSort
+  [Filter.OffsetPixelSort]: offsetPixelSort,
+  [Filter.Duotone]: duotoneFilter
 }

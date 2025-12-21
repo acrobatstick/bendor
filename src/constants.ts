@@ -13,3 +13,7 @@ export const SLICE_INTENSITY_RANGE = { min: -100.0, max: 0.0 }
 
 // had to use an unsigned integer as the step in order to make the rgb shift work
 export const OFFSET_PIXEL_DISTORTION_RANGE = { min: 1, max: 20, step: 1 }
+
+export const DUOTONE_CONFIG = {
+  BRIGHTNESS_RANGE: { min: 0, max: 2.0 }
+}

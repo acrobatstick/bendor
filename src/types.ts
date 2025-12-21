@@ -2,6 +2,8 @@ import type { FileTypeResult } from "file-type"
 import type { PIXEL_SORT_DIRECTIONS, RGB_SHIFT_OPTIONS } from "./constants"
 import type Commands from "./utils/commands"
 
+export type ColorValueHex = `#${string}`
+
 export type Point = {
   x: number
   y: number
@@ -17,7 +19,8 @@ export enum Filter {
   RGBShift = "RGBShift",
   Grayscale = "Grayscale",
   Slice = "Slice",
-  OffsetPixelSort = "OffsetPixelSort"
+  OffsetPixelSort = "OffsetPixelSort",
+  Duotone = "Duotone"
 }
 
 interface AsSoundConfig {
@@ -62,6 +65,13 @@ interface NoConfig {
   _empty?: true
 }
 
+export interface Duotone {
+  contrast: number
+  brightness: number
+  highlightsColor: ColorValueHex
+  shadowsColor: ColorValueHex
+}
+
 export type FilterConfigMap = {
   [Filter.AsSound]: AsSoundConfig
   [Filter.FractalPixelSort]: FractalPixelSortConfig
@@ -72,6 +82,7 @@ export type FilterConfigMap = {
   [Filter.PixelSort]: PixelSortConfig
   [Filter.Slice]: SliceConfig
   [Filter.OffsetPixelSort]: OffsetPixelSort
+  [Filter.Duotone]: Duotone
 }
 
 export interface LSelection<F extends Filter = Filter> {
@@ -89,7 +100,7 @@ export interface LSelection<F extends Filter = Filter> {
 export interface Layer {
   selection: LSelection
   // Color to differentiate current layer with other layers
-  color: `#${string}`
+  color: ColorValueHex
   // To store every user action on the stack so that it can be reverted back or forward
   ctx: CanvasRenderingContext2D | null
   commands: Commands<LSelection>

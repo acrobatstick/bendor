@@ -4,7 +4,7 @@ import { useStore } from "~/hooks/useStore"
 import { StoreActionType } from "~/providers/store/reducer"
 import { Filter } from "~/types"
 import { filterNameRegistry } from "~/utils/filters/registry"
-import FilterConfigurations from "./filterConfigurations"
+import FilterConfigurations from "./filterConfigurations/filterConfigurations"
 import Button from "./reusables/buttons"
 import { Select } from "./reusables/select"
 import { H4, Label } from "./reusables/typography"
@@ -80,6 +80,9 @@ const LayerSettings = () => {
 
 const Container = styled.div`
   padding: 24px;
+  flex: 1; // stretch the height until the next element
+  min-height: 0;
+  overflow-y: auto;
   @media (max-width: 1280px) {
     border-top: solid black 1px;
     border-top-style: dashed;
