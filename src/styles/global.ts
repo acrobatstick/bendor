@@ -179,6 +179,96 @@ export const GlobalStyles = createGlobalStyle`
   .react-colorful__last-control {
     border-radius: 0px !important;
   }
+
+  .onboarding {
+    border: 2px solid ${({ theme }) => theme.colors.primary};
+    border-radius: 0px;
+  }
+
+  .shepherd-modal-overlay-container {
+    opacity: 0.6 !important;
+  }
+
+  .shepherd-title {
+    color: ${({ theme }) => theme.colors.primary};
+  }
+
+  .shepherd-element .shepherd-arrow:after {
+    content: url('./images/arrow.svg');
+    color: #0062f6ff;
+    display: inline-block;
+  }
+
+  .shepherd-element .shepherd-arrow {
+    border-width: 0;
+    height: auto;
+    width: auto;
+  }
+
+  .shepherd-arrow::before {
+    display: none;
+  }
+
+  .shepherd-element[data-popper-placement^='top'] .shepherd-arrow,
+  .shepherd-element.shepherd-pinned-top .shepherd-arrow {
+    bottom: -35px;
+  }
+
+  .shepherd-element[data-popper-placement^='top'] .shepherd-arrow:after,
+  .shepherd-element.shepherd-pinned-top .shepherd-arrow:after {
+    transform: rotate(270deg);
+  }
+
+  .shepherd-element[data-popper-placement^='bottom'] .shepherd-arrow {
+    top: -35px;
+  }
+
+  .shepherd-element[data-popper-placement^='bottom'] .shepherd-arrow:after {
+    transform: rotate(90deg);
+  }
+
+  .shepherd-element[data-popper-placement^='left'] .shepherd-arrow,
+  .shepherd-element.shepherd-pinned-left .shepherd-arrow {
+    right: -35px;
+  }
+
+  .shepherd-element[data-popper-placement^='left'] .shepherd-arrow:after,
+  .shepherd-element.shepherd-pinned-left .shepherd-arrow:after {
+    transform: rotate(180deg);
+  }
+
+  .shepherd-element[data-popper-placement^='right'] .shepherd-arrow,
+  .shepherd-element.shepherd-pinned-right .shepherd-arrow {
+    left: -35px;
+  }
+
+  .shepherd-button {
+    background: #ffffff;
+    border-radius: 0;
+    color: ${({ theme }) => theme.colors.primary};
+    display: flex;
+    flex-grow: 1;
+    font-size: 1rem;
+    justify-content: center;
+    margin: 0;
+    padding: 0.2;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  .shepherd-button:hover {
+    color: ${({ theme }) => theme.colors.primary};
+    color: #ffffff;
+  }
+
+  .shepherd-button.shepherd-button-secondary {
+    background: #cad5d5;
+  }
+
+  .shepherd-button.shepherd-button-secondary:hover {
+    color: #cad5d5;
+    color: ${({ theme }) => theme.colors.primary};
+  }
 `
 
 export const PushTop = styled.div`

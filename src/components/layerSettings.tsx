@@ -1,6 +1,8 @@
+import { useContext } from "react"
 import styled from "styled-components"
 import { useLoading } from "~/hooks/useLoading"
 import { useStore } from "~/hooks/useStore"
+import { ShepherdTourContext } from "~/providers/shepherd/shepherdContext"
 import { StoreActionType } from "~/providers/store/reducer"
 import { Filter } from "~/types"
 import { filterNameRegistry } from "~/utils/filters/registry"
@@ -16,6 +18,8 @@ const LayerSettings = () => {
   } = useStore()
   const { start, stop } = useLoading()
 
+  const tour = useContext(ShepherdTourContext)
+
   const filterList = Object.keys(Filter)
 
   const onChangeFilter = (idx: number, value: Filter) => {
@@ -30,6 +34,9 @@ const LayerSettings = () => {
         withUpdateInitialPresent: false
       }
     })
+    if (tour?.isActive() && tour.getCurrentStep()?.id === "chooseEffect") {
+      tour.next()
+    }
     stop()
   }
 
@@ -55,7 +62,12 @@ const LayerSettings = () => {
     <Container>
       <H4 style={{ marginBottom: "12px" }}>Layer Configurations</H4>
       <Label>Filter</Label>
-      <Select $full onChange={(event) => onChangeFilter(selectedLayerIdx, event.target.value as Filter)} value={currentLayer?.selection.filter}>
+      <Select
+        id="filterList"
+        $full
+        onChange={(event) => onChangeFilter(selectedLayerIdx, event.target.value as Filter)}
+        value={currentLayer?.selection.filter}
+      >
         {filterList.map((filter) => (
           <option value={filter} key={`filter-${filter}`}>
             {filterNameRegistry[filter as Filter]}

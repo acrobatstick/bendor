@@ -17,12 +17,14 @@
     "@ffmpeg/ffmpeg": "^0.12.15",
     "@ffmpeg/types": "^0.12.4",
     "@ffmpeg/util": "^0.12.2",
+    "@floating-ui/dom": "^1.7.4",
     "browser-image-compression": "^2.0.2",
     "file-type": "^21.1.1",
     "gifsicle-wasm-browser": "^1.5.19",
     "react": "^19.1.1",
     "react-colorful": "^5.6.1",
     "react-dom": "^19.1.1",
+    "shepherd.js": "^14.5.1",
     "styled-components": "^6.1.19"
   },
   "devDependencies": {

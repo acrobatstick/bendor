@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useContext, useEffect, useRef, useState } from "react"
 import { useLoading } from "~/hooks/useLoading"
 import { useStore } from "~/hooks/useStore"
+import { ShepherdTourContext } from "~/providers/shepherd/shepherdContext"
 import { StoreActionType } from "~/providers/store/reducer"
 import DrawManager from "~/utils/drawManager"
 import { cursorInBoundingBox, getMouseCanvasCoordinates } from "~/utils/image"
@@ -8,6 +9,7 @@ import { cursorInBoundingBox, getMouseCanvasCoordinates } from "~/utils/image"
 function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
   const { start, stop } = useLoading()
   const { state, dispatch } = useStore()
+  const tour = useContext(ShepherdTourContext)
 
   const imageCanvasRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -127,6 +129,15 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
         const [, , minX, minY] = drawManagerRef.current.getPointsBoundingBox()
         drawManagerRef.current.mouseStartPos = { x: minX, y: minY }
         dispatch({ type: StoreActionType.GenerateResult })
+
+        if (tour?.isActive) {
+          if (!drawManagerRef.current.isAllArea && tour.getCurrentStep()?.id === "selectArea") {
+            tour.next()
+          }
+          if (drawManagerRef.current.isAllArea && tour.getCurrentStep()?.id === "selectAllArea") {
+            tour.next()
+          }
+        }
         stop()
       })
     }
@@ -202,6 +213,14 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
         const [, , minX, minY] = drawManagerRef.current.getPointsBoundingBox()
         drawManagerRef.current.mouseStartPos = { x: minX, y: minY }
         dispatch({ type: StoreActionType.GenerateResult })
+        if (tour?.isActive) {
+          if (!drawManagerRef.current.isAllArea && tour.getCurrentStep()?.id === "selectArea") {
+            tour.next()
+          }
+          if (drawManagerRef.current.isAllArea && tour.getCurrentStep()?.id === "selectAllArea") {
+            tour.next()
+          }
+        }
         stop()
       })
     }
@@ -289,7 +308,18 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
     return () => {
       ctrl.abort()
     }
-  }, [state.selectedLayerIdx, state.currentLayer, state.mode, dispatch, getOngoingTouchById, start, stop])
+  }, [
+    state.selectedLayerIdx,
+    state.currentLayer,
+    state.mode,
+    dispatch,
+    getOngoingTouchById,
+    start,
+    stop,
+    tour?.isActive,
+    tour?.getCurrentStep,
+    tour?.next
+  ])
 
   // Handle selection render on layer index change
   useEffect(() => {

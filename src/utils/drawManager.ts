@@ -2,18 +2,30 @@ import type { Layer, Point } from "~/types"
 
 class DrawManager {
   // ordered list of selection points from the user mouse movement
-  points: Point[] = []
+  points: Point[]
   // the first point of the current draw operation
-  startPoint: Point | null = null
+  startPoint: Point | null
   // to keep track of the mouse starting coordinate relative to the drawing on
   // first drawing movement
   mouseStartPos = { x: 0, y: 0 }
   // the area inside the selection points, length must be equal cwidth * cheight
-  selectionArea: Uint8Array | null = null
+  selectionArea: Uint8Array | null
   isDrawing = false
   // canvas dimension, must be set after loading an image
-  cwidth = 0
-  cheight = 0
+  cwidth: number
+  cheight: number
+  isAllArea: boolean
+
+  constructor() {
+    this.points = []
+    this.startPoint = null
+    this.mouseStartPos = { x: 0, y: 0 }
+    this.selectionArea = null
+    this.isDrawing = false
+    this.cwidth = 0
+    this.cheight = 0
+    this.isAllArea = false
+  }
 
   begin(startPoint: Point) {
     this.isDrawing = true
@@ -43,6 +55,7 @@ class DrawManager {
     this.startPoint = null
     this.selectionArea = null
     this.isDrawing = false
+    this.isAllArea = false
   }
 
   loadSelection(points: Point[], startPoint: Point) {
@@ -59,6 +72,7 @@ class DrawManager {
       { x: 0, y: this.cheight - 1 }
     ]
     this.startPoint = this.points[0]
+    this.isAllArea = true
   }
 
   fillSelectionArea(area: Point[]) {

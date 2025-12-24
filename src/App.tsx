@@ -1,5 +1,5 @@
 import { fileTypeFromBuffer } from "file-type"
-import { Fragment, useRef } from "react"
+import { Fragment, useCallback, useContext, useEffect, useRef } from "react"
 import styled from "styled-components"
 import Canvas from "./components/canvas"
 import Exports from "./components/exports"
@@ -11,12 +11,15 @@ import { H1, Link, Paragraph } from "./components/reusables/typography"
 import UploadArea from "./components/uploadArea"
 import { useStore } from "./hooks/useStore"
 import { LoadingProvider } from "./providers/loading/loadingProvider"
+import { ShepherdTourContext } from "./providers/shepherd/shepherdContext"
 import { StoreActionType } from "./providers/store/reducer"
 import { PushTop } from "./styles/global"
 
 function App() {
   const { state, dispatch } = useStore()
   const imageRef = useRef<HTMLInputElement>(null)
+
+  const tour = useContext(ShepherdTourContext)
 
   const onImageChange = async () => {
     dispatch({ type: StoreActionType.ClearLayers })
@@ -49,13 +52,21 @@ function App() {
     imageRef.current?.click()
   }
 
-  const hasImage = () => {
+  const hasImage = useCallback(() => {
     return state.imgBuf.byteLength > 0
-  }
+  }, [state.imgBuf.byteLength])
 
   const hasActiveLayer = () => {
     return hasImage() && state.selectedLayerIdx !== -1
   }
+
+  useEffect(() => {
+    if (tour && hasImage()) {
+      const boarded = localStorage.getItem("boarded")
+      if (boarded) return
+      tour.start()
+    }
+  }, [tour, hasImage])
 
   if (!hasImage()) {
     return (
@@ -106,7 +117,7 @@ function App() {
           </PushTop>
         </LeftColumn>
         {hasActiveLayer() && (
-          <LeftColumn>
+          <LeftColumn id="layerSettings">
             <LayerSettings />
           </LeftColumn>
         )}

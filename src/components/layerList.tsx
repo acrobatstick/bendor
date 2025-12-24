@@ -1,6 +1,8 @@
+import { useContext } from "react"
 import styled from "styled-components"
 import { useLoading } from "~/hooks/useLoading"
 import { useStore } from "~/hooks/useStore"
+import { ShepherdTourContext } from "~/providers/shepherd/shepherdContext"
 import { StoreActionType } from "~/providers/store/reducer"
 import { FlexEnd } from "~/styles/global"
 import { filterNameRegistry } from "~/utils/filters/registry"
@@ -14,9 +16,14 @@ function LayerList() {
     dispatch
   } = useStore()
 
+  const tour = useContext(ShepherdTourContext)
+
   const onAddLayer = () => {
     if (!loading && imgCtx) {
       dispatch({ type: StoreActionType.CreateNewLayer })
+    }
+    if (tour?.isActive() && tour.getCurrentStep()?.id === "addLayer") {
+      tour.next()
     }
   }
 
@@ -68,7 +75,7 @@ function LayerList() {
           <EmptyList>{"<empty>"}</EmptyList>
         )}
       </List>
-      <Button variant="outline" type="button" $full onClick={onAddLayer}>
+      <Button id="addNewLayer" variant="outline" type="button" $full onClick={onAddLayer}>
         + Add new layer
       </Button>
     </Container>
