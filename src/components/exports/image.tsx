@@ -1,5 +1,5 @@
 import imageCompression, { type Options } from "browser-image-compression"
-import { useRef } from "react"
+import { useRef, useState } from "react"
 import { useLoading } from "~/hooks/useLoading"
 import { useStore } from "~/hooks/useStore"
 import { FlexGap } from "~/styles/global"
@@ -10,6 +10,7 @@ import { Slider } from "../reusables/slider"
 export const ExportImage = () => {
   const { state } = useStore()
   const { start, stop } = useLoading()
+  const [isExporting, setIsExporting] = useState(false)
 
   const imageQualitySliderRef = useRef<HTMLInputElement>(null)
 
@@ -21,6 +22,8 @@ export const ExportImage = () => {
       return
     }
     const ftype = state.ftype
+
+    setIsExporting(true)
 
     start()
     const file = await new Promise<File>((resolve) => {
@@ -59,13 +62,14 @@ export const ExportImage = () => {
     a.click()
     URL.revokeObjectURL(url)
     stop()
+    setIsExporting(false)
   }
 
   return (
     <FlexGap direction="col">
       <Slider id="imageQuality" label="Quality" ref={imageQualitySliderRef} type="range" step={1} min={10} max={100} defaultValue={100} />
-      <Button $full type="button" onClick={() => onExportImage(Number(imageQualitySliderRef.current))}>
-        Export
+      <Button variant={`${isExporting ? "disabled" : "primary"}`} disabled={isExporting} $full type="button" onClick={() => onExportImage(Number(imageQualitySliderRef.current?.value))}>
+        {isExporting ? "Exporting..." : "Export"}
       </Button>
     </FlexGap>
   )

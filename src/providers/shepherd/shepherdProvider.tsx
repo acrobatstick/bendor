@@ -153,5 +153,9 @@ export const ShepherdProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem("boarded", "1")
   })
 
+  tour.on("cancel", () => {
+    localStorage.setItem("boarded", "1")
+  })
+
   return <ShepherdTourContext.Provider value={tour}>{children}</ShepherdTourContext.Provider>
 }
