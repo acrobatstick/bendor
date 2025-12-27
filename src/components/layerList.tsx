@@ -1,5 +1,6 @@
 import { Copy, MoveDown, MoveUp } from "lucide-react"
 import { useContext } from "react"
+import { Tooltip } from "react-tooltip"
 import styled from "styled-components"
 import { useLoading } from "~/hooks/useLoading"
 import { useStore } from "~/hooks/useStore"
@@ -69,18 +70,20 @@ function LayerList() {
           layers.map((point, idx) => (
             <Item id={`${idx}`} key={`layers-${point.color}`}>
               <Text variant="secondary" onClick={() => onSelectLayer(idx)} style={{ cursor: "pointer" }}>
-                <span>{selectedLayerIdx === idx ? "<*> " : "< > "}</span>
-                {filterNameRegistry[point.selection.filter]}
+                {selectedLayerIdx === idx ? "<*> " : "< > "} {filterNameRegistry[point.selection.filter]}
               </Text>
               <ActionList>
                 <Action onClick={() => onMoveSelection("up", idx)}>
-                  <MoveUp size={16} />
+                  <MoveUp size={16} data-tooltip-id="moveUp" data-tooltip-content="Move layer up" data-tooltip-place="bottom" />
+                  <Tooltip id="moveUp" className="custom-tooltip" />
                 </Action>
                 <Action onClick={() => onMoveSelection("down", idx)}>
-                  <MoveDown size={16} />
+                  <MoveDown size={16} data-tooltip-id="moveDown" data-tooltip-content="Move layer down" data-tooltip-place="bottom" />
+                  <Tooltip id="moveDown" className="custom-tooltip" />
                 </Action>
-                <Action>
-                  <Copy size={16} onClick={() => onDuplicateLayer(idx)} />
+                <Action onClick={() => onDuplicateLayer(idx)}>
+                  <Copy size={16} data-tooltip-id="duplicate" data-tooltip-content="Duplicate layer" data-tooltip-place="bottom-end" />
+                  <Tooltip id="duplicate" className="custom-tooltip" />
                 </Action>
               </ActionList>
             </Item>
@@ -127,7 +130,6 @@ const List = styled.ul`
 const Item = styled.li`
   display: flex;
   justify-content: space-between;
-  margin-left: 12px;
 `
 
 const ActionList = styled.div`
@@ -138,7 +140,13 @@ const ActionList = styled.div`
 `
 
 const Action = styled.span`
+  display: flex;
+  align-items: center;
+  padding: 4px;
   cursor: pointer;
+  &:hover {
+    background-color: #ccc ;
+  };
 `
 
 const EmptyList = styled.div`

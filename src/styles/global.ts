@@ -269,6 +269,12 @@ export const GlobalStyles = createGlobalStyle`
     color: #cad5d5;
     color: ${({ theme }) => theme.colors.primary};
   }
+
+  .custom-tooltip {
+    border-radius: 0 !important;
+    font-size: 12px !important;
+    padding: 8px !important;
+  }
 `
 
 export const PushTop = styled.div`
