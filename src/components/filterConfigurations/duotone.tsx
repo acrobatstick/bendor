@@ -1,4 +1,4 @@
-import { Fragment, useRef, useState } from "react"
+import { Fragment, useEffect, useRef, useState } from "react"
 import { HexColorInput, HexColorPicker } from "react-colorful"
 import styled from "styled-components"
 import { DUOTONE_CONFIG } from "~/constants"
@@ -34,9 +34,9 @@ const presets: ColorPresets = [
 
 const DuotoneConfig = () => {
   const { state, dispatch } = useStore()
-  const [color, setColor] = useState<string>("#ffffff")
+  const [color, setColor] = useState<string>("#ffffff") // color picker value state
   const [usingCustom, setUsingCustom] = useState<boolean>(false)
-  const [customType, setCustomType] = useState<keyof Preset>("highlightsColor")
+  const [customType, setCustomType] = useState<keyof Preset>("highlightsColor") // color picker type state
   const [selectedPreset, setSelectedPreset] = useState<number>(0)
 
   // to persist custom preset
@@ -122,6 +122,28 @@ const DuotoneConfig = () => {
     setColor(changeColor)
     updateCanvas(customColor.current)
   }
+
+  useEffect(() => {
+    customColor.current = { highlightsColor: conf.highlightsColor, shadowsColor: conf.shadowsColor }
+
+    let isAPreset = false
+    for (const [index, preset] of presets.entries()) {
+      if (preset.highlightsColor === conf.highlightsColor && preset.shadowsColor === conf.shadowsColor) {
+        isAPreset = true
+        setSelectedPreset(index)
+        break
+      }
+    }
+
+    if (!isAPreset) {
+      if (customType === "highlightsColor") {
+        setColor(conf.highlightsColor)
+      } else {
+        setColor(conf.shadowsColor)
+      }
+      setUsingCustom(true)
+    }
+  }, [customType, conf.highlightsColor, conf.shadowsColor])
 
   return (
     <Container>
