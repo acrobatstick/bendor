@@ -1,3 +1,4 @@
+import { Copy, MoveDown, MoveUp } from "lucide-react"
 import { useContext } from "react"
 import styled from "styled-components"
 import { useLoading } from "~/hooks/useLoading"
@@ -47,6 +48,12 @@ function LayerList() {
     dispatch({ type: StoreActionType.GenerateResult, payload: { refreshIdx: 0 } })
   }
 
+  const onDuplicateLayer = (idx: number) => {
+    dispatch({ type: StoreActionType.DuplicateLayer, payload: idx })
+    dispatch({ type: StoreActionType.ResetImageCanvas })
+    dispatch({ type: StoreActionType.GenerateResult, payload: { refreshIdx: idx } })
+  }
+
   return (
     <Container>
       <FlexEnd>
@@ -65,10 +72,17 @@ function LayerList() {
                 <span>{selectedLayerIdx === idx ? "<*> " : "< > "}</span>
                 {filterNameRegistry[point.selection.filter]}
               </Text>
-              <MoveDirections>
-                <Direction onClick={() => onMoveSelection("up", idx)}>↑</Direction>
-                <Direction onClick={() => onMoveSelection("down", idx)}>↓</Direction>
-              </MoveDirections>
+              <ActionList>
+                <Action onClick={() => onMoveSelection("up", idx)}>
+                  <MoveUp size={16} />
+                </Action>
+                <Action onClick={() => onMoveSelection("down", idx)}>
+                  <MoveDown size={16} />
+                </Action>
+                <Action>
+                  <Copy size={16} onClick={() => onDuplicateLayer(idx)} />
+                </Action>
+              </ActionList>
             </Item>
           ))
         ) : (
@@ -116,14 +130,14 @@ const Item = styled.li`
   margin-left: 12px;
 `
 
-const MoveDirections = styled.div`
+const ActionList = styled.div`
   display: flex;
   align-items: center;
   justify-items: center;
   gap: 4px;
 `
 
-const Direction = styled.span`
+const Action = styled.span`
   cursor: pointer;
 `
 

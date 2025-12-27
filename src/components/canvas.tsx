@@ -584,7 +584,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
   }, [state.hideSelectionOverlay, state.currentLayer, state.selectedLayerIdx])
 
   return (
-    <div ref={containerRef} style={{ position: "relative", display: "inline-block", lineHeight: 0 }} {...props}>
+    <div id="canvasContainer" ref={containerRef} style={{ position: "relative", display: "inline-block", lineHeight: 0 }} {...props}>
       <canvas
         id="imageCanvas"
         ref={imageCanvasRef}

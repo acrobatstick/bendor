@@ -18,6 +18,7 @@ export enum StoreActionType {
   UpdateLayerSelection,
   DeleteLayer,
   MoveLayer,
+  DuplicateLayer,
   ResetImageCanvas,
   GenerateResult,
   UpdateState
@@ -76,6 +77,11 @@ interface MoveLayer {
   }
 }
 
+interface DuplicateLayer {
+  type: StoreActionType.DuplicateLayer
+  payload: number
+}
+
 interface GenerateResult {
   type: StoreActionType.GenerateResult
   payload?: {
@@ -110,6 +116,7 @@ export type Action =
   | UpdateLayerSelection
   | DeleteLayer
   | MoveLayer
+  | DuplicateLayer
   | GenerateResult
   | ResetImageCanvas
   | UpdateState<keyof State>
@@ -371,6 +378,86 @@ const storeReducer = (state: State, action: Action): State => {
         selectedLayerIdx: isCurrent ? toIdx : state.selectedLayerIdx,
         currentLayer: isCurrent ? updated[toIdx] : state.currentLayer
       }
+    }
+
+    case StoreActionType.DuplicateLayer: {
+      const canvasContainer = document.getElementById("canvasContainer")
+      if (!canvasContainer) {
+        throw new Error("could not find #canvasContainer")
+      }
+
+      const currDuplicatedLayer = state.layers[action.payload]
+      const newCanvas = document.createElement("canvas")
+
+      if (!currDuplicatedLayer.ctx) {
+        throw new Error("currDuplicatedLayer has no canvas context")
+      }
+      // make new context for the duplicated layer. we cant add the existing one because it will
+      // just read as if the canvas were already there
+      newCanvas.width = currDuplicatedLayer.ctx.canvas.width
+      newCanvas.height = currDuplicatedLayer.ctx.canvas.height
+      const newCtx = newCanvas.getContext("2d")
+      newCtx!.drawImage(currDuplicatedLayer.ctx!.canvas, 0, 0)
+
+      const duplicatedLayer = {
+        ...currDuplicatedLayer,
+        color: generateRandomHex(), // had to change the color since we are using color as react element key
+        ctx: newCtx
+      }
+
+      const updated = [...state.layers]
+      updated.splice(action.payload + 1, 0, duplicatedLayer)
+
+      if (!duplicatedLayer.ctx) {
+        throw new Error("duplicatedLayer has no canvas context")
+      }
+
+      // add the drawing canvas node to the dom
+      const nextLayerIndex = action.payload + 2
+      const nextCanvas = updated[nextLayerIndex]?.ctx?.canvas
+
+      Object.assign(duplicatedLayer.ctx.canvas.style, {
+        position: "absolute",
+        top: "0",
+        left: "0",
+        width: "100%",
+        height: "100%",
+        cursor: "crosshair"
+      })
+
+      if (nextCanvas) {
+        // append behind the next layer after the duplicated one
+        canvasContainer.insertBefore(duplicatedLayer.ctx.canvas, nextCanvas)
+      } else {
+        canvasContainer.appendChild(duplicatedLayer.ctx.canvas)
+      }
+
+      let selectedLayerIdx = state.selectedLayerIdx
+      if (action.payload < selectedLayerIdx) {
+        selectedLayerIdx++ // keep selectedLayer position as before
+      }
+
+      // re index since we are adding new canvas to the dom
+      for (let i = action.payload + 1; i < updated.length; i++) {
+        const layer = updated[i]
+        if (!layer.ctx?.canvas) continue
+
+        const canvas = layer.ctx.canvas
+        const ctx = layer.ctx
+        canvas.id = `drawing-canvas-${i}`
+
+        // reapply the "active" class to the original layer, since it's index being moved once
+        if (i === selectedLayerIdx) {
+          canvas.classList.add("active")
+          canvas.style.pointerEvents = "auto"
+        } else {
+          ctx.clearRect(0, 0, canvas.width, canvas.height)
+          canvas.classList.remove("active")
+          canvas.style.pointerEvents = "none"
+        }
+      }
+
+      return { ...state, layers: updated, selectedLayerIdx, currentLayer: updated[selectedLayerIdx] }
     }
 
     case StoreActionType.GenerateResult: {

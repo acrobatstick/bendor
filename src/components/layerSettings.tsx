@@ -1,9 +1,11 @@
+import { Redo, Trash, Undo } from "lucide-react"
 import { useContext } from "react"
 import styled from "styled-components"
 import { useLoading } from "~/hooks/useLoading"
 import { useStore } from "~/hooks/useStore"
 import { ShepherdTourContext } from "~/providers/shepherd/shepherdContext"
 import { StoreActionType } from "~/providers/store/reducer"
+import { FlexCenter } from "~/styles/global"
 import { Filter } from "~/types"
 import { filterNameRegistry } from "~/utils/filters/registry"
 import FilterConfigurations from "./filterConfigurations/filterConfigurations"
@@ -77,13 +79,22 @@ const LayerSettings = () => {
       <FilterConfigurations />
       <Actions>
         <Button $full variant="warning" onClick={onDeleteLayer}>
-          Delete Layer
+          <FlexCenter>
+            <Trash size={16} />
+            <span>Delete Layer</span>
+          </FlexCenter>
         </Button>
         <Button variant="outline" type="button" onClick={() => onUndoRedo("undo")}>
-          Undo
+          <FlexCenter>
+            <Undo size={16} />
+            <span>Undo</span>
+          </FlexCenter>
         </Button>
         <Button variant="outline" type="button" onClick={() => onUndoRedo("redo")}>
-          Redo
+          <FlexCenter>
+            <Redo size={16} />
+            <span>Redo</span>
+          </FlexCenter>
         </Button>
       </Actions>
     </Container>

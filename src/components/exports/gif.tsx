@@ -1,10 +1,11 @@
 import { FFmpeg, type FileData } from "@ffmpeg/ffmpeg"
 import { toBlobURL } from "@ffmpeg/util"
+import { Download } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { useLoading } from "~/hooks/useLoading"
 import { useStore } from "~/hooks/useStore"
 import { StoreActionType } from "~/providers/store/reducer"
-import { FlexGap } from "~/styles/global"
+import { FlexCenter, FlexGap } from "~/styles/global"
 import { generateFilename } from "~/utils/etc"
 import Button from "../reusables/buttons"
 import { Slider } from "../reusables/slider"
@@ -245,7 +246,16 @@ const ExportGIF = () => {
         onChange={(evt) => setExportOpts((prev) => ({ ...prev, compressionQuality: parseFloat(evt.target.value) }))}
       />
       <Button $full onClick={onExportGIF} disabled={isButtonDisabled} variant={isButtonDisabled ? "disabled" : "primary"}>
-        {!isLoadedRef.current ? "Loading..." : isExporting ? "Exporting..." : "Export"}
+        {!isLoadedRef.current ? (
+          "Loading..."
+        ) : isExporting ? (
+          "Exporting..."
+        ) : (
+          <FlexCenter>
+            <Download size={15} />
+            <span>Export</span>
+          </FlexCenter>
+        )}
       </Button>
     </FlexGap>
   )

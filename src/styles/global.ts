@@ -282,6 +282,14 @@ export const FlexEnd = styled.div`
   align-items: center;
 `
 
+export const FlexCenter = styled.div`
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  align-items: center;
+  gap: 4px;
+`
+
 export const FlexGap = styled.div<{ direction: "col" | "row" }>`
   display: flex;
   flex-direction: ${({ direction }) => (direction === "col" ? "column" : "row")};

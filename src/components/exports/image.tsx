@@ -1,8 +1,9 @@
 import imageCompression, { type Options } from "browser-image-compression"
+import { Download } from "lucide-react"
 import { useRef, useState } from "react"
 import { useLoading } from "~/hooks/useLoading"
 import { useStore } from "~/hooks/useStore"
-import { FlexGap } from "~/styles/global"
+import { FlexCenter, FlexGap } from "~/styles/global"
 import { generateFilename } from "~/utils/etc"
 import Button from "../reusables/buttons"
 import { Slider } from "../reusables/slider"
@@ -68,8 +69,21 @@ export const ExportImage = () => {
   return (
     <FlexGap direction="col">
       <Slider id="imageQuality" label="Quality" ref={imageQualitySliderRef} type="range" step={1} min={10} max={100} defaultValue={100} />
-      <Button variant={`${isExporting ? "disabled" : "primary"}`} disabled={isExporting} $full type="button" onClick={() => onExportImage(Number(imageQualitySliderRef.current?.value))}>
-        {isExporting ? "Exporting..." : "Export"}
+      <Button
+        variant={`${isExporting ? "disabled" : "primary"}`}
+        disabled={isExporting}
+        $full
+        type="button"
+        onClick={() => onExportImage(Number(imageQualitySliderRef.current?.value))}
+      >
+        {isExporting ? (
+          "Exporting..."
+        ) : (
+          <FlexCenter>
+            <Download size={15} />
+            <span>Export</span>
+          </FlexCenter>
+        )}
       </Button>
     </FlexGap>
   )
