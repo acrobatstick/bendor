@@ -98,6 +98,9 @@ export interface LSelection<F extends Filter = Filter> {
 }
 
 export interface Layer {
+  // Just a unique identifier to satisfies the @dnd-core sortable context. Don't have
+  // the direct side effects to the layers itself
+  id: number
   selection: LSelection
   // Color to differentiate current layer with other layers
   color: ColorValueHex

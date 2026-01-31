@@ -29,6 +29,7 @@ export enum StoreActionType {
   UpdateLayerSelection,
   DeleteLayer,
   MoveLayer,
+  MoveLayerIndex,
   DuplicateLayer,
   ResetImageCanvas,
   GenerateResult,
@@ -88,6 +89,14 @@ interface MoveLayer {
   }
 }
 
+interface MoveLayerIndex {
+  type: StoreActionType.MoveLayerIndex
+  payload: {
+    active: number
+    over: number
+  }
+}
+
 interface DuplicateLayer {
   type: StoreActionType.DuplicateLayer
   payload: number
@@ -127,6 +136,7 @@ export type Action =
   | UpdateLayerSelection
   | DeleteLayer
   | MoveLayer
+  | MoveLayerIndex
   | DuplicateLayer
   | GenerateResult
   | ResetImageCanvas
@@ -170,6 +180,7 @@ const storeReducer = (state: State, action: Action): State => {
         selectionArea: new Uint32Array()
       }
       const newLayer: Layer = {
+        id: state.layers.length,
         selection,
         ctx: null,
         color: generateRandomHex(),
@@ -355,6 +366,7 @@ const storeReducer = (state: State, action: Action): State => {
         const ctx = updated[i].ctx
         if (!ctx?.canvas) continue
         ctx.canvas.id = `drawing-canvas-${i}`
+        updated[i].id = i // rewrite the layer id also so it won't collide
       }
 
       // adjust selectedLayerIdx if updated layers are empty or overflowing the array length
@@ -396,6 +408,42 @@ const storeReducer = (state: State, action: Action): State => {
         layers: updated,
         selectedLayerIdx: isCurrent ? toIdx : state.selectedLayerIdx,
         currentLayer: isCurrent ? updated[toIdx] : state.currentLayer
+      }
+    }
+
+    case StoreActionType.MoveLayerIndex: {
+      const idxA = action.payload.over
+      const idxB = action.payload.active
+
+      if (idxA === idxB || idxA < 0 || idxB < 0 || idxA >= state.layers.length || idxB >= state.layers.length) {
+        return state
+      }
+
+      const updated = state.layers.map((layer) => ({ ...layer }))
+
+      const layerA = updated[idxA]
+      const layerB = updated[idxB]
+
+      // swap positions but keep canvas contexts consistent
+      updated[idxA] = { ...layerB, ctx: layerA.ctx }
+      updated[idxB] = { ...layerA, ctx: layerB.ctx }
+
+      let selectedLayerIdx = state.selectedLayerIdx
+      let currentLayer = state.currentLayer
+
+      if (state.selectedLayerIdx === idxA) {
+        selectedLayerIdx = idxB
+        currentLayer = updated[idxB]
+      } else if (state.selectedLayerIdx === idxB) {
+        selectedLayerIdx = idxA
+        currentLayer = updated[idxA]
+      }
+
+      return {
+        ...state,
+        layers: updated,
+        selectedLayerIdx,
+        currentLayer
       }
     }
 

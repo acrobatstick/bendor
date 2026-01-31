@@ -1,6 +1,6 @@
-import { Copy, MoveDown, MoveUp } from "lucide-react"
+import { closestCenter, DndContext, type DragEndEvent, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core"
+import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { useContext } from "react"
-import { Tooltip } from "react-tooltip"
 import styled from "styled-components"
 import { useLoading } from "~/hooks/useLoading"
 import { useStore } from "~/hooks/useStore"
@@ -8,6 +8,7 @@ import { ShepherdTourContext } from "~/providers/shepherd/shepherdContext"
 import { StoreActionType } from "~/providers/store/reducer"
 import { FlexEnd } from "~/styles/global"
 import { filterNameRegistry } from "~/utils/filters/registry"
+import LayerItem from "./layerItem"
 import Button from "./reusables/buttons"
 import { Label, Text } from "./reusables/typography"
 
@@ -17,6 +18,13 @@ function LayerList() {
     state: { selectedLayerIdx, imgCtx, layers },
     dispatch
   } = useStore()
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates
+    })
+  )
 
   const tour = useContext(ShepherdTourContext)
 
@@ -55,6 +63,15 @@ function LayerList() {
     dispatch({ type: StoreActionType.GenerateResult, payload: { refreshIdx: idx } })
   }
 
+  const onDragEnd = (event: DragEndEvent) => {
+    start()
+    const { active, over } = event
+    dispatch({ type: StoreActionType.MoveLayerIndex, payload: { active: Number(active.id), over: Number(over?.id) } })
+    dispatch({ type: StoreActionType.ResetImageCanvas })
+    dispatch({ type: StoreActionType.GenerateResult })
+    stop()
+  }
+
   return (
     <Container>
       <FlexEnd>
@@ -65,33 +82,28 @@ function LayerList() {
           </Text>
         )}
       </FlexEnd>
-      <List>
-        {layers.length > 0 ? (
-          layers.map((point, idx) => (
-            <Item id={`${idx}`} key={`layers-${point.color}`}>
-              <Text variant="secondary" onClick={() => onSelectLayer(idx)} style={{ cursor: "pointer" }}>
-                {selectedLayerIdx === idx ? "<*> " : "< > "} {filterNameRegistry[point.selection.filter]}
-              </Text>
-              <ActionList>
-                <Action onClick={() => onMoveSelection("up", idx)}>
-                  <MoveUp size={16} data-tooltip-id="moveUp" data-tooltip-content="Move layer up" data-tooltip-place="bottom" />
-                  <Tooltip id="moveUp" className="custom-tooltip" />
-                </Action>
-                <Action onClick={() => onMoveSelection("down", idx)}>
-                  <MoveDown size={16} data-tooltip-id="moveDown" data-tooltip-content="Move layer down" data-tooltip-place="bottom" />
-                  <Tooltip id="moveDown" className="custom-tooltip" />
-                </Action>
-                <Action onClick={() => onDuplicateLayer(idx)}>
-                  <Copy size={16} data-tooltip-id="duplicate" data-tooltip-content="Duplicate layer" data-tooltip-place="bottom-end" />
-                  <Tooltip id="duplicate" className="custom-tooltip" />
-                </Action>
-              </ActionList>
-            </Item>
-          ))
-        ) : (
-          <EmptyList>{"<empty>"}</EmptyList>
-        )}
-      </List>
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+        <SortableContext items={layers} strategy={verticalListSortingStrategy}>
+          <List>
+            {layers.length > 0 ? (
+              layers.map((point, idx) => (
+                <LayerItem
+                  idx={idx}
+                  key={`layers-${point.color}`}
+                  selected={selectedLayerIdx === idx}
+                  onDuplicateLayer={onDuplicateLayer}
+                  onMoveSelection={onMoveSelection}
+                  onSelectLayer={onSelectLayer}
+                >
+                  {filterNameRegistry[point.selection.filter]}
+                </LayerItem>
+              ))
+            ) : (
+              <EmptyList>{"<empty>"}</EmptyList>
+            )}
+          </List>
+        </SortableContext>
+      </DndContext>
       <Button id="addNewLayer" variant="outline" type="button" $full onClick={onAddLayer}>
         + Add new layer
       </Button>
@@ -125,28 +137,6 @@ const List = styled.ul`
     flex: none;
     min-height: auto;
   }
-`
-
-const Item = styled.li`
-  display: flex;
-  justify-content: space-between;
-`
-
-const ActionList = styled.div`
-  display: flex;
-  align-items: center;
-  justify-items: center;
-  gap: 4px;
-`
-
-const Action = styled.span`
-  display: flex;
-  align-items: center;
-  padding: 4px;
-  cursor: pointer;
-  &:hover {
-    background-color: #ccc ;
-  };
 `
 
 const EmptyList = styled.div`
