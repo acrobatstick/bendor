@@ -6,6 +6,7 @@ import { ShepherdTourContext } from "~/providers/shepherd/shepherdContext"
 import { StoreActionType } from "~/providers/store/reducer"
 import DrawManager from "~/utils/drawManager"
 import { cursorInBoundingBox, getMouseCanvasCoordinates } from "~/utils/image"
+import { markProcessingDone } from "~/utils/processing"
 
 function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
   const { start, stop } = useLoading()
@@ -602,7 +603,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
     let cancelled = false
 
     const run = async () => {
-      const newLayers = await process(stateRef.current)
+      const newLayers = await process(stateRef.current, -1)
       if (cancelled) return
       dispatch({
         type: StoreActionType.ApplyProcessedLayers,
@@ -614,6 +615,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
 
     return () => {
       cancelled = true
+      markProcessingDone()
       stop()
     }
   }, [state.needsProcessing])

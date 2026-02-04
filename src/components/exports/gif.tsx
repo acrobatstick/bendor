@@ -9,6 +9,7 @@ import { FlexCenter, FlexGap } from "~/styles/global"
 import { generateFilename } from "~/utils/etc"
 import Button from "../reusables/buttons"
 import { Slider } from "../reusables/slider"
+import { waitForProcessing } from "~/utils/processing"
 
 interface GIFOpts {
   framerate: number
@@ -130,8 +131,7 @@ const ExportGIF = () => {
       frames.push(await captureFrame())
       for (let i = 0; i < exportOpts.framerate - 1; i++) {
         dispatch({ type: StoreActionType.RequestProcessing })
-
-        // TODO: fix gif capturing
+        await waitForProcessing()
         try {
           const frame = await captureFrame()
           frames.push(frame)
