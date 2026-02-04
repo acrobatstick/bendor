@@ -2,6 +2,7 @@ import react from "@vitejs/plugin-react"
 import { visualizer } from "rollup-plugin-visualizer"
 import { defineConfig } from "vite"
 import tsconfigPaths from "vite-tsconfig-paths"
+import path from "path"
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
@@ -13,12 +14,24 @@ export default defineConfig(({ mode }) => {
             if (id.includes("src/components/exports/gif")) {
               return "gif-export" // Separate chunk for GIF export
             }
-
             // Group other components together (excluding lazy-loaded ones)
             if (id.includes("src/components/") && !id.includes("src/components/exports/gif")) {
               return "components"
             }
           }
+        }
+      }
+    },
+    resolve: {
+      alias: {
+        '~': path.resolve(__dirname, './src')
+      }
+    },
+    worker: {
+      format: 'es',
+      rollupOptions: {
+        output: {
+          format: 'es'
         }
       }
     },
