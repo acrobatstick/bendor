@@ -1,12 +1,11 @@
 import { createContext, type Dispatch } from "react"
 import type { State } from "~/types"
 import type { Action } from "./reducer"
-import { initialStoreState } from "./storeState"
 
-export const StoreContext = createContext<{
+type StoreContextValue = {
   state: State
   dispatch: Dispatch<Action>
-}>({
-  state: initialStoreState,
-  dispatch: () => undefined
-})
+  stateRef: React.MutableRefObject<State>
+}
+
+export const StoreContext = createContext<StoreContextValue | undefined>(undefined)

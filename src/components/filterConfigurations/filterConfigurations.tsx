@@ -58,11 +58,7 @@ const FractalPixelSortConfig = () => {
         variant="outline"
         type="button"
         onClick={() => {
-          dispatch({ type: StoreActionType.ResetImageCanvas })
-          dispatch({
-            type: StoreActionType.GenerateResult,
-            payload: { refreshIdx: state.selectedLayerIdx }
-          })
+          dispatch({ type: StoreActionType.RequestProcessing })
         }}
       >
         Refresh Pattern
@@ -142,11 +138,7 @@ const OffsetPixelSortConfig = () => {
         variant="outline"
         type="button"
         onClick={() => {
-          dispatch({ type: StoreActionType.ResetImageCanvas })
-          dispatch({
-            type: StoreActionType.GenerateResult,
-            payload: { refreshIdx: state.selectedLayerIdx }
-          })
+          dispatch({ type: StoreActionType.RequestProcessing })
         }}
       >
         Refresh Patterns

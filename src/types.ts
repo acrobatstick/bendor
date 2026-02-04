@@ -123,6 +123,7 @@ export interface State {
   selectedLayerIdx: number
   mode: "edit" | "move"
   hideSelectionOverlay: boolean
+  needsProcessing: boolean
 }
 
 export interface LoadingState {

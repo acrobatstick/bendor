@@ -9,12 +9,10 @@ import {
   SLICE_INTENSITY_OPTS,
   SOUND_BIT_RATE_BLEND_OPTS
 } from "~/constants"
-import { Filter, type FilterConfigMap, type Layer, type LayerWithOptionalCtx, type LSelection, type State } from "~/types"
+import { Filter, type FilterConfigMap, type Layer, type LSelection, type State } from "~/types"
 import Commands from "~/utils/commands"
 import { generateRandomHex } from "~/utils/etc"
-import { filterFnRegistry } from "~/utils/filters/registry"
 import { initialStoreState } from "./storeState"
-import FilterWorker from "./filter.worker.ts?worker"
 
 export enum StoreActionType {
   SetOriginalAreaData,
@@ -34,7 +32,9 @@ export enum StoreActionType {
   DuplicateLayer,
   ResetImageCanvas,
   GenerateResult,
-  UpdateState
+  ApplyProcessedLayers,
+  UpdateState,
+  RequestProcessing
 }
 
 interface CreateNewLayer {
@@ -111,6 +111,11 @@ interface GenerateResult {
   }
 }
 
+interface ApplyProcessedLayer {
+  type: StoreActionType.ApplyProcessedLayers
+  payload: Layer[]
+}
+
 interface ResetImageCanvas {
   type: StoreActionType.ResetImageCanvas
 }
@@ -121,6 +126,10 @@ interface UpdateState<K extends keyof State> {
     key: K
     value: State[K]
   }
+}
+
+interface RequestProcessing {
+  type: StoreActionType.RequestProcessing
 }
 
 function isInBounds(arrLen: number, idx: number): boolean {
@@ -140,8 +149,10 @@ export type Action =
   | MoveLayerIndex
   | DuplicateLayer
   | GenerateResult
+  | ApplyProcessedLayer
   | ResetImageCanvas
   | UpdateState<keyof State>
+  | RequestProcessing
 
 // TODO: should i use values from consts or just set it up right here?
 const defaultConfig = <F extends Filter>(filter: F): FilterConfigMap[F] => {
@@ -217,12 +228,11 @@ const storeReducer = (state: State, action: Action): State => {
         selection: nextSelection,
         commands: prevLayer.commands.set(nextSelection)
       }
-
       layers[idx] = nextLayer
 
       return {
         ...state,
-        layers
+        layers: layers
       }
     }
 
@@ -422,6 +432,7 @@ const storeReducer = (state: State, action: Action): State => {
 
       const updated = state.layers.map((layer) => ({ ...layer }))
 
+
       const layerA = updated[idxA]
       const layerB = updated[idxB]
 
@@ -432,19 +443,46 @@ const storeReducer = (state: State, action: Action): State => {
       let selectedLayerIdx = state.selectedLayerIdx
       let currentLayer = state.currentLayer
 
-      if (state.selectedLayerIdx === idxA) {
-        selectedLayerIdx = idxB
-        currentLayer = updated[idxB]
-      } else if (state.selectedLayerIdx === idxB) {
+      if (state.selectedLayerIdx === idxB) {
+        // dragged layer was selected → move selection to new index
         selectedLayerIdx = idxA
         currentLayer = updated[idxA]
+      } else if (state.selectedLayerIdx === idxA) {
+        // target layer was selected > it moves to idxB
+        selectedLayerIdx = idxB
+        currentLayer = updated[idxB]
+      }
+
+      selectedLayerIdx = idxA
+      currentLayer = updated[idxA]
+
+
+      // re index to make my life easier i guess
+      for (let i = 0; i < updated.length; i++) {
+        const layer = updated[i]
+        if (!layer.ctx?.canvas) continue
+
+        const canvas = layer.ctx.canvas
+        const ctx = layer.ctx
+        canvas.id = `drawing-canvas-${i}`
+        layer.id = i
+
+        // reapply the "active" class to the original layer, since it's index being moved once
+        if (i === selectedLayerIdx) {
+          canvas.classList.add("active")
+          canvas.style.pointerEvents = "auto"
+        } else {
+          ctx.clearRect(0, 0, canvas.width, canvas.height)
+          canvas.classList.remove("active")
+          canvas.style.pointerEvents = "none"
+        }
       }
 
       return {
         ...state,
         layers: updated,
-        selectedLayerIdx,
-        currentLayer
+        selectedLayerIdx: selectedLayerIdx,
+        currentLayer,
       }
     }
 
@@ -529,73 +567,15 @@ const storeReducer = (state: State, action: Action): State => {
     }
 
     case StoreActionType.GenerateResult: {
-      const imageCanvas = state.imgCtx
-      if (!imageCanvas) return state
-
-      let refreshNext = action.payload?.refreshIdx === -1
-
-      const processLayersSequentially = async () => {
-        for (let i = 0; i < state.layers.length; i++) {
-          const layer = state.layers[i]
-          const { filter, selectionArea } = layer.selection
-
-          if (!selectionArea) {
-            console.log("No selection area")
-            continue
-          }
-
-          if (!filterFnRegistry[filter]) {
-            console.error("could not find filter " + filter)
-            continue
-          }
-
-          if (action.payload?.refreshIdx === i) refreshNext = true
-
-          const currentImageData = imageCanvas.getImageData(
-            0, 0,
-            imageCanvas.canvas.width,
-            imageCanvas.canvas.height
-          )
-
-          type Result = {
-            updatedSelection: LSelection<Filter>,
-            processedImageData: ImageData
-          }
-
-          const result = await new Promise<Result>((resolve) => {
-            const worker = new FilterWorker()
-
-            worker.onmessage = (e: MessageEvent<Result>) => {
-              resolve({
-                updatedSelection: e.data.updatedSelection,
-                processedImageData: e.data.processedImageData
-              })
-              worker.terminate()
-            }
-            const { ctx, ...layerWithoutCtx }: { ctx: Layer["ctx"] } & LayerWithOptionalCtx = layer
-            worker.postMessage({
-              layer: layerWithoutCtx,
-              filter,
-              imageData: structuredClone(currentImageData),
-              selectionArea,
-              refresh: refreshNext || action.payload?.refreshIdx === i
-            })
-          })
-
-          // apply this layer's result immediately before processing next layer
-          if (result) {
-            imageCanvas.putImageData(result.processedImageData, 0, 0)
-            state.layers[i] = {
-              ...layer,
-              selection: result.updatedSelection
-            }
-          }
-        }
-      }
-
-      processLayersSequentially()
-
       return state
+    }
+
+    case StoreActionType.ApplyProcessedLayers: {
+      return {
+        ...state,
+        layers: action.payload,
+        needsProcessing: false,
+      }
     }
 
     // revert back to the original image canvas
@@ -606,7 +586,10 @@ const storeReducer = (state: State, action: Action): State => {
         throw new Error("Original image data is not defined")
       }
       imageCanvas.putImageData(state.originalImageData, 0, 0)
-      return state
+      return {
+        ...state,
+        imgCtx: imageCanvas
+      }
     }
 
     case StoreActionType.UpdateState: {
@@ -614,6 +597,13 @@ const storeReducer = (state: State, action: Action): State => {
       return {
         ...state,
         [key]: value
+      }
+    }
+
+    case StoreActionType.RequestProcessing: {
+      return {
+        ...state,
+        needsProcessing: true
       }
     }
 
