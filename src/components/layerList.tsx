@@ -14,10 +14,7 @@ import { Label, Text } from "./reusables/typography"
 
 function LayerList() {
   const { loading, start, stop } = useLoading()
-  const {
-    state,
-    dispatch,
-  } = useStore()
+  const { state, dispatch } = useStore()
 
   const { selectedLayerIdx, imgCtx, layers } = state
 

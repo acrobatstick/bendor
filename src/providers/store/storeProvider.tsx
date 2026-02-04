@@ -1,8 +1,8 @@
-import { type ReactNode, useReducer, useEffect, useRef } from "react"
+import { type ReactNode, useEffect, useReducer, useRef } from "react"
+import type { State } from "~/types"
 import reducer from "./reducer"
 import { StoreContext } from "./storeContext"
 import { initialStoreState } from "./storeState"
-import type { State } from "~/types"
 
 export const StoreProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(reducer, initialStoreState)

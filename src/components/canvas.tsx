@@ -558,7 +558,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
         ctrl.abort()
       }
     }
-  }, [state.mode, state.currentLayer, state.selectedLayerIdx, selectionMovable, dispatch, start, stop])
+  }, [state.mode, state.currentLayer, state.selectedLayerIdx, selectionMovable, dispatch, start])
 
   // auto select layer whenever seletedLayerIdx changes
   useEffect(() => {
@@ -593,7 +593,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
   // state from the store
   useEffect(() => {
     stateRef.current = state
-  }, [state])
+  }, [state, stateRef])
 
   // all canvas drawing processing happens here!
   useEffect(() => {
@@ -618,7 +618,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
       markProcessingDone()
       stop()
     }
-  }, [state.needsProcessing])
+  }, [state.needsProcessing, dispatch, process, state.imgCtx, stateRef.current, stop])
 
   return (
     <div id="canvasContainer" ref={containerRef} style={{ position: "relative", display: "inline-block", lineHeight: 0 }} {...props}>

@@ -24,7 +24,7 @@ const useProcessCanvas = () => {
       throw new Error("cannot process canvas")
     }
 
-    let refreshNext = false;
+    let refreshNext = false
 
     // when generating a gif it should refresh all layer to get different results
     if (refreshIdx === -1) {
@@ -35,12 +35,7 @@ const useProcessCanvas = () => {
     if (!imageCanvas || !state.originalImageData) throw new Error()
     // reset image to the original state
     imageCanvas.putImageData(state.originalImageData, 0, 0)
-    let currentImageData = imageCanvas.getImageData(
-      0,
-      0,
-      imageCanvas.canvas.width,
-      imageCanvas.canvas.height
-    )
+    let currentImageData = imageCanvas.getImageData(0, 0, imageCanvas.canvas.width, imageCanvas.canvas.height)
 
     const nextLayers = [...state.layers]
 
@@ -53,7 +48,7 @@ const useProcessCanvas = () => {
         continue
       }
       if (!filterFnRegistry[filter]) {
-        console.error("could not find filter " + filter)
+        console.error(`could not find filter ${filter}`)
         continue
       }
 
@@ -85,7 +80,7 @@ const useProcessCanvas = () => {
 
       nextLayers[i] = {
         ...layer,
-        selection: result.updatedSelection,
+        selection: result.updatedSelection
       }
     }
 
