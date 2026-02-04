@@ -12,13 +12,9 @@ import FilterConfigurations from "./filterConfigurations/filterConfigurations"
 import Button from "./reusables/buttons"
 import { Select } from "./reusables/select"
 import { H4, Label } from "./reusables/typography"
-import type { Actions } from "@dnd-kit/core/dist/store/actions"
 
 const LayerSettings = () => {
-  const {
-    state,
-    dispatch
-  } = useStore()
+  const { state, dispatch } = useStore()
   const { start } = useLoading()
 
   const tour = useContext(ShepherdTourContext)

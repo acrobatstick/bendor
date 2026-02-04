@@ -10,7 +10,7 @@ export const grayscaleFilter: FilterFunction = ({ imageCanvas, layer, selectionA
   return {
     updatedSelection: {
       ...selection,
-      config: selection.config,
+      config: selection.config
     } as LSelection<Filter.Grayscale>
   }
 }

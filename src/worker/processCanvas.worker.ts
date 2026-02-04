@@ -1,6 +1,6 @@
 // filterWorker.js
-import type { Filter, LayerWithOptionalCtx } from '~/types'
-import { filterFnRegistry } from '~/utils/filters/registry'
+import type { Filter, LayerWithOptionalCtx } from "~/types"
+import { filterFnRegistry } from "~/utils/filters/registry"
 
 type Request = {
   layer: LayerWithOptionalCtx
@@ -15,13 +15,13 @@ self.onmessage = (e: MessageEvent<Request>) => {
 
   const filterFn = filterFnRegistry[filter]
   if (!filterFn) {
-    self.postMessage({ layer: layer.id, error: 'Filter not found' })
+    self.postMessage({ layer: layer.id, error: "Filter not found" })
     return
   }
 
   // create a temporary canvas context in the worker to draw the current image
   const canvas = new OffscreenCanvas(imageData.width, imageData.height)
-  const ctx = canvas.getContext('2d')
+  const ctx = canvas.getContext("2d")
   if (!ctx) {
     self.postMessage({ layer: layer.id, error: "could not get canvas context" })
     return

@@ -294,9 +294,9 @@ const storeReducer = (state: State, action: Action): State => {
         pselection.filter && pselection.filter !== prevSelection.filter
           ? defaultConfig(nextFilter)
           : {
-            ...prevSelection.config,
-            ...(pselection.config || {})
-          }
+              ...prevSelection.config,
+              ...(pselection.config || {})
+            }
 
       const nextSelection: LSelection = {
         ...prevSelection,
@@ -432,7 +432,6 @@ const storeReducer = (state: State, action: Action): State => {
 
       const updated = state.layers.map((layer) => ({ ...layer }))
 
-
       const layerA = updated[idxA]
       const layerB = updated[idxB]
 
@@ -455,7 +454,6 @@ const storeReducer = (state: State, action: Action): State => {
 
       selectedLayerIdx = idxA
       currentLayer = updated[idxA]
-
 
       // re index to make my life easier i guess
       for (let i = 0; i < updated.length; i++) {
@@ -482,7 +480,7 @@ const storeReducer = (state: State, action: Action): State => {
         ...state,
         layers: updated,
         selectedLayerIdx: selectedLayerIdx,
-        currentLayer,
+        currentLayer
       }
     }
 
@@ -574,7 +572,7 @@ const storeReducer = (state: State, action: Action): State => {
       return {
         ...state,
         layers: action.payload,
-        needsProcessing: false,
+        needsProcessing: false
       }
     }
 
