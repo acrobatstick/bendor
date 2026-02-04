@@ -10,8 +10,8 @@ import {
   rgbToUnitRange
 } from "../sound"
 
-export const asSoundFilter: FilterFunction = ({ imageCanvas, layer, selectionArea }) => {
-  const selection = layer.selection as LSelection<Filter.AsSound>
+export const asSoundFilter: FilterFunction = ({ imageCanvas, lselection, selectionArea }) => {
+  const selection = lselection as LSelection<Filter.AsSound>
   const { width, height } = imageCanvas.canvas
   const img = imageCanvas.getImageData(0, 0, width, height)
   const data = img.data
@@ -33,7 +33,7 @@ export const asSoundFilter: FilterFunction = ({ imageCanvas, layer, selectionAre
 
   return {
     updatedSelection: {
-      ...layer.selection,
+      ...selection,
       config: { ...selection.config, cache }
     } as LSelection<Filter.AsSound>
   }

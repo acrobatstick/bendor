@@ -15,9 +15,11 @@ import { Label, Text } from "./reusables/typography"
 function LayerList() {
   const { loading, start, stop } = useLoading()
   const {
-    state: { selectedLayerIdx, imgCtx, layers },
+    state,
     dispatch
   } = useStore()
+
+  const { selectedLayerIdx, imgCtx, layers } = state
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -63,7 +65,7 @@ function LayerList() {
     dispatch({ type: StoreActionType.GenerateResult, payload: { refreshIdx: idx } })
   }
 
-  const onDragEnd = (event: DragEndEvent) => {
+  const onDragEnd = async (event: DragEndEvent) => {
     start()
     const { active, over } = event
     dispatch({ type: StoreActionType.MoveLayerIndex, payload: { active: Number(active.id), over: Number(over?.id) } })

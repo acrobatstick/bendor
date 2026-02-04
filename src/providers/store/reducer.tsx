@@ -14,6 +14,7 @@ import Commands from "~/utils/commands"
 import { generateRandomHex } from "~/utils/etc"
 import { filterFnRegistry } from "~/utils/filters/registry"
 import { initialStoreState } from "./storeState"
+import FilterWorker from "./filter.worker.ts?worker"
 
 export enum StoreActionType {
   SetOriginalAreaData,
@@ -283,9 +284,9 @@ const storeReducer = (state: State, action: Action): State => {
         pselection.filter && pselection.filter !== prevSelection.filter
           ? defaultConfig(nextFilter)
           : {
-              ...prevSelection.config,
-              ...(pselection.config || {})
-            }
+            ...prevSelection.config,
+            ...(pselection.config || {})
+          }
 
       const nextSelection: LSelection = {
         ...prevSelection,
@@ -531,56 +532,53 @@ const storeReducer = (state: State, action: Action): State => {
       const imageCanvas = state.imgCtx
       if (!imageCanvas) return state
 
-      let layers = state.layers
-      let didChange = false
-      let refreshNext = false
+      let refreshNext = action.payload?.refreshIdx === -1
 
-      // when generating a gif it should refresh all layer to get different results
-      if (action.payload?.refreshIdx === -1) {
-        refreshNext = true
-      }
+      const processLayersSequentially = async () => {
+        for (let i = 0; i < state.layers.length; i++) {
+          const layer = state.layers[i]
+          const { filter, selectionArea } = layer.selection
 
-      for (let i = 0; i < state.layers.length; i++) {
-        const layer = state.layers[i]
-        const { filter, selectionArea } = layer.selection
-        if (!selectionArea) {
-          continue
-        }
-        const filterFn = filterFnRegistry[filter]
-        if (!filterFn) continue
-
-        // should refresh all layer next onwards
-        if (action.payload?.refreshIdx === i) refreshNext = true
-
-        const { updatedSelection } = filterFn({
-          imageCanvas,
-          layer: {
-            ...layer,
-            selection: { ...layer.selection }
-          },
-          selectionArea,
-          refresh: refreshNext ?? action.payload?.refreshIdx === i
-        })
-
-        if (updatedSelection !== layer.selection) {
-          if (!didChange) {
-            layers = state.layers.slice()
-            didChange = true
+          if (!selectionArea || !filterFnRegistry[filter]) {
+            continue
           }
 
-          layers[i] = {
-            ...layer,
-            selection: updatedSelection
+          if (action.payload?.refreshIdx === i) refreshNext = true
+
+          const currentImageData = imageCanvas.getImageData(
+            0, 0,
+            imageCanvas.canvas.width,
+            imageCanvas.canvas.height
+          )
+
+          const result = await new Promise<ImageData>((resolve) => {
+            const worker = new FilterWorker()
+
+            worker.onmessage = (e) => {
+              resolve(e.data)
+              worker.terminate()
+            }
+
+            worker.postMessage({
+              layerId: layer.id,
+              lselection: layer.selection,
+              filter,
+              imageData: structuredClone(currentImageData),
+              selectionArea,
+              refresh: refreshNext || action.payload?.refreshIdx === i
+            })
+          })
+
+          // apply this layer's result immediately before processing next layer
+          if (result) {
+            imageCanvas.putImageData(result, 0, 0)
           }
         }
       }
 
-      if (!didChange) return state
+      processLayersSequentially()
 
-      return {
-        ...state,
-        layers
-      }
+      return state
     }
 
     // revert back to the original image canvas

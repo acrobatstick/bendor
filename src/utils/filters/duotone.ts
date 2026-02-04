@@ -1,8 +1,8 @@
 import type { Filter, FilterFunction, LSelection } from "~/types"
 import { adjustBrightness, adjustContrast, adjustGrayscale, parseHexToRGB } from "../image"
 
-export const duotoneFilter: FilterFunction = ({ imageCanvas, layer, selectionArea }) => {
-  const selection = layer.selection as LSelection<Filter.Duotone>
+export const duotoneFilter: FilterFunction = ({ imageCanvas, lselection, selectionArea }) => {
+  const selection = lselection as LSelection<Filter.Duotone>
   const { width, height } = imageCanvas.canvas
   const image = imageCanvas.getImageData(0, 0, width, height)
   const data = image.data
@@ -31,5 +31,5 @@ export const duotoneFilter: FilterFunction = ({ imageCanvas, layer, selectionAre
 
   imageCanvas.putImageData(image, 0, 0)
 
-  return { updatedSelection: layer.selection }
+  return { updatedSelection: selection }
 }

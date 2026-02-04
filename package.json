@@ -21,6 +21,7 @@
     "@ffmpeg/types": "^0.12.4",
     "@ffmpeg/util": "^0.12.2",
     "@floating-ui/dom": "^1.7.4",
+    "@koale/useworker": "^4.1.2",
     "browser-image-compression": "^2.0.2",
     "file-type": "^21.1.1",
     "gifsicle-wasm-browser": "^1.5.19",
