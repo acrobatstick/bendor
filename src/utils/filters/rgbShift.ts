@@ -1,8 +1,8 @@
 import type { Filter, FilterFunction, LSelection } from "~/types"
 import { Color } from "../color"
 
-export const rgbShift: FilterFunction = ({ imageCanvas, lselection, selectionArea }) => {
-  const selection = lselection as LSelection<Filter.RGBShift>
+export const rgbShift: FilterFunction = ({ imageCanvas, layer, selectionArea }) => {
+  const selection = layer.selection as LSelection<Filter.RGBShift>
   const wholeImage = imageCanvas.getImageData(0, 0, imageCanvas.canvas.width, imageCanvas.canvas.height)
   const data = wholeImage.data
 
@@ -48,6 +48,6 @@ export const rgbShift: FilterFunction = ({ imageCanvas, lselection, selectionAre
   imageCanvas.putImageData(wholeImage, 0, 0)
 
   return {
-    updatedSelection: selection
+    updatedSelection: layer.selection
   }
 }

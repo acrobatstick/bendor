@@ -1,12 +1,12 @@
 import type { Filter, FilterFunction, LSelection } from "~/types"
 import { Color } from "../color"
 
-export const pixelSort: FilterFunction = ({ imageCanvas, lselection, selectionArea, refresh }) => {
+export const pixelSort: FilterFunction = ({ imageCanvas, layer, selectionArea, refresh }) => {
   const img = imageCanvas.getImageData(0, 0, imageCanvas.canvas.width, imageCanvas.canvas.height)
   const data = img.data
   const width = imageCanvas.canvas.width
   const height = imageCanvas.canvas.height
-  const selection = lselection as LSelection<Filter.PixelSort>
+  const selection = layer.selection as LSelection<Filter.PixelSort>
   const intensity = selection.config.intensity
   const direction = selection.config.direction
 
@@ -36,7 +36,7 @@ export const pixelSort: FilterFunction = ({ imageCanvas, lselection, selectionAr
   imageCanvas.putImageData(img, 0, 0)
 
   return {
-    updatedSelection: selection
+    updatedSelection: layer.selection
   }
 }
 

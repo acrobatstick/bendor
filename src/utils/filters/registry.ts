@@ -10,8 +10,8 @@ import { rgbShift } from "./rgbShift"
 import { slice } from "./slice"
 
 // a placeholder if filter is not yet implemented or just do nothing
-export const noop: FilterFunction = ({ lselection }) => {
-  return { updatedSelection: lselection }
+export const noop: FilterFunction = ({ layer }) => {
+  return { updatedSelection: layer.selection }
 }
 
 export const filterNameRegistry: Record<Filter, string> = {

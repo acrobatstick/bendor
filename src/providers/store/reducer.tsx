@@ -9,7 +9,7 @@ import {
   SLICE_INTENSITY_OPTS,
   SOUND_BIT_RATE_BLEND_OPTS
 } from "~/constants"
-import { Filter, type FilterConfigMap, type Layer, type LSelection, type State } from "~/types"
+import { Filter, type FilterConfigMap, type Layer, type LayerWithOptionalCtx, type LSelection, type State } from "~/types"
 import Commands from "~/utils/commands"
 import { generateRandomHex } from "~/utils/etc"
 import { filterFnRegistry } from "~/utils/filters/registry"
@@ -539,7 +539,13 @@ const storeReducer = (state: State, action: Action): State => {
           const layer = state.layers[i]
           const { filter, selectionArea } = layer.selection
 
-          if (!selectionArea || !filterFnRegistry[filter]) {
+          if (!selectionArea) {
+            console.log("No selection area")
+            continue
+          }
+
+          if (!filterFnRegistry[filter]) {
+            console.error("could not find filter " + filter)
             continue
           }
 
@@ -551,17 +557,24 @@ const storeReducer = (state: State, action: Action): State => {
             imageCanvas.canvas.height
           )
 
-          const result = await new Promise<ImageData>((resolve) => {
+          type Result = {
+            updatedSelection: LSelection<Filter>,
+            processedImageData: ImageData
+          }
+
+          const result = await new Promise<Result>((resolve) => {
             const worker = new FilterWorker()
 
-            worker.onmessage = (e) => {
-              resolve(e.data)
+            worker.onmessage = (e: MessageEvent<Result>) => {
+              resolve({
+                updatedSelection: e.data.updatedSelection,
+                processedImageData: e.data.processedImageData
+              })
               worker.terminate()
             }
-
+            const { ctx, ...layerWithoutCtx }: { ctx: Layer["ctx"] } & LayerWithOptionalCtx = layer
             worker.postMessage({
-              layerId: layer.id,
-              lselection: layer.selection,
+              layer: layerWithoutCtx,
               filter,
               imageData: structuredClone(currentImageData),
               selectionArea,
@@ -571,7 +584,11 @@ const storeReducer = (state: State, action: Action): State => {
 
           // apply this layer's result immediately before processing next layer
           if (result) {
-            imageCanvas.putImageData(result, 0, 0)
+            imageCanvas.putImageData(result.processedImageData, 0, 0)
+            state.layers[i] = {
+              ...layer,
+              selection: result.updatedSelection
+            }
           }
         }
       }

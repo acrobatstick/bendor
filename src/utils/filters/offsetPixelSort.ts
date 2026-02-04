@@ -1,8 +1,8 @@
 import type { Filter, FilterFunction, LSelection } from "~/types"
 import { Color } from "../color"
 
-export const offsetPixelSort: FilterFunction = ({ lselection, imageCanvas, selectionArea, refresh }) => {
-  const selection = lselection as LSelection<Filter.OffsetPixelSort>
+export const offsetPixelSort: FilterFunction = ({ layer, imageCanvas, selectionArea, refresh }) => {
+  const selection = layer.selection as LSelection<Filter.OffsetPixelSort>
   const width = imageCanvas.canvas.width
   const height = imageCanvas.canvas.height
 
@@ -28,6 +28,7 @@ export const offsetPixelSort: FilterFunction = ({ lselection, imageCanvas, selec
       const offsetRenderDist = randInt(-maxOffsetMarker, maxOffsetMarker)
 
       if (offsetRenderDist === 0) {
+        // noop
       } else if (offsetRenderDist < 0) {
         const absOffset = -offsetRenderDist
 
@@ -155,7 +156,7 @@ export const offsetPixelSort: FilterFunction = ({ lselection, imageCanvas, selec
 
   return {
     updatedSelection: {
-      ...selection,
+      ...layer.selection,
       config: { ...selection.config, cache: sortedData }
     } as LSelection<Filter.OffsetPixelSort>
   }
