@@ -9,5 +9,6 @@ export const initialStoreState: State = {
   currentLayer: undefined,
   selectedLayerIdx: -1,
   mode: "edit",
-  hideSelectionOverlay: false
+  hideSelectionOverlay: false,
+  needsProcessing: false
 }

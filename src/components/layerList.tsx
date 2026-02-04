@@ -16,7 +16,7 @@ function LayerList() {
   const { loading, start, stop } = useLoading()
   const {
     state,
-    dispatch
+    dispatch,
   } = useStore()
 
   const { selectedLayerIdx, imgCtx, layers } = state
@@ -49,28 +49,27 @@ function LayerList() {
       type: StoreActionType.MoveLayer,
       payload: { direction, layerIdx: idx }
     })
-    dispatch({ type: StoreActionType.ResetImageCanvas })
-    dispatch({ type: StoreActionType.GenerateResult })
+    dispatch({ type: StoreActionType.RequestProcessing })
     stop()
   }
 
   const onRefresh = () => {
-    dispatch({ type: StoreActionType.ResetImageCanvas })
-    dispatch({ type: StoreActionType.GenerateResult, payload: { refreshIdx: 0 } })
+    dispatch({ type: StoreActionType.RequestProcessing })
   }
 
   const onDuplicateLayer = (idx: number) => {
     dispatch({ type: StoreActionType.DuplicateLayer, payload: idx })
-    dispatch({ type: StoreActionType.ResetImageCanvas })
-    dispatch({ type: StoreActionType.GenerateResult, payload: { refreshIdx: idx } })
+    dispatch({ type: StoreActionType.RequestProcessing })
   }
 
   const onDragEnd = async (event: DragEndEvent) => {
     start()
     const { active, over } = event
-    dispatch({ type: StoreActionType.MoveLayerIndex, payload: { active: Number(active.id), over: Number(over?.id) } })
-    dispatch({ type: StoreActionType.ResetImageCanvas })
-    dispatch({ type: StoreActionType.GenerateResult })
+    dispatch({
+      type: StoreActionType.MoveLayerIndex,
+      payload: { active: Number(active.id), over: Number(over?.id) }
+    })
+    dispatch({ type: StoreActionType.RequestProcessing })
     stop()
   }
 

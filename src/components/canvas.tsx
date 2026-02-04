@@ -1,5 +1,6 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react"
 import { useLoading } from "~/hooks/useLoading"
+import useProcessCanvas from "~/hooks/useProcessCanvas"
 import { useStore } from "~/hooks/useStore"
 import { ShepherdTourContext } from "~/providers/shepherd/shepherdContext"
 import { StoreActionType } from "~/providers/store/reducer"
@@ -8,7 +9,7 @@ import { cursorInBoundingBox, getMouseCanvasCoordinates } from "~/utils/image"
 
 function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
   const { start, stop } = useLoading()
-  const { state, dispatch } = useStore()
+  const { state, dispatch, stateRef } = useStore()
   const tour = useContext(ShepherdTourContext)
 
   const imageCanvasRef = useRef<HTMLCanvasElement>(null)
@@ -18,6 +19,8 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
   const [selectionMovable, setSelectionMovable] = useState<boolean>(false)
 
   const getOngoingTouchById = useCallback((id: number) => ongoingTouches.findIndex((t) => t.identifier === id), [ongoingTouches])
+
+  const process = useProcessCanvas()
 
   useEffect(() => {
     if (state.imgBuf.byteLength === 0 || !imageCanvasRef.current) return
@@ -102,7 +105,6 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
       drawManagerRef.current.renderSelection(drawingCanvasCtx, activeCanvas, state.currentLayer!.color)
       start()
       requestIdleCallback(() => {
-        dispatch({ type: StoreActionType.ResetImageCanvas })
         drawManagerRef.current.getSelectArea()
         const { points, startPoint } = drawManagerRef.current
         dispatch({
@@ -126,9 +128,11 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
             withUpdateInitialPresent: true
           }
         })
+
         const [, , minX, minY] = drawManagerRef.current.getPointsBoundingBox()
         drawManagerRef.current.mouseStartPos = { x: minX, y: minY }
-        dispatch({ type: StoreActionType.GenerateResult })
+
+        dispatch({ type: StoreActionType.RequestProcessing })
 
         if (tour?.isActive) {
           if (!drawManagerRef.current.isAllArea && tour.getCurrentStep()?.id === "selectArea") {
@@ -185,8 +189,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
       }
       drawManagerRef.current.renderSelection(drawingCanvasCtx, activeCanvas, state.currentLayer!.color)
       start()
-      requestIdleCallback(() => {
-        dispatch({ type: StoreActionType.ResetImageCanvas })
+      requestIdleCallback(async () => {
         drawManagerRef.current.getSelectArea()
         const { points, startPoint } = drawManagerRef.current
         dispatch({
@@ -212,7 +215,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
         })
         const [, , minX, minY] = drawManagerRef.current.getPointsBoundingBox()
         drawManagerRef.current.mouseStartPos = { x: minX, y: minY }
-        dispatch({ type: StoreActionType.GenerateResult })
+        dispatch({ type: StoreActionType.RequestProcessing })
         if (tour?.isActive) {
           if (!drawManagerRef.current.isAllArea && tour.getCurrentStep()?.id === "selectArea") {
             tour.next()
@@ -221,7 +224,6 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
             tour.next()
           }
         }
-        stop()
       })
     }
 
@@ -274,8 +276,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
       drawManagerRef.current.renderSelection(drawingCanvasCtx, activeCanvas, state.currentLayer!.color)
 
       start()
-      requestIdleCallback(() => {
-        dispatch({ type: StoreActionType.ResetImageCanvas })
+      requestIdleCallback(async () => {
         drawManagerRef.current.getSelectArea()
         const { points, startPoint } = drawManagerRef.current
         dispatch({
@@ -288,8 +289,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
         const imageCanvas = imageCanvasRef.current
         const imageCtx = imageCanvas?.getContext("2d")
         if (!imageCtx) return
-        dispatch({ type: StoreActionType.GenerateResult })
-        stop()
+        dispatch({ type: StoreActionType.RequestProcessing })
       })
     }
 
@@ -430,8 +430,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
         e.preventDefault()
         setSelectionMovable(false)
         start()
-        requestIdleCallback(() => {
-          dispatch({ type: StoreActionType.ResetImageCanvas })
+        requestIdleCallback(async () => {
           drawManagerRef.current.getSelectArea()
           const { points, startPoint } = drawManagerRef.current
           dispatch({
@@ -455,8 +454,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
               withUpdateInitialPresent: true
             }
           })
-          dispatch({ type: StoreActionType.GenerateResult })
-          stop()
+          dispatch({ type: StoreActionType.RequestProcessing })
         })
       }
 
@@ -519,8 +517,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
         e.preventDefault()
         setSelectionMovable(false)
         start()
-        requestIdleCallback(() => {
-          dispatch({ type: StoreActionType.ResetImageCanvas })
+        requestIdleCallback(async () => {
           drawManagerRef.current.getSelectArea()
           const { points, startPoint } = drawManagerRef.current
           dispatch({
@@ -544,8 +541,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
               withUpdateInitialPresent: true
             }
           })
-          dispatch({ type: StoreActionType.GenerateResult })
-          stop()
+          dispatch({ type: StoreActionType.RequestProcessing })
         })
       }
 
@@ -571,17 +567,56 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
   // to handle hide/unhide selection points
   useEffect(() => {
     const container = containerRef.current
-    if (!container) return
+    if (!container) {
+      // console.info("no container")
+      return
+    }
     const activeCanvas = container.querySelector<HTMLCanvasElement>(`#drawing-canvas-${state.selectedLayerIdx}`)
     const currentLayer = state.currentLayer
-    if (!currentLayer) return
-    if (!activeCanvas || !currentLayer.ctx) return
+    if (!currentLayer) {
+      // console.info("currentLayer empty")
+      return
+    }
+    if (!activeCanvas || !currentLayer.ctx) {
+      // console.info("no activeCanvas")
+      return
+    }
     if (state.hideSelectionOverlay) {
       currentLayer.ctx.clearRect(0, 0, activeCanvas.width, activeCanvas.height)
     } else {
       drawManagerRef.current.renderSelection(currentLayer.ctx, activeCanvas, state.currentLayer!.color)
     }
   }, [state.hideSelectionOverlay, state.currentLayer, state.selectedLayerIdx])
+
+  // update the stateRef so that if the canvas needs processing it have the latest
+  // state from the store
+  useEffect(() => {
+    stateRef.current = state
+  }, [state])
+
+  // all canvas drawing processing happens here!
+  useEffect(() => {
+    if (!state.needsProcessing) return
+    if (!state.imgCtx) return
+
+    let cancelled = false
+
+    const run = async () => {
+      const newLayers = await process(stateRef.current)
+      if (cancelled) return
+      dispatch({
+        type: StoreActionType.ApplyProcessedLayers,
+        payload: newLayers
+      })
+    }
+
+    run()
+
+    return () => {
+      cancelled = true
+      stop()
+    }
+  }, [state.needsProcessing])
 
   return (
     <div id="canvasContainer" ref={containerRef} style={{ position: "relative", display: "inline-block", lineHeight: 0 }} {...props}>

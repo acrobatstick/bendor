@@ -7,5 +7,10 @@ export const brightnessFilter: FilterFunction = ({ imageCanvas, layer, selection
   const data = wholeImage.data
   adjustBrightness(data, selectionArea, selection.config.intensity)
   imageCanvas.putImageData(wholeImage, 0, 0)
-  return { updatedSelection: selection }
+  return {
+    updatedSelection: {
+      ...selection,
+      config: selection.config
+    } as LSelection<Filter.Brightness>
+  }
 }

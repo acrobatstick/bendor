@@ -46,7 +46,7 @@ const DuotoneConfig = () => {
   const currSelection = state.currentLayer?.selection as LSelection<Filter.Duotone>
   const conf = currSelection.config
 
-  const updateCanvas = (preset: Preset) => {
+  const updateCanvas = async (preset: Preset) => {
     dispatch({
       type: StoreActionType.UpdateLayerSelection,
       payload: {
@@ -55,8 +55,7 @@ const DuotoneConfig = () => {
         withUpdateInitialPresent: false
       }
     })
-    dispatch({ type: StoreActionType.ResetImageCanvas })
-    dispatch({ type: StoreActionType.GenerateResult, payload: { refreshIdx: state.selectedLayerIdx } })
+    dispatch({ type: StoreActionType.RequestProcessing })
   }
 
   const onClickPreset = (idx: number) => {

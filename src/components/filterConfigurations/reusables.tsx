@@ -30,7 +30,7 @@ interface ListSelectionProps<T, V = T> {
 }
 
 const RangeInput = ({ label, id, min, max, configKey, defaultValue, ...rest }: RangeInputProps) => {
-  const { loading, start, stop } = useLoading()
+  const { loading, start } = useLoading()
   const { state, dispatch } = useStore()
   const inputRef = useRef<HTMLInputElement | null>(null)
 
@@ -38,7 +38,6 @@ const RangeInput = ({ label, id, min, max, configKey, defaultValue, ...rest }: R
     flushSync(() => {
       start()
     })
-    dispatch({ type: StoreActionType.ResetImageCanvas })
     const value = parseFloat(inputRef.current?.value ?? defaultValue.toString())
     dispatch({
       type: StoreActionType.UpdateLayerSelection,
@@ -49,8 +48,7 @@ const RangeInput = ({ label, id, min, max, configKey, defaultValue, ...rest }: R
         withUpdateInitialPresent: false
       }
     })
-    dispatch({ type: StoreActionType.GenerateResult, payload: { refreshIdx: state.selectedLayerIdx } })
-    stop()
+    dispatch({ type: StoreActionType.RequestProcessing })
   }
 
   return (
@@ -72,7 +70,7 @@ const RangeInput = ({ label, id, min, max, configKey, defaultValue, ...rest }: R
 }
 
 const ListSelection = <T, V = T>({ label, id, items, configKey, defaultValue, renderItem, getItemValue }: ListSelectionProps<T, V>) => {
-  const { loading, start, stop } = useLoading()
+  const { loading, start } = useLoading()
   const { state, dispatch } = useStore()
   const [selectedValue, setSelectedValue] = useState<T>(defaultValue)
 
@@ -84,7 +82,6 @@ const ListSelection = <T, V = T>({ label, id, items, configKey, defaultValue, re
       start()
     })
     setSelectedValue(item)
-    dispatch({ type: StoreActionType.ResetImageCanvas })
     const value = getItemValue ? getItemValue(item) : item
     dispatch({
       type: StoreActionType.UpdateLayerSelection,
@@ -94,8 +91,7 @@ const ListSelection = <T, V = T>({ label, id, items, configKey, defaultValue, re
         withUpdateInitialPresent: false
       }
     })
-    dispatch({ type: StoreActionType.GenerateResult, payload: { refreshIdx: state.selectedLayerIdx } })
-    stop()
+    dispatch({ type: StoreActionType.RequestProcessing })
   }
 
   const selectedIndex = items.findIndex((item) => {

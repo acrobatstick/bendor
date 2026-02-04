@@ -172,8 +172,10 @@ class DrawManager {
 
   renderSelection(ctx: CanvasRenderingContext2D, element: HTMLCanvasElement, color: Layer["color"]) {
     if (!this.startPoint) {
+      console.log("selection have no startPoint, skip rendering")
       return
     }
+
     ctx.clearRect(0, 0, element.width, element.height)
     ctx.setLineDash([5, 3])
     ctx.strokeStyle = color

@@ -12,13 +12,14 @@ import FilterConfigurations from "./filterConfigurations/filterConfigurations"
 import Button from "./reusables/buttons"
 import { Select } from "./reusables/select"
 import { H4, Label } from "./reusables/typography"
+import type { Actions } from "@dnd-kit/core/dist/store/actions"
 
 const LayerSettings = () => {
   const {
-    state: { selectedLayerIdx, currentLayer },
+    state,
     dispatch
   } = useStore()
-  const { start, stop } = useLoading()
+  const { start } = useLoading()
 
   const tour = useContext(ShepherdTourContext)
 
@@ -39,25 +40,18 @@ const LayerSettings = () => {
     if (tour?.isActive() && tour.getCurrentStep()?.id === "chooseEffect") {
       tour.next()
     }
-    stop()
+    dispatch({ type: StoreActionType.RequestProcessing })
   }
 
   const onDeleteLayer = () => {
     start()
-    dispatch({ type: StoreActionType.DeleteLayer, payload: selectedLayerIdx })
-    dispatch({ type: StoreActionType.ResetImageCanvas })
-    dispatch({ type: StoreActionType.GenerateResult })
-    stop()
+    dispatch({ type: StoreActionType.DeleteLayer, payload: state.selectedLayerIdx })
+    dispatch({ type: StoreActionType.RequestProcessing })
   }
 
-  const generateResult = () => {
-    dispatch({ type: StoreActionType.ResetImageCanvas })
-    dispatch({ type: StoreActionType.GenerateResult })
-  }
-
-  const onUndoRedo = (action: "undo" | "redo") => {
-    dispatch({ type: StoreActionType.DoLayerAction, payload: action })
-    generateResult()
+  const onUndoRedo = (dir: "undo" | "redo") => {
+    dispatch({ type: StoreActionType.DoLayerAction, payload: dir })
+    dispatch({ type: StoreActionType.RequestProcessing })
   }
 
   return (
@@ -67,8 +61,8 @@ const LayerSettings = () => {
       <Select
         id="filterList"
         $full
-        onChange={(event) => onChangeFilter(selectedLayerIdx, event.target.value as Filter)}
-        value={currentLayer?.selection.filter}
+        onChange={(event) => onChangeFilter(state.selectedLayerIdx, event.target.value as Filter)}
+        value={state.currentLayer?.selection.filter}
       >
         {filterList.map((filter) => (
           <option value={filter} key={`filter-${filter}`}>
