@@ -1,8 +1,8 @@
 import type { Filter, FilterFunction, LSelection } from "~/types"
 import { Color } from "../color"
 
-export const slice: FilterFunction = ({ lselection, imageCanvas, selectionArea }) => {
-  const selection = lselection as LSelection<Filter.Slice>
+export const slice: FilterFunction = ({ layer, imageCanvas, selectionArea }) => {
+  const selection = layer.selection as LSelection<Filter.Slice>
   const img = imageCanvas.getImageData(0, 0, imageCanvas.canvas.width, imageCanvas.canvas.height)
   const data = img.data
 
@@ -50,6 +50,6 @@ export const slice: FilterFunction = ({ lselection, imageCanvas, selectionArea }
   imageCanvas.putImageData(img, 0, 0)
 
   return {
-    updatedSelection: selection
+    updatedSelection: layer.selection
   }
 }

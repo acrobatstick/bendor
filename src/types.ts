@@ -109,6 +109,10 @@ export interface Layer {
   commands: Commands<LSelection>
 }
 
+export type LayerWithOptionalCtx = Omit<Layer, "ctx"> & {
+  ctx?: CanvasRenderingContext2D | null
+}
+
 export interface State {
   ftype?: FileTypeResult
   imgBuf: ArrayBuffer
@@ -128,7 +132,7 @@ export interface LoadingState {
 
 export interface FilterContext {
   imageCanvas: OffscreenCanvasRenderingContext2D
-  lselection: Layer["selection"]
+  layer: LayerWithOptionalCtx
   selectionArea: Uint32Array
   refresh?: boolean
 }

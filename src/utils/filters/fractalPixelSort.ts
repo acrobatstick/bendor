@@ -1,8 +1,8 @@
 import type { Filter, FilterFunction, LSelection } from "~/types"
 import { Color } from "../color"
 
-export const fractalPixelSortFilter: FilterFunction = ({ imageCanvas, lselection, selectionArea, refresh }) => {
-  const selection = lselection as LSelection<Filter.FractalPixelSort>
+export const fractalPixelSortFilter: FilterFunction = ({ imageCanvas, layer, selectionArea, refresh }) => {
+  const selection = layer.selection as LSelection<Filter.FractalPixelSort>
   let cache: Uint8ClampedArray
 
   if (selection.config.cache.length === 0 || refresh) {
@@ -15,7 +15,7 @@ export const fractalPixelSortFilter: FilterFunction = ({ imageCanvas, lselection
 
   return {
     updatedSelection: {
-      ...selection,
+      ...layer.selection,
       config: { ...selection.config, cache }
     } as LSelection<Filter.FractalPixelSort>
   }
