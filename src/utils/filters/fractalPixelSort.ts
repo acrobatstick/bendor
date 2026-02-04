@@ -1,8 +1,8 @@
 import type { Filter, FilterFunction, LSelection } from "~/types"
 import { Color } from "../color"
 
-export const fractalPixelSortFilter: FilterFunction = ({ imageCanvas, layer, selectionArea, refresh }) => {
-  const selection = layer.selection as LSelection<Filter.FractalPixelSort>
+export const fractalPixelSortFilter: FilterFunction = ({ imageCanvas, lselection, selectionArea, refresh }) => {
+  const selection = lselection as LSelection<Filter.FractalPixelSort>
   let cache: Uint8ClampedArray
 
   if (selection.config.cache.length === 0 || refresh) {
@@ -15,13 +15,13 @@ export const fractalPixelSortFilter: FilterFunction = ({ imageCanvas, layer, sel
 
   return {
     updatedSelection: {
-      ...layer.selection,
+      ...selection,
       config: { ...selection.config, cache }
     } as LSelection<Filter.FractalPixelSort>
   }
 }
 
-const generateFractalCache = (imageCanvas: CanvasRenderingContext2D, intensity: number): Uint8ClampedArray => {
+const generateFractalCache = (imageCanvas: OffscreenCanvasRenderingContext2D, intensity: number): Uint8ClampedArray => {
   const wholeImage = imageCanvas.getImageData(0, 0, imageCanvas.canvas.width, imageCanvas.canvas.height)
   const cache = new Uint8ClampedArray(wholeImage.data)
 
@@ -94,7 +94,7 @@ const applyColorShift = (
   }
 }
 
-const applyFilter = (imageCanvas: CanvasRenderingContext2D, cache: Uint8ClampedArray, selectionArea: Uint32Array) => {
+const applyFilter = (imageCanvas: OffscreenCanvasRenderingContext2D, cache: Uint8ClampedArray, selectionArea: Uint32Array) => {
   const wholeImage = imageCanvas.getImageData(0, 0, imageCanvas.canvas.width, imageCanvas.canvas.height)
   const data = wholeImage.data
 

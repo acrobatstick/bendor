@@ -29,6 +29,9 @@ importers:
       '@floating-ui/dom':
         specifier: ^1.7.4
         version: 1.7.4
+      '@koale/useworker':
+        specifier: ^4.1.2
+        version: 4.1.2(react@19.2.0)
       browser-image-compression:
         specifier: ^2.0.2
         version: 2.0.2
@@ -528,6 +531,11 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
+  '@koale/useworker@4.1.2':
+    resolution: {integrity: sha512-rVS9qs5prEBBw1YnvBlIN/jc1MLbchtv54mI1OGH8rQrE1jYfXg2+1p+4O5vFcU96cy2dafosnwZw8HXDpY//w==}
+    peerDependencies:
+      react: '>=16.8.0 <20.0.0'
+
   '@nodelib/fs.scandir@2.1.5':
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
     engines: {node: '>= 8'}
@@ -880,6 +888,10 @@ packages:
   define-lazy-prop@2.0.0:
     resolution: {integrity: sha512-Ds09qNh8yw3khSjiJjiUInaGX9xlqZDY7JVryGxdxV7NPeuqQfplOpQ66yJFZut3jLa5zOwkXw1g9EI2uKh4Og==}
     engines: {node: '>=8'}
+
+  dequal@2.0.3:
+    resolution: {integrity: sha512-0je+qPKHEMohvfRTCEo3CrPG6cAzAYgmzKyxRiYSSDkS6eGJdyVJm7WaYA5ECaAD9wLB2T4EEeymA5aFVcYXCA==}
+    engines: {node: '>=6'}
 
   electron-to-chromium@1.5.244:
     resolution: {integrity: sha512-OszpBN7xZX4vWMPJwB9illkN/znA8M36GQqQxi6MNy9axWxhOfJyZZJtSLQCpEFLHP2xK33BiWx9aIuIEXVCcw==}
@@ -1854,6 +1866,11 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
+  '@koale/useworker@4.1.2(react@19.2.0)':
+    dependencies:
+      dequal: 2.0.3
+      react: 19.2.0
+
   '@nodelib/fs.scandir@2.1.5':
     dependencies:
       '@nodelib/fs.stat': 2.0.5
@@ -2197,6 +2214,8 @@ snapshots:
   deepmerge-ts@7.1.5: {}
 
   define-lazy-prop@2.0.0: {}
+
+  dequal@2.0.3: {}
 
   electron-to-chromium@1.5.244: {}
 

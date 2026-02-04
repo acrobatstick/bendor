@@ -127,8 +127,8 @@ export interface LoadingState {
 }
 
 export interface FilterContext {
-  imageCanvas: CanvasRenderingContext2D
-  layer: Layer
+  imageCanvas: OffscreenCanvasRenderingContext2D
+  lselection: Layer["selection"]
   selectionArea: Uint32Array
   refresh?: boolean
 }
