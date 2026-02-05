@@ -10,7 +10,7 @@ import { markProcessingDone } from "~/utils/processing"
 
 function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
   const { start, stop } = useLoading()
-  const { state, dispatch, stateRef } = useStore()
+  const { state, dispatch } = useStore()
   const tour = useContext(ShepherdTourContext)
 
   const imageCanvasRef = useRef<HTMLCanvasElement>(null)
@@ -589,12 +589,6 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
     }
   }, [state.hideSelectionOverlay, state.currentLayer, state.selectedLayerIdx])
 
-  // update the stateRef so that if the canvas needs processing it have the latest
-  // state from the store
-  useEffect(() => {
-    stateRef.current = state
-  }, [state, stateRef])
-
   // all canvas drawing processing happens here!
   useEffect(() => {
     if (!state.needsProcessing) return
@@ -618,7 +612,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
       markProcessingDone()
       stop()
     }
-  }, [state, state.needsProcessing, dispatch, process, state.imgCtx, stateRef.current, stop])
+  }, [state, state.needsProcessing, dispatch, process, state.imgCtx, stop])
 
   return (
     <div id="canvasContainer" ref={containerRef} style={{ position: "relative", display: "inline-block", lineHeight: 0 }} {...props}>
