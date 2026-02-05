@@ -1,5 +1,8 @@
 import { closestCenter, DndContext, type DragEndEvent, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core"
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable"
+import {
+  restrictToVerticalAxis,
+} from '@dnd-kit/modifiers';
 import { useContext } from "react"
 import styled from "styled-components"
 import { useLoading } from "~/hooks/useLoading"
@@ -80,7 +83,7 @@ function LayerList() {
           </Text>
         )}
       </FlexEnd>
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd} modifiers={[restrictToVerticalAxis]}>
         <SortableContext items={layers} strategy={verticalListSortingStrategy}>
           <List>
             {layers.length > 0 ? (
@@ -128,6 +131,7 @@ const Container = styled.div`
 const List = styled.ul`
   margin-bottom: 8px;
   overflow-y: auto;
+  overflow-x: hidden;
   flex: 1; 
   min-height: 0;
 
