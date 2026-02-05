@@ -13,6 +13,7 @@ import { Filter, type FilterConfigMap, type Layer, type LSelection, type State }
 import Commands from "~/utils/commands"
 import { generateRandomHex } from "~/utils/etc"
 import { initialStoreState } from "./storeState"
+import { markProcessingDone } from "~/utils/processing"
 
 export enum StoreActionType {
   SetOriginalAreaData,
@@ -294,9 +295,9 @@ const storeReducer = (state: State, action: Action): State => {
         pselection.filter && pselection.filter !== prevSelection.filter
           ? defaultConfig(nextFilter)
           : {
-              ...prevSelection.config,
-              ...(pselection.config || {})
-            }
+            ...prevSelection.config,
+            ...(pselection.config || {})
+          }
 
       const nextSelection: LSelection = {
         ...prevSelection,
@@ -414,11 +415,14 @@ const storeReducer = (state: State, action: Action): State => {
       updated[fromIdx] = { ...updated[fromIdx], ctx: ctxA }
 
       const isCurrent = action.payload.layerIdx === state.selectedLayerIdx
+
+      markProcessingDone()
+
       return {
         ...state,
         layers: updated,
         selectedLayerIdx: isCurrent ? toIdx : state.selectedLayerIdx,
-        currentLayer: isCurrent ? updated[toIdx] : state.currentLayer
+        currentLayer: isCurrent ? updated[toIdx] : state.currentLayer,
       }
     }
 
@@ -432,12 +436,10 @@ const storeReducer = (state: State, action: Action): State => {
 
       const updated = state.layers.map((layer) => ({ ...layer }))
 
-      const layerA = updated[idxA]
-      const layerB = updated[idxB]
-
       // swap positions but keep canvas contexts consistent
-      updated[idxA] = { ...layerB, ctx: layerA.ctx }
-      updated[idxB] = { ...layerA, ctx: layerB.ctx }
+      const temp = updated[idxA]
+      updated[idxA] = updated[idxB]
+      updated[idxB] = temp
 
       let selectedLayerIdx = state.selectedLayerIdx
       let currentLayer = state.currentLayer
@@ -451,9 +453,6 @@ const storeReducer = (state: State, action: Action): State => {
         selectedLayerIdx = idxB
         currentLayer = updated[idxB]
       }
-
-      selectedLayerIdx = idxA
-      currentLayer = updated[idxA]
 
       // re index to make my life easier i guess
       for (let i = 0; i < updated.length; i++) {
@@ -476,11 +475,13 @@ const storeReducer = (state: State, action: Action): State => {
         }
       }
 
+      markProcessingDone()
+
       return {
         ...state,
         layers: updated,
-        selectedLayerIdx: selectedLayerIdx,
-        currentLayer
+        selectedLayerIdx,
+        currentLayer,
       }
     }
 
@@ -560,6 +561,8 @@ const storeReducer = (state: State, action: Action): State => {
           canvas.style.pointerEvents = "none"
         }
       }
+
+      markProcessingDone()
 
       return { ...state, layers: updated, selectedLayerIdx, currentLayer: updated[selectedLayerIdx] }
     }

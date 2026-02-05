@@ -14,9 +14,10 @@ import { filterNameRegistry } from "~/utils/filters/registry"
 import LayerItem from "./layerItem"
 import Button from "./reusables/buttons"
 import { Label, Text } from "./reusables/typography"
+import { waitForProcessing } from "~/utils/processing";
 
 function LayerList() {
-  const { loading, start, stop } = useLoading()
+  const { loading, start } = useLoading()
   const { state, dispatch } = useStore()
 
   const { selectedLayerIdx, imgCtx, layers } = state
@@ -43,22 +44,25 @@ function LayerList() {
     dispatch({ type: StoreActionType.SelectLayer, payload: idx })
   }
 
-  const onMoveSelection = (direction: "up" | "down", idx: number) => {
+  const onMoveSelection = async (direction: "up" | "down", idx: number) => {
     start()
     dispatch({
       type: StoreActionType.MoveLayer,
       payload: { direction, layerIdx: idx }
     })
+    await waitForProcessing()
     dispatch({ type: StoreActionType.RequestProcessing })
-    stop()
   }
 
   const onRefresh = () => {
+    start()
     dispatch({ type: StoreActionType.RequestProcessing })
   }
 
-  const onDuplicateLayer = (idx: number) => {
+  const onDuplicateLayer = async (idx: number) => {
+    start()
     dispatch({ type: StoreActionType.DuplicateLayer, payload: idx })
+    await waitForProcessing()
     dispatch({ type: StoreActionType.RequestProcessing })
   }
 
@@ -69,8 +73,8 @@ function LayerList() {
       type: StoreActionType.MoveLayerIndex,
       payload: { active: Number(active.id), over: Number(over?.id) }
     })
+    await waitForProcessing()
     dispatch({ type: StoreActionType.RequestProcessing })
-    stop()
   }
 
   return (

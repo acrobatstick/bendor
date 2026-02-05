@@ -190,7 +190,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
       }
       drawManagerRef.current.renderSelection(drawingCanvasCtx, activeCanvas, state.currentLayer!.color)
       start()
-      requestIdleCallback(async () => {
+      requestIdleCallback(() => {
         drawManagerRef.current.getSelectArea()
         const { points, startPoint } = drawManagerRef.current
         dispatch({
@@ -277,7 +277,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
       drawManagerRef.current.renderSelection(drawingCanvasCtx, activeCanvas, state.currentLayer!.color)
 
       start()
-      requestIdleCallback(async () => {
+      requestIdleCallback(() => {
         drawManagerRef.current.getSelectArea()
         const { points, startPoint } = drawManagerRef.current
         dispatch({
@@ -431,7 +431,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
         e.preventDefault()
         setSelectionMovable(false)
         start()
-        requestIdleCallback(async () => {
+        requestIdleCallback(() => {
           drawManagerRef.current.getSelectArea()
           const { points, startPoint } = drawManagerRef.current
           dispatch({
@@ -518,7 +518,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
         e.preventDefault()
         setSelectionMovable(false)
         start()
-        requestIdleCallback(async () => {
+        requestIdleCallback(() => {
           drawManagerRef.current.getSelectArea()
           const { points, startPoint } = drawManagerRef.current
           dispatch({
@@ -603,7 +603,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
     let cancelled = false
 
     const run = async () => {
-      const newLayers = await process(stateRef.current, -1)
+      const newLayers = await process(state, -1)
       if (cancelled) return
       dispatch({
         type: StoreActionType.ApplyProcessedLayers,
@@ -618,7 +618,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
       markProcessingDone()
       stop()
     }
-  }, [state.needsProcessing, dispatch, process, state.imgCtx, stateRef.current, stop])
+  }, [state, state.needsProcessing, dispatch, process, state.imgCtx, stateRef.current, stop])
 
   return (
     <div id="canvasContainer" ref={containerRef} style={{ position: "relative", display: "inline-block", lineHeight: 0 }} {...props}>

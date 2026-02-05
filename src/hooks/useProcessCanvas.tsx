@@ -52,7 +52,7 @@ const useProcessCanvas = () => {
         continue
       }
 
-      const { ctx: _ctx, ...layerWithoutCtx } = layer
+      const { ctx, ...layerWithoutCtx } = layer
 
       const result = await new Promise<WorkerResult>((resolve, reject) => {
         if (!workerRef.current) {
