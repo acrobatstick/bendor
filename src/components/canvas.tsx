@@ -1,4 +1,6 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react"
+import styled from "styled-components"
+import { keyframes } from "styled-components"
 import { useLoading } from "~/hooks/useLoading"
 import useProcessCanvas from "~/hooks/useProcessCanvas"
 import { useStore } from "~/hooks/useStore"
@@ -10,6 +12,7 @@ import { markProcessingDone } from "~/utils/processing"
 
 function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
   const { start, stop } = useLoading()
+  const [showSkeleton, setShowSkeleton] = useState<boolean>(false)
   const { state, dispatch } = useStore()
   const tour = useContext(ShepherdTourContext)
 
@@ -591,10 +594,15 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
 
   // all canvas drawing processing happens here!
   useEffect(() => {
-    if (!state.needsProcessing) return
-    if (!state.imgCtx) return
+    if (!state.needsProcessing || !state.imgCtx) return
 
     let cancelled = false
+
+    const timeout = setTimeout(() => {
+      if (!cancelled) {
+        setShowSkeleton(true)
+      }
+    }, 150)
 
     const run = async () => {
       const newLayers = await process(state, -1)
@@ -603,19 +611,23 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
         type: StoreActionType.ApplyProcessedLayers,
         payload: newLayers
       })
+      setShowSkeleton(false)
     }
 
     run()
 
     return () => {
       cancelled = true
+      clearTimeout(timeout)
+      setShowSkeleton(false)
       markProcessingDone()
       stop()
     }
-  }, [state, state.needsProcessing, dispatch, process, state.imgCtx, stop])
+  }, [state.needsProcessing, state.imgCtx])
 
   return (
     <div id="canvasContainer" ref={containerRef} style={{ position: "relative", display: "inline-block", lineHeight: 0 }} {...props}>
+      {showSkeleton && <CanvasLoadingSkeleton />}
       <canvas
         id="imageCanvas"
         ref={imageCanvasRef}
@@ -628,5 +640,32 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
     </div>
   )
 }
+
+const shimmer = keyframes`
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+`;
+
+const CanvasLoadingSkeleton = styled.div`
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+
+  background: linear-gradient(
+    90deg,
+    #f0f0f0 25%,
+    #e0e0e0 50%,
+    #f0f0f0 75%
+  );
+  background-size: 200% 100%;
+  animation: ${shimmer} 1.5s infinite;
+
+  pointer-events: none;  /* optional, lets clicks pass through */
+`;
 
 export default Canvas
