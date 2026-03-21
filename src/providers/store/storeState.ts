@@ -11,5 +11,5 @@ export const initialStoreState: State = {
   mode: "edit",
   hideSelectionOverlay: false,
   needsProcessing: false,
-  exportingAs: "image"
+  processingAs: "image"
 }

@@ -18,7 +18,7 @@ const useProcessCanvas = () => {
     }
   }, [])
 
-  const process = async (state: State, exportingAs: State["exportingAs"], refreshIdx?: -1): Promise<State["layers"]> => {
+  const process = async (state: State, processingAs: State["processingAs"], refreshIdx?: -1): Promise<State["layers"]> => {
     if (!state.imgCtx || !workerRef.current) {
       throw new Error("cannot process canvas")
     }
@@ -72,7 +72,7 @@ const useProcessCanvas = () => {
           selectionArea,
           layerIndex: i,
           refresh: refreshNext ?? refreshIdx === i,
-          variative: exportingAs === "gif"
+          variative: processingAs === "gif"
         })
       })
 

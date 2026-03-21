@@ -131,7 +131,7 @@ interface UpdateState<K extends keyof State> {
 
 interface RequestProcessing {
   type: StoreActionType.RequestProcessing
-  payload?: State["exportingAs"] // default as "image"
+  payload?: State["processingAs"] // default as "image"
 }
 
 function isInBounds(arrLen: number, idx: number): boolean {
@@ -296,9 +296,9 @@ const storeReducer = (state: State, action: Action): State => {
         pselection.filter && pselection.filter !== prevSelection.filter
           ? defaultConfig(nextFilter)
           : {
-            ...prevSelection.config,
-            ...(pselection.config || {})
-          }
+              ...prevSelection.config,
+              ...(pselection.config || {})
+            }
 
       const nextSelection: LSelection = {
         ...prevSelection,
@@ -423,7 +423,7 @@ const storeReducer = (state: State, action: Action): State => {
         ...state,
         layers: updated,
         selectedLayerIdx: isCurrent ? toIdx : state.selectedLayerIdx,
-        currentLayer: isCurrent ? updated[toIdx] : state.currentLayer,
+        currentLayer: isCurrent ? updated[toIdx] : state.currentLayer
       }
     }
 
@@ -482,7 +482,7 @@ const storeReducer = (state: State, action: Action): State => {
         ...state,
         layers: updated,
         selectedLayerIdx,
-        currentLayer,
+        currentLayer
       }
     }
 
@@ -603,13 +603,13 @@ const storeReducer = (state: State, action: Action): State => {
     }
 
     case StoreActionType.RequestProcessing: {
-      let exportingAs = action.payload
-      if (!exportingAs) {
-        exportingAs = state.exportingAs
+      let processingAs = action.payload
+      if (!processingAs) {
+        processingAs = state.processingAs
       }
       return {
         ...state,
-        exportingAs,
+        processingAs,
         needsProcessing: true
       }
     }

@@ -11,8 +11,7 @@ import { cursorInBoundingBox, getMouseCanvasCoordinates } from "~/utils/image"
 import { markProcessingDone } from "~/utils/processing"
 
 function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
-  const { start, stop } = useLoading()
-  const [showSkeleton, setShowSkeleton] = useState<boolean>(false)
+  const { loading, start, stop } = useLoading()
   const { state, dispatch } = useStore()
   const tour = useContext(ShepherdTourContext)
 
@@ -595,23 +594,28 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
   // all canvas drawing processing happens here!
   useEffect(() => {
     if (!state.needsProcessing || !state.imgCtx) return
-
     let cancelled = false
+
+    // only stop loading if it's not processing a gif to prevent
+    // the canvas skeleton from blinking on each frame generated
+    const stopLoading = () => {
+      if (state.processingAs === "gif") return
+      stop()
+    }
 
     const timeout = setTimeout(() => {
       if (!cancelled) {
-        setShowSkeleton(true)
+        stopLoading()
       }
     }, 150)
 
     const run = async () => {
-      const newLayers = await process(state, state.exportingAs, -1)
+      const newLayers = await process(state, state.processingAs, -1)
       if (cancelled) return
       dispatch({
         type: StoreActionType.ApplyProcessedLayers,
         payload: newLayers
       })
-      setShowSkeleton(false)
     }
 
     run()
@@ -619,15 +623,14 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
     return () => {
       cancelled = true
       clearTimeout(timeout)
-      setShowSkeleton(false)
       markProcessingDone()
-      stop()
+      stopLoading()
     }
-  }, [state.needsProcessing, state.imgCtx, state.exportingAs])
+  }, [state.needsProcessing, state.imgCtx, state.processingAs])
 
   return (
     <div id="canvasContainer" ref={containerRef} style={{ position: "relative", display: "inline-block", lineHeight: 0 }} {...props}>
-      {showSkeleton && <CanvasLoadingSkeleton />}
+      {loading && <CanvasLoadingSkeleton />}
       <canvas
         id="imageCanvas"
         ref={imageCanvasRef}

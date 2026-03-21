@@ -124,7 +124,7 @@ export interface State {
   mode: "edit" | "move"
   hideSelectionOverlay: boolean
   needsProcessing: boolean
-  exportingAs: "gif" | "image"
+  processingAs: "gif" | "image"
 }
 
 export interface LoadingState {
