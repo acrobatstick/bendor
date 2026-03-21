@@ -10,5 +10,6 @@ export const initialStoreState: State = {
   selectedLayerIdx: -1,
   mode: "edit",
   hideSelectionOverlay: false,
-  needsProcessing: false
+  needsProcessing: false,
+  exportingAs: "image"
 }

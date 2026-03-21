@@ -2,7 +2,6 @@ import { useEffect, useRef } from "react"
 import type { Filter, LSelection, State } from "~/types"
 import { filterFnRegistry } from "~/utils/filters/registry"
 import ProcessWorker from "~/worker/processCanvas.worker.ts?worker"
-
 type WorkerResult = {
   updatedSelection: LSelection<Filter>
   processedImageData: ImageData
@@ -19,7 +18,7 @@ const useProcessCanvas = () => {
     }
   }, [])
 
-  const process = async (state: State, refreshIdx?: -1): Promise<State["layers"]> => {
+  const process = async (state: State, exportingAs: State["exportingAs"], refreshIdx?: -1): Promise<State["layers"]> => {
     if (!state.imgCtx || !workerRef.current) {
       throw new Error("cannot process canvas")
     }
@@ -52,7 +51,7 @@ const useProcessCanvas = () => {
         continue
       }
 
-      const { ctx, ...layerWithoutCtx } = layer
+      const { ctx: _, ...layerWithoutCtx } = layer
 
       const result = await new Promise<WorkerResult>((resolve, reject) => {
         if (!workerRef.current) {
@@ -72,7 +71,8 @@ const useProcessCanvas = () => {
           imageData: structuredClone(currentImageData),
           selectionArea,
           layerIndex: i,
-          refresh: refreshNext ?? refreshIdx === i
+          refresh: refreshNext ?? refreshIdx === i,
+          variative: exportingAs === "gif"
         })
       })
 

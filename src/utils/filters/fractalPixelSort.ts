@@ -1,12 +1,14 @@
 import type { Filter, FilterFunction, LSelection } from "~/types"
 import { Color } from "../color"
+import { getRandomOffset } from "../etc"
 
-export const fractalPixelSortFilter: FilterFunction = ({ imageCanvas, layer, selectionArea, refresh }) => {
+export const fractalPixelSortFilter: FilterFunction = ({ imageCanvas, layer, selectionArea, refresh, variative }) => {
   const selection = layer.selection as LSelection<Filter.FractalPixelSort>
   let cache: Uint8ClampedArray
 
   if (selection.config.cache.length === 0 || refresh) {
-    cache = generateFractalCache(imageCanvas, selection.config.intensity)
+    const intensity = variative ? getRandomOffset(selection.config.intensity, 2) : selection.config.intensity
+    cache = generateFractalCache(imageCanvas, intensity)
   } else {
     cache = selection.config.cache
   }

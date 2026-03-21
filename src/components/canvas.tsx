@@ -605,7 +605,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
     }, 150)
 
     const run = async () => {
-      const newLayers = await process(state, -1)
+      const newLayers = await process(state, state.exportingAs, -1)
       if (cancelled) return
       dispatch({
         type: StoreActionType.ApplyProcessedLayers,
@@ -623,7 +623,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
       markProcessingDone()
       stop()
     }
-  }, [state.needsProcessing, state.imgCtx])
+  }, [state.needsProcessing, state.imgCtx, state.exportingAs])
 
   return (
     <div id="canvasContainer" ref={containerRef} style={{ position: "relative", display: "inline-block", lineHeight: 0 }} {...props}>

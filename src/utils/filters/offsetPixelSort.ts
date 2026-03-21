@@ -1,12 +1,13 @@
 import type { Filter, FilterFunction, LSelection } from "~/types"
 import { Color } from "../color"
+import { getRandomOffset } from "../etc"
 
-export const offsetPixelSort: FilterFunction = ({ layer, imageCanvas, selectionArea, refresh }) => {
+export const offsetPixelSort: FilterFunction = ({ layer, imageCanvas, selectionArea, refresh, variative }) => {
   const selection = layer.selection as LSelection<Filter.OffsetPixelSort>
   const width = imageCanvas.canvas.width
   const height = imageCanvas.canvas.height
 
-  const distortion = selection.config.intensity
+  const distortion = variative ? getRandomOffset(selection.config.intensity, 1) : selection.config.intensity
 
   let sortedData: Uint8ClampedArray
   if (selection.config.cache.length === 0 || refresh) {

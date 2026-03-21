@@ -124,6 +124,7 @@ export interface State {
   mode: "edit" | "move"
   hideSelectionOverlay: boolean
   needsProcessing: boolean
+  exportingAs: "gif" | "image"
 }
 
 export interface LoadingState {
@@ -136,6 +137,9 @@ export interface FilterContext {
   layer: LayerWithOptionalCtx
   selectionArea: Uint32Array
   refresh?: boolean
+  // If variative holds true, the filter function will randomize some variables
+  // in the filter on each generation to make it not so static for the result
+  variative: boolean
 }
 
 export interface FilterResult {

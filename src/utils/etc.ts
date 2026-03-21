@@ -10,3 +10,8 @@ export const generateFilename = async (buf: ArrayBuffer) => {
 export const generateRandomHex = () => {
   return `# ${((Math.random() * 0xffffff) << 0).toString(16).padStart(6, "0")}` as `#${string}`
 }
+
+// generates random number from 1 mid point with maximum range of `diff`
+export const getRandomOffset = (mid: number, diff: number): number => {
+  return Math.max(Math.floor(mid + (Math.random() * 2 - 1) * diff), 0);
+};

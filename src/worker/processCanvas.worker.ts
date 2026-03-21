@@ -1,4 +1,3 @@
-// filterWorker.js
 import type { Filter, LayerWithOptionalCtx } from "~/types"
 import { filterFnRegistry } from "~/utils/filters/registry"
 
@@ -8,6 +7,7 @@ type Request = {
   imageData: ImageData
   selectionArea: Uint32Array<ArrayBufferLike>
   refresh: boolean
+  variative: boolean
 }
 
 self.onmessage = (e: MessageEvent<Request>) => {
@@ -32,7 +32,8 @@ self.onmessage = (e: MessageEvent<Request>) => {
     layer,
     imageCanvas: ctx,
     selectionArea,
-    refresh: e.data.refresh
+    refresh: e.data.refresh,
+    variative: e.data.variative
   })
 
   const processedImageData = ctx.getImageData(0, 0, canvas.width, canvas.height)

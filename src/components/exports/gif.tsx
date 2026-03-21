@@ -38,26 +38,26 @@ const ExportGIF = () => {
     if (isLoadedRef.current) return
 
     start()
-    ;(async () => {
-      try {
-        const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm"
-        await ffmpegRef.current.load({
-          coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
-          wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm")
-        })
-        console.info("ffmpeg loaded")
+      ; (async () => {
+        try {
+          const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm"
+          await ffmpegRef.current.load({
+            coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
+            wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm")
+          })
+          console.info("ffmpeg loaded")
 
-        const gifsicleModule = await import("gifsicle-wasm-browser")
-        gifsicleRef.current = gifsicleModule.default
-        console.info("gifsicle loaded")
+          const gifsicleModule = await import("gifsicle-wasm-browser")
+          gifsicleRef.current = gifsicleModule.default
+          console.info("gifsicle loaded")
 
-        isLoadedRef.current = true
-      } catch (error) {
-        console.error("Failed to load libraries:", error)
-      } finally {
-        stop()
-      }
-    })()
+          isLoadedRef.current = true
+        } catch (error) {
+          console.error("Failed to load libraries:", error)
+        } finally {
+          stop()
+        }
+      })()
   }, [start, stop])
 
   const compressGIF = async (gifBlob: Blob): Promise<Blob> => {
@@ -130,7 +130,7 @@ const ExportGIF = () => {
 
       frames.push(await captureFrame())
       for (let i = 0; i < exportOpts.framerate - 1; i++) {
-        dispatch({ type: StoreActionType.RequestProcessing })
+        dispatch({ type: StoreActionType.RequestProcessing, payload: "gif" })
         await waitForProcessing()
         try {
           const frame = await captureFrame()
