@@ -24,6 +24,7 @@ export const asSoundFilter: FilterFunction = ({ imageCanvas, layer, selectionAre
 
   if (selection.config.cache.length === 0) {
     cache = generateSoundCache(data, selectionArea, width, height)
+    selection.config.cache = new Uint8ClampedArray(cache.buffer as ArrayBuffer)
   } else {
     cache = selection.config.cache
   }

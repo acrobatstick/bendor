@@ -153,7 +153,6 @@ const DuotoneConfig = () => {
         max={BRIGHTNESS_RANGE.max}
         configKey="brightness"
         defaultValue={conf.brightness}
-        refresh
       />
       <RangeInput
         label="Contrast"
@@ -162,7 +161,6 @@ const DuotoneConfig = () => {
         max={CONTRAST_RANGE.max}
         configKey="contrast"
         defaultValue={conf.contrast}
-        refresh
       />
       <Label>Color Presets</Label>
       <ColorPresetContainer>

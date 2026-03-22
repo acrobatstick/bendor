@@ -22,6 +22,7 @@ export const pixelSort: FilterFunction = ({ imageCanvas, layer, selectionArea, r
     } else {
       sortHorizontally(sortedData, width, height, intensity)
     }
+    selection.config.cache = new Uint8ClampedArray(sortedData.buffer as ArrayBuffer)
   } else {
     sortedData = selection.config.cache
   }

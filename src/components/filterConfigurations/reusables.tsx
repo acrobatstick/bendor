@@ -15,7 +15,6 @@ interface RangeInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   max: number
   configKey: "intensity" | "blend" | "brightness" | "distortion" | "contrast"
   defaultValue: number
-  refresh?: boolean
 }
 
 interface ListSelectionProps<T, V = T> {
@@ -24,7 +23,6 @@ interface ListSelectionProps<T, V = T> {
   items: readonly T[] | T[]
   configKey: string
   defaultValue: T
-  refresh?: boolean
   renderItem?: (item: T, isSelected: boolean) => React.ReactNode
   getItemValue?: (item: T) => V
 }

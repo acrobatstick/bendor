@@ -53,7 +53,7 @@ const FractalPixelSortConfig = () => {
 
   return (
     <ColWithGaps>
-      <RangeInput label="Intensity" id="distortionIntensity" min={min} max={max} configKey="intensity" defaultValue={conf.intensity} refresh />
+      <RangeInput label="Intensity" id="distortionIntensity" min={min} max={max} configKey="intensity" defaultValue={conf.intensity} />
       <Button
         variant="outline"
         type="button"
@@ -82,7 +82,7 @@ const RGBShiftConfig = () => {
         defaultValue="Vibrance"
         getItemValue={(item) => item}
       />
-      <RangeInput label="Intensity" id="rgbShiftIntensity" min={min} max={max} configKey="intensity" defaultValue={conf.intensity} refresh />
+      <RangeInput label="Intensity" id="rgbShiftIntensity" min={min} max={max} configKey="intensity" defaultValue={conf.intensity} />
     </ColWithGaps>
   )
 }
@@ -101,9 +101,8 @@ const PixelSortConfig = () => {
         configKey="direction"
         defaultValue="Vertical"
         getItemValue={(item) => item}
-        refresh
       />
-      <RangeInput label="Intensity" id="pixelSortIntensity" min={min} max={max} configKey="intensity" defaultValue={conf.intensity} refresh />
+      <RangeInput label="Intensity" id="pixelSortIntensity" min={min} max={max} configKey="intensity" defaultValue={conf.intensity} />
     </ColWithGaps>
   )
 }
@@ -132,7 +131,6 @@ const OffsetPixelSortConfig = () => {
         step={distortion.step}
         configKey="intensity"
         defaultValue={conf.intensity}
-        refresh
       />
       <Button
         variant="outline"

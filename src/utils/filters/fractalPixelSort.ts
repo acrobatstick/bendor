@@ -9,6 +9,7 @@ export const fractalPixelSortFilter: FilterFunction = ({ imageCanvas, layer, sel
   if (selection.config.cache.length === 0 || refresh) {
     const intensity = variative ? getRandomOffset(selection.config.intensity, 2) : selection.config.intensity
     cache = generateFractalCache(imageCanvas, intensity)
+    selection.config.cache = new Uint8ClampedArray(cache.buffer as ArrayBuffer)
   } else {
     cache = selection.config.cache
   }

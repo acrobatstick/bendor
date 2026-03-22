@@ -18,7 +18,7 @@ const useProcessCanvas = () => {
     }
   }, [])
 
-  const process = async (state: State, processingAs: State["processingAs"], refreshIdx?: -1): Promise<State["layers"]> => {
+  const process = async (state: State, processingAs: State["processingAs"], refreshIdx = -1): Promise<State["layers"]> => {
     if (!state.imgCtx || !workerRef.current) {
       throw new Error("cannot process canvas")
     }
@@ -53,6 +53,11 @@ const useProcessCanvas = () => {
 
       const { ctx: _, ...layerWithoutCtx } = layer
 
+      // should reprocess next layers after i to update the results after
+      if (refreshIdx === i) {
+        refreshNext = true
+      }
+
       const result = await new Promise<WorkerResult>((resolve, reject) => {
         if (!workerRef.current) {
           reject("workerRef is undefined")
@@ -71,7 +76,7 @@ const useProcessCanvas = () => {
           imageData: structuredClone(currentImageData),
           selectionArea,
           layerIndex: i,
-          refresh: refreshNext ?? refreshIdx === i,
+          refresh: refreshNext || refreshIdx === i,
           variative: processingAs === "gif"
         })
       })

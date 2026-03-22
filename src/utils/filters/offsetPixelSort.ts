@@ -137,6 +137,7 @@ export const offsetPixelSort: FilterFunction = ({ layer, imageCanvas, selectionA
     const processedImg = tempCtx.getImageData(0, 0, width, height)
     const processedData = processedImg.data
     sortedData = processedData
+    selection.config.cache = new Uint8ClampedArray(sortedData.buffer as ArrayBuffer)
   } else {
     sortedData = selection.config.cache
   }

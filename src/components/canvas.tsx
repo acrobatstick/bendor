@@ -603,7 +603,10 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
     }
 
     const run = async () => {
-      const newLayers = await process(state, state.processingAs, -1)
+      // refresh all layer if processing gif otherwise just process the current layer 
+      // to not waste much resource
+      const refreshOnIdx = state.processingAs === "gif" ? -1 : state.selectedLayerIdx
+      const newLayers = await process(state, state.processingAs, refreshOnIdx)
       if (cancelled) return
       dispatch({
         type: StoreActionType.ApplyProcessedLayers,

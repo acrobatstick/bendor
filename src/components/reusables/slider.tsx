@@ -6,10 +6,9 @@ import { Label } from "./typography"
 interface SliderProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string
   id: string
-  refresh?: boolean
 }
 
-export const Slider = forwardRef<HTMLInputElement, SliderProps>(({ id, label, min, max, refresh, defaultValue, ...rest }, ref) => {
+export const Slider = forwardRef<HTMLInputElement, SliderProps>(({ id, label, min, max, defaultValue, ...rest }, ref) => {
   const { loading } = useLoading()
   const [displayValue, setDisplayValue] = useState(defaultValue ?? rest.value ?? min ?? 0)
 
