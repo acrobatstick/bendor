@@ -22,7 +22,6 @@ const LayerSettings = () => {
   const filterList = Object.keys(Filter)
 
   const onChangeFilter = (idx: number, value: Filter) => {
-    start()
     dispatch({
       type: StoreActionType.UpdateLayerSelection,
       payload: {
@@ -36,7 +35,11 @@ const LayerSettings = () => {
     if (tour?.isActive() && tour.getCurrentStep()?.id === "chooseEffect") {
       tour.next()
     }
-    dispatch({ type: StoreActionType.RequestProcessing })
+    // only process layer when there is points to be processed
+    if (state.currentLayer && state.currentLayer.selection.points.length > 0) {
+      start()
+      dispatch({ type: StoreActionType.RequestProcessing })
+    }
   }
 
   const onDeleteLayer = () => {
