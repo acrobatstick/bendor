@@ -135,8 +135,6 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
         const [, , minX, minY] = drawManagerRef.current.getPointsBoundingBox()
         drawManagerRef.current.mouseStartPos = { x: minX, y: minY }
 
-        dispatch({ type: StoreActionType.RequestProcessing })
-
         if (tour?.isActive) {
           if (!drawManagerRef.current.isAllArea && tour.getCurrentStep()?.id === "selectArea") {
             tour.next()
@@ -145,7 +143,8 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
             tour.next()
           }
         }
-        stop()
+
+        dispatch({ type: StoreActionType.RequestProcessing })
       })
     }
 
@@ -218,7 +217,6 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
         })
         const [, , minX, minY] = drawManagerRef.current.getPointsBoundingBox()
         drawManagerRef.current.mouseStartPos = { x: minX, y: minY }
-        dispatch({ type: StoreActionType.RequestProcessing })
         if (tour?.isActive) {
           if (!drawManagerRef.current.isAllArea && tour.getCurrentStep()?.id === "selectArea") {
             tour.next()
@@ -227,6 +225,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
             tour.next()
           }
         }
+        dispatch({ type: StoreActionType.RequestProcessing })
       })
     }
 
@@ -603,12 +602,6 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
       stop()
     }
 
-    const timeout = setTimeout(() => {
-      if (!cancelled) {
-        stopLoading()
-      }
-    }, 150)
-
     const run = async () => {
       const newLayers = await process(state, state.processingAs, -1)
       if (cancelled) return
@@ -616,15 +609,14 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
         type: StoreActionType.ApplyProcessedLayers,
         payload: newLayers
       })
+      stopLoading()
     }
 
     run()
 
     return () => {
       cancelled = true
-      clearTimeout(timeout)
       markProcessingDone()
-      stopLoading()
     }
   }, [state.needsProcessing, state.imgCtx, state.processingAs])
 
