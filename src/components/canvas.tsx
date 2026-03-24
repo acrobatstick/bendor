@@ -23,7 +23,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
 
   const getOngoingTouchById = useCallback((id: number) => ongoingTouches.findIndex((t) => t.identifier === id), [ongoingTouches])
 
-  const process = useProcessCanvas()
+  const { process, processed } = useProcessCanvas()
 
   useEffect(() => {
     if (state.imgBuf.byteLength === 0 || !imageCanvasRef.current) return
@@ -625,7 +625,14 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
 
   return (
     <div id="canvasContainer" ref={containerRef} style={{ position: "relative", display: "inline-block", lineHeight: 0 }} {...props}>
-      {loading && <CanvasLoadingSkeleton />}
+      {loading && (
+        <CanvasLoadingSkeleton>
+          <CanvasLoadingText>
+            <span>Processing Layers</span>
+            <span>{processed}/{state.layers.length}</span>
+          </CanvasLoadingText>
+        </CanvasLoadingSkeleton>
+      )}
       <canvas
         id="imageCanvas"
         ref={imageCanvasRef}
@@ -663,7 +670,21 @@ const CanvasLoadingSkeleton = styled.div`
   background-size: 200% 100%;
   animation: ${shimmer} 1.5s infinite;
 
-  pointer-events: none;  /* optional, lets clicks pass through */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const CanvasLoadingText = styled.div`
+  font-size: 14px;
+  font-weight: 600;
+  color: #666;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  line-height: normal;
 `;
 
 export default Canvas

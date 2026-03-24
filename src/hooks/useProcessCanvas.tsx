@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import type { Filter, LSelection, State } from "~/types"
 import { filterFnRegistry } from "~/utils/filters/registry"
 import ProcessWorker from "~/worker/processCanvas.worker.ts?worker"
@@ -9,6 +9,7 @@ type WorkerResult = {
 }
 
 const useProcessCanvas = () => {
+  const [processed, setProcessed] = useState<number>(1)
   const workerRef = useRef<Worker | null>(null)
 
   useEffect(() => {
@@ -37,6 +38,8 @@ const useProcessCanvas = () => {
     let currentImageData = imageCanvas.getImageData(0, 0, imageCanvas.canvas.width, imageCanvas.canvas.height)
 
     const nextLayers = [...state.layers]
+
+    setProcessed(1)
 
     for (let i = 0; i < nextLayers.length; i++) {
       const layer = nextLayers[i]
@@ -82,6 +85,7 @@ const useProcessCanvas = () => {
       })
 
       currentImageData = result.processedImageData
+      setProcessed((prev) => prev + 1)
 
       nextLayers[i] = {
         ...layer,
@@ -92,7 +96,7 @@ const useProcessCanvas = () => {
     return nextLayers
   }
 
-  return process
+  return { process, processed }
 }
 
 export default useProcessCanvas
