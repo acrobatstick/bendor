@@ -2,6 +2,7 @@ import { Fragment, useEffect, useRef, useState } from "react"
 import { HexColorInput, HexColorPicker } from "react-colorful"
 import styled from "styled-components"
 import { DUOTONE_OPTS } from "~/constants"
+import { useCanvasLoading } from "~/hooks/useCanvasLoading"
 import { useStore } from "~/hooks/useStore"
 import { StoreActionType } from "~/providers/store/reducer"
 import { FlexEnd } from "~/styles/global"
@@ -9,7 +10,6 @@ import type { Duotone, Filter, LSelection } from "~/types"
 import { generateRandomHex } from "~/utils/etc"
 import { Label, Text } from "../reusables/typography"
 import { RangeInput } from "./reusables"
-import { useCanvasLoading } from "~/hooks/useCanvasLoading"
 
 type Preset = Pick<Duotone, "highlightsColor" | "shadowsColor">
 type ColorPresets = Array<Preset>

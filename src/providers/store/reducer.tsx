@@ -12,8 +12,8 @@ import {
 import { Filter, type FilterConfigMap, type Layer, type LSelection, type State } from "~/types"
 import Commands from "~/utils/commands"
 import { generateRandomHex } from "~/utils/etc"
-import { initialStoreState } from "./storeState"
 import { markProcessingDone } from "~/utils/processing"
+import { initialStoreState } from "./storeState"
 
 export enum StoreActionType {
   SetOriginalAreaData,

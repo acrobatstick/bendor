@@ -1,6 +1,5 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react"
-import styled from "styled-components"
-import { keyframes } from "styled-components"
+import styled, { keyframes } from "styled-components"
 import { useCanvasLoading } from "~/hooks/useCanvasLoading"
 import useProcessCanvas from "~/hooks/useProcessCanvas"
 import { useStore } from "~/hooks/useStore"
@@ -310,18 +309,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
     return () => {
       ctrl.abort()
     }
-  }, [
-    state.selectedLayerIdx,
-    state.currentLayer,
-    state.mode,
-    dispatch,
-    getOngoingTouchById,
-    start,
-    stop,
-    tour?.isActive,
-    tour?.getCurrentStep,
-    tour?.next
-  ])
+  }, [state.selectedLayerIdx, state.currentLayer, state.mode, dispatch, getOngoingTouchById, start, tour?.isActive, tour?.getCurrentStep, tour?.next])
 
   // Handle selection render on layer index change
   useEffect(() => {
@@ -603,7 +591,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
     }
 
     const run = async () => {
-      // refresh all layer if processing gif otherwise just process the current layer 
+      // refresh all layer if processing gif otherwise just process the current layer
       // to not waste much resource
       const refreshOnIdx = state.processingAs === "gif" ? -1 : state.selectedLayerIdx
       const newLayers = await process(state, state.processingAs, refreshOnIdx)
@@ -621,7 +609,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
       cancelled = true
       markProcessingDone()
     }
-  }, [state.needsProcessing, state.imgCtx, state.processingAs])
+  }, [state.needsProcessing, state.imgCtx, state.processingAs, process, state, dispatch, stop])
 
   return (
     <div id="canvasContainer" ref={containerRef} style={{ position: "relative", display: "inline-block", lineHeight: 0 }} {...props}>
@@ -629,7 +617,9 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
         <CanvasLoadingSkeleton>
           <CanvasLoadingText>
             <span>Processing Layers</span>
-            <span>{processed}/{state.layers.length}</span>
+            <span>
+              {processed}/{state.layers.length}
+            </span>
           </CanvasLoadingText>
         </CanvasLoadingSkeleton>
       )}
@@ -653,7 +643,7 @@ const shimmer = keyframes`
   100% {
     background-position: 200% 0;
   }
-`;
+`
 
 const CanvasLoadingSkeleton = styled.div`
   position: absolute;
@@ -673,7 +663,7 @@ const CanvasLoadingSkeleton = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-`;
+`
 
 const CanvasLoadingText = styled.div`
   font-size: 14px;
@@ -685,6 +675,6 @@ const CanvasLoadingText = styled.div`
   align-items: center;
   gap: 4px;
   line-height: normal;
-`;
+`
 
 export default Canvas

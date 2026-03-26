@@ -13,5 +13,5 @@ export const generateRandomHex = () => {
 
 // generates random number from 1 mid point with maximum range of `diff`
 export const getRandomOffset = (mid: number, diff: number): number => {
-  return Math.max(Math.floor(mid + (Math.random() * 2 - 1) * diff), 0);
-};
+  return Math.max(Math.floor(mid + (Math.random() * 2 - 1) * diff), 0)
+}

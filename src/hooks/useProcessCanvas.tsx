@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react"
 import type { Filter, LSelection, State } from "~/types"
 import { filterFnRegistry } from "~/utils/filters/registry"
 import ProcessWorker from "~/worker/processCanvas.worker.ts?worker"
+
 type WorkerResult = {
   updatedSelection: LSelection<Filter>
   processedImageData: ImageData

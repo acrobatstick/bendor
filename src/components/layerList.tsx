@@ -1,8 +1,6 @@
 import { closestCenter, DndContext, type DragEndEvent, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core"
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers"
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable"
-import {
-  restrictToVerticalAxis,
-} from '@dnd-kit/modifiers';
 import { useContext } from "react"
 import styled from "styled-components"
 import { useCanvasLoading } from "~/hooks/useCanvasLoading"
@@ -11,10 +9,10 @@ import { ShepherdTourContext } from "~/providers/shepherd/shepherdContext"
 import { StoreActionType } from "~/providers/store/reducer"
 import { FlexEnd } from "~/styles/global"
 import { filterNameRegistry } from "~/utils/filters/registry"
+import { waitForProcessing } from "~/utils/processing"
 import LayerItem from "./layerItem"
 import Button from "./reusables/buttons"
 import { Label, Text } from "./reusables/typography"
-import { waitForProcessing } from "~/utils/processing";
 
 function LayerList() {
   const { loading, start } = useCanvasLoading()
