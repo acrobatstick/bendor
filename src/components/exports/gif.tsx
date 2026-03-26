@@ -2,7 +2,7 @@ import { FFmpeg, type FileData } from "@ffmpeg/ffmpeg"
 import { toBlobURL } from "@ffmpeg/util"
 import { Download } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
-import { useLoading } from "~/hooks/useLoading"
+import { useCanvasLoading } from "~/hooks/useCanvasLoading"
 import { useStore } from "~/hooks/useStore"
 import { StoreActionType } from "~/providers/store/reducer"
 import { FlexCenter, FlexGap } from "~/styles/global"
@@ -24,41 +24,35 @@ const initialGIFOpts = {
 } as GIFOpts
 
 const ExportGIF = () => {
+  const { start } = useCanvasLoading() // only to control the canvas frame loading
+  const [libLoaded, setLibLoaded] = useState<boolean>(false)
   const ffmpegRef = useRef(new FFmpeg())
   const gifsicleRef = useRef<any>(null)
-  const isLoadedRef = useRef(false)
 
   const { state, dispatch } = useStore()
-  const { start, stop } = useLoading()
 
   const [isExporting, setIsExporting] = useState(false)
   const [exportOpts, setExportOpts] = useState<GIFOpts>(initialGIFOpts)
 
   useEffect(() => {
-    if (isLoadedRef.current) return
-
-    start()
-    ;(async () => {
-      try {
-        const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm"
-        await ffmpegRef.current.load({
-          coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
-          wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm")
-        })
-        console.info("ffmpeg loaded")
-
-        const gifsicleModule = await import("gifsicle-wasm-browser")
-        gifsicleRef.current = gifsicleModule.default
-        console.info("gifsicle loaded")
-
-        isLoadedRef.current = true
-      } catch (error) {
-        console.error("Failed to load libraries:", error)
-      } finally {
-        stop()
-      }
-    })()
-  }, [start, stop])
+    if (libLoaded) return
+      ; (async () => {
+        try {
+          const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm"
+          await ffmpegRef.current.load({
+            coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
+            wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm")
+          })
+          // console.info("ffmpeg loaded")
+          const gifsicleModule = await import("gifsicle-wasm-browser")
+          gifsicleRef.current = gifsicleModule.default
+          // console.info("gifsicle loaded")
+          setLibLoaded(true)
+        } catch (error) {
+          console.error("Failed to load libraries:", error)
+        }
+      })()
+  }, [libLoaded])
 
   const compressGIF = async (gifBlob: Blob): Promise<Blob> => {
     if (!gifsicleRef.current) {
@@ -100,7 +94,7 @@ const ExportGIF = () => {
   }
 
   const onExportGIF = async () => {
-    if (!isLoadedRef.current) {
+    if (!libLoaded) {
       console.warn("Libraries not loaded yet")
       return
     }
@@ -216,7 +210,7 @@ const ExportGIF = () => {
     }
   }
 
-  const isButtonDisabled = !isLoadedRef.current || isExporting
+  const isButtonDisabled = !libLoaded || isExporting
 
   return (
     <FlexGap direction="col">
@@ -247,7 +241,7 @@ const ExportGIF = () => {
         onChange={(evt) => setExportOpts((prev) => ({ ...prev, compressionQuality: parseFloat(evt.target.value) }))}
       />
       <Button $full onClick={onExportGIF} disabled={isButtonDisabled} variant={isButtonDisabled ? "disabled" : "primary"}>
-        {!isLoadedRef.current ? (
+        {!libLoaded ? (
           "Loading..."
         ) : isExporting ? (
           "Exporting..."

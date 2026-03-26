@@ -1,7 +1,7 @@
 import imageCompression, { type Options } from "browser-image-compression"
 import { Download } from "lucide-react"
 import { useRef, useState } from "react"
-import { useLoading } from "~/hooks/useLoading"
+import { useCanvasLoading } from "~/hooks/useCanvasLoading"
 import { useStore } from "~/hooks/useStore"
 import { FlexCenter, FlexGap } from "~/styles/global"
 import { generateFilename } from "~/utils/etc"
@@ -10,7 +10,7 @@ import { Slider } from "../reusables/slider"
 
 export const ExportImage = () => {
   const { state } = useStore()
-  const { start, stop } = useLoading()
+  const { start, stop } = useCanvasLoading()
   const [isExporting, setIsExporting] = useState(false)
 
   const imageQualitySliderRef = useRef<HTMLInputElement>(null)

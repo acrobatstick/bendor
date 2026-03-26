@@ -1,7 +1,7 @@
 import { Redo, Trash, Undo } from "lucide-react"
 import { useContext } from "react"
 import styled from "styled-components"
-import { useLoading } from "~/hooks/useLoading"
+import { useCanvasLoading } from "~/hooks/useCanvasLoading"
 import { useStore } from "~/hooks/useStore"
 import { ShepherdTourContext } from "~/providers/shepherd/shepherdContext"
 import { StoreActionType } from "~/providers/store/reducer"
@@ -15,7 +15,7 @@ import { H4, Label } from "./reusables/typography"
 
 const LayerSettings = () => {
   const { state, dispatch } = useStore()
-  const { start } = useLoading()
+  const { start } = useCanvasLoading()
 
   const tour = useContext(ShepherdTourContext)
 

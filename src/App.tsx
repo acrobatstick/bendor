@@ -10,7 +10,7 @@ import Button from "./components/reusables/buttons"
 import { H1, Link, Paragraph } from "./components/reusables/typography"
 import UploadArea from "./components/uploadArea"
 import { useStore } from "./hooks/useStore"
-import { LoadingProvider } from "./providers/loading/loadingProvider"
+import { CanvasLoadingProvider } from "./providers/canvasloading/provider"
 import { ShepherdTourContext } from "./providers/shepherd/shepherdContext"
 import { StoreActionType } from "./providers/store/reducer"
 import { PushTop } from "./styles/global"
@@ -88,7 +88,7 @@ function App() {
   }
 
   return (
-    <LoadingProvider>
+    <CanvasLoadingProvider>
       <Layout columns={hasActiveLayer() ? 2 : 1}>
         <LeftColumn>
           <LogoContainer>
@@ -125,7 +125,7 @@ function App() {
           <Canvas />
         </RightColumn>
       </Layout>
-    </LoadingProvider>
+    </CanvasLoadingProvider>
   )
 }
 

@@ -1,7 +1,7 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react"
 import styled from "styled-components"
 import { keyframes } from "styled-components"
-import { useLoading } from "~/hooks/useLoading"
+import { useCanvasLoading } from "~/hooks/useCanvasLoading"
 import useProcessCanvas from "~/hooks/useProcessCanvas"
 import { useStore } from "~/hooks/useStore"
 import { ShepherdTourContext } from "~/providers/shepherd/shepherdContext"
@@ -11,7 +11,7 @@ import { cursorInBoundingBox, getMouseCanvasCoordinates } from "~/utils/image"
 import { markProcessingDone } from "~/utils/processing"
 
 function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
-  const { loading, start, stop } = useLoading()
+  const { loading, start, stop } = useCanvasLoading()
   const { state, dispatch } = useStore()
   const tour = useContext(ShepherdTourContext)
 

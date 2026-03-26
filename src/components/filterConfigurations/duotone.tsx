@@ -9,7 +9,7 @@ import type { Duotone, Filter, LSelection } from "~/types"
 import { generateRandomHex } from "~/utils/etc"
 import { Label, Text } from "../reusables/typography"
 import { RangeInput } from "./reusables"
-import { useLoading } from "~/hooks/useLoading"
+import { useCanvasLoading } from "~/hooks/useCanvasLoading"
 
 type Preset = Pick<Duotone, "highlightsColor" | "shadowsColor">
 type ColorPresets = Array<Preset>
@@ -34,7 +34,7 @@ const presets: ColorPresets = [
 ]
 
 const DuotoneConfig = () => {
-  const { start } = useLoading()
+  const { start } = useCanvasLoading()
   const { state, dispatch } = useStore()
   const [color, setColor] = useState<string>("#ffffff") // color picker value state
   const [usingCustom, setUsingCustom] = useState<boolean>(false)

@@ -1,7 +1,7 @@
 import { useRef, useState } from "react"
 import { flushSync } from "react-dom"
 import styled from "styled-components"
-import { useLoading } from "~/hooks/useLoading"
+import { useCanvasLoading } from "~/hooks/useCanvasLoading"
 import { useStore } from "~/hooks/useStore"
 import { StoreActionType } from "~/providers/store/reducer"
 import { Select } from "../reusables/select"
@@ -28,7 +28,7 @@ interface ListSelectionProps<T, V = T> {
 }
 
 const RangeInput = ({ label, id, min, max, configKey, defaultValue, ...rest }: RangeInputProps) => {
-  const { loading, start } = useLoading()
+  const { loading, start } = useCanvasLoading()
   const { state, dispatch } = useStore()
   const inputRef = useRef<HTMLInputElement | null>(null)
 
@@ -68,7 +68,7 @@ const RangeInput = ({ label, id, min, max, configKey, defaultValue, ...rest }: R
 }
 
 const ListSelection = <T, V = T>({ label, id, items, configKey, defaultValue, renderItem, getItemValue }: ListSelectionProps<T, V>) => {
-  const { loading, start } = useLoading()
+  const { loading, start } = useCanvasLoading()
   const { state, dispatch } = useStore()
   const [selectedValue, setSelectedValue] = useState<T>(defaultValue)
 

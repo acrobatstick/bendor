@@ -1,6 +1,6 @@
 import { forwardRef, useEffect, useState } from "react"
 import styled from "styled-components"
-import { useLoading } from "~/hooks/useLoading"
+import { useCanvasLoading } from "~/hooks/useCanvasLoading"
 import { Label } from "./typography"
 
 interface SliderProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -9,7 +9,7 @@ interface SliderProps extends React.InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const Slider = forwardRef<HTMLInputElement, SliderProps>(({ id, label, min, max, defaultValue, ...rest }, ref) => {
-  const { loading } = useLoading()
+  const { loading } = useCanvasLoading()
   const [displayValue, setDisplayValue] = useState(defaultValue ?? rest.value ?? min ?? 0)
 
   useEffect(() => {

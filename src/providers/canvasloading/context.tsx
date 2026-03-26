@@ -1,6 +1,6 @@
 import { createContext } from "react"
 
-export const LoadingContext = createContext<{
+export const CanvasLoadingContext = createContext<{
   loading: boolean
   start: () => void
   stop: () => void

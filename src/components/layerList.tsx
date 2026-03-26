@@ -5,7 +5,7 @@ import {
 } from '@dnd-kit/modifiers';
 import { useContext } from "react"
 import styled from "styled-components"
-import { useLoading } from "~/hooks/useLoading"
+import { useCanvasLoading } from "~/hooks/useCanvasLoading"
 import { useStore } from "~/hooks/useStore"
 import { ShepherdTourContext } from "~/providers/shepherd/shepherdContext"
 import { StoreActionType } from "~/providers/store/reducer"
@@ -17,7 +17,7 @@ import { Label, Text } from "./reusables/typography"
 import { waitForProcessing } from "~/utils/processing";
 
 function LayerList() {
-  const { loading, start } = useLoading()
+  const { loading, start } = useCanvasLoading()
   const { state, dispatch } = useStore()
 
   const { selectedLayerIdx, imgCtx, layers } = state
@@ -45,7 +45,6 @@ function LayerList() {
   }
 
   const onMoveSelection = async (direction: "up" | "down", idx: number) => {
-    start()
     dispatch({
       type: StoreActionType.MoveLayer,
       payload: { direction, layerIdx: idx }
