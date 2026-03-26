@@ -309,7 +309,18 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
     return () => {
       ctrl.abort()
     }
-  }, [state.selectedLayerIdx, state.currentLayer, state.mode, dispatch, getOngoingTouchById, start, tour?.isActive, tour?.getCurrentStep, tour?.next])
+  }, [
+    state.selectedLayerIdx,
+    state.currentLayer,
+    state.mode,
+    dispatch,
+    getOngoingTouchById,
+    start,
+    stop,
+    tour?.isActive,
+    tour?.getCurrentStep,
+    tour?.next
+  ])
 
   // Handle selection render on layer index change
   useEffect(() => {
@@ -582,18 +593,16 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
   useEffect(() => {
     if (!state.needsProcessing || !state.imgCtx) return
     let cancelled = false
-
     // only stop loading if it's not processing a gif to prevent
     // the canvas skeleton from blinking on each frame generated
     const stopLoading = () => {
-      if (state.processingAs === "gif") return
+      if (state.processingAs.type === "gif") return
       stop()
     }
-
     const run = async () => {
       // refresh all layer if processing gif otherwise just process the current layer
       // to not waste much resource
-      const refreshOnIdx = state.processingAs === "gif" ? -1 : state.selectedLayerIdx
+      const refreshOnIdx = state.processingAs.type === "gif" ? -1 : state.selectedLayerIdx
       const newLayers = await process(state, state.processingAs, refreshOnIdx)
       if (cancelled) return
       dispatch({
@@ -602,25 +611,40 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
       })
       stopLoading()
     }
-
     run()
-
     return () => {
       cancelled = true
       markProcessingDone()
     }
-  }, [state.needsProcessing, state.imgCtx, state.processingAs, process, state, dispatch, stop])
+  }, [state.needsProcessing, state.imgCtx, state.processingAs])
+
+  const processingLayersLoading = () => {
+    return (
+      <>
+        {state.processingAs.type === "image" ? (
+          <>
+            <span>Processing Layers</span>
+            <span>
+              {processed}/{state.layers.length}
+            </span>
+          </>
+        ) : (
+          <>
+            <span>Processing GIF Frames</span>
+            <span>
+              {state.processingAs.frame}/{state.processingAs.maxFrame}
+            </span>
+          </>
+        )}
+      </>
+    )
+  }
 
   return (
     <div id="canvasContainer" ref={containerRef} style={{ position: "relative", display: "inline-block", lineHeight: 0 }} {...props}>
       {loading && (
         <CanvasLoadingSkeleton>
-          <CanvasLoadingText>
-            <span>Processing Layers</span>
-            <span>
-              {processed}/{state.layers.length}
-            </span>
-          </CanvasLoadingText>
+          <CanvasLoadingText>{processingLayersLoading()}</CanvasLoadingText>
         </CanvasLoadingSkeleton>
       )}
       <canvas

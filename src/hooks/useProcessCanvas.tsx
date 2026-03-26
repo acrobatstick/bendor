@@ -81,7 +81,7 @@ const useProcessCanvas = () => {
           selectionArea,
           layerIndex: i,
           refresh: refreshNext || refreshIdx === i,
-          variative: processingAs === "gif"
+          variative: processingAs.type === "gif"
         })
       })
 

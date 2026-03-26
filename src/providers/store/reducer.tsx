@@ -131,7 +131,7 @@ interface UpdateState<K extends keyof State> {
 
 interface RequestProcessing {
   type: StoreActionType.RequestProcessing
-  payload?: State["processingAs"] // default as "image"
+  payload?: State["processingAs"]
 }
 
 function isInBounds(arrLen: number, idx: number): boolean {
@@ -605,7 +605,7 @@ const storeReducer = (state: State, action: Action): State => {
     case StoreActionType.RequestProcessing: {
       let processingAs = action.payload
       if (!processingAs) {
-        processingAs = state.processingAs
+        processingAs = { type: "image" }
       }
       return {
         ...state,

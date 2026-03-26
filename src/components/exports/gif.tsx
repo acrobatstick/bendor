@@ -122,7 +122,7 @@ const ExportGIF = () => {
 
       frames.push(await captureFrame())
       for (let i = 0; i < exportOpts.framerate - 1; i++) {
-        dispatch({ type: StoreActionType.RequestProcessing, payload: "gif" })
+        dispatch({ type: StoreActionType.RequestProcessing, payload: { type: "gif", frame: i + 2, maxFrame: exportOpts.framerate } })
         await waitForProcessing()
         try {
           const frame = await captureFrame()
@@ -203,7 +203,7 @@ const ExportGIF = () => {
     } finally {
       setIsExporting(false)
       // revert back to the original processingAs image
-      dispatch({ type: StoreActionType.UpdateState, payload: { key: "processingAs", value: "image" } })
+      dispatch({ type: StoreActionType.UpdateState, payload: { key: "processingAs", value: { type: "image" } } })
       stop()
     }
   }
