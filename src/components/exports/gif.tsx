@@ -1,5 +1,7 @@
+import wasmURL from "@ffmpeg/core/wasm?url"
+import coreURL from "@ffmpeg/core?url"
 import { FFmpeg, type FileData } from "@ffmpeg/ffmpeg"
-import { toBlobURL } from "@ffmpeg/util"
+import type gifsicle from "gifsicle-wasm-browser"
 import { Download } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { useCanvasLoading } from "~/hooks/useCanvasLoading"
@@ -24,10 +26,10 @@ const initialGIFOpts = {
 } as GIFOpts
 
 const ExportGIF = () => {
-  const { start } = useCanvasLoading() // only to control the canvas frame loading
+  const { start, stop } = useCanvasLoading() // only to control the canvas frame loading
   const [libLoaded, setLibLoaded] = useState<boolean>(false)
   const ffmpegRef = useRef(new FFmpeg())
-  const gifsicleRef = useRef<any>(null)
+  const gifsicleRef = useRef<typeof gifsicle | null>(null)
 
   const { state, dispatch } = useStore()
 
@@ -36,22 +38,18 @@ const ExportGIF = () => {
 
   useEffect(() => {
     if (libLoaded) return
-      ; (async () => {
-        try {
-          const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm"
-          await ffmpegRef.current.load({
-            coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
-            wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm")
-          })
-          // console.info("ffmpeg loaded")
-          const gifsicleModule = await import("gifsicle-wasm-browser")
-          gifsicleRef.current = gifsicleModule.default
-          // console.info("gifsicle loaded")
-          setLibLoaded(true)
-        } catch (error) {
-          console.error("Failed to load libraries:", error)
-        }
-      })()
+    ;(async () => {
+      try {
+        await ffmpegRef.current.load({ coreURL, wasmURL })
+        // console.info("ffmpeg loaded")
+        const gifsicleModule = await import("gifsicle-wasm-browser")
+        gifsicleRef.current = gifsicleModule.default
+        // console.info("gifsicle loaded")
+        setLibLoaded(true)
+      } catch (error) {
+        console.error("Failed to load libraries:", error)
+      }
+    })()
   }, [libLoaded])
 
   const compressGIF = async (gifBlob: Blob): Promise<Blob> => {
