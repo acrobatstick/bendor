@@ -687,13 +687,14 @@ const CanvasLoadingSkeleton = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 999;
 `
 
 const CanvasLoadingText = styled.div`
   font-size: 14px;
   font-weight: 600;
   color: #666;
-  z-index: 1;
+  z-index: 999;
   display: flex;
   flex-direction: column;
   align-items: center;
