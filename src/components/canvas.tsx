@@ -290,6 +290,18 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
         const imageCanvas = imageCanvasRef.current
         const imageCtx = imageCanvas?.getContext("2d")
         if (!imageCtx) return
+        const selectionArea = drawManagerRef.current.getSelectedAreaCoords()
+        dispatch({
+          type: StoreActionType.UpdateLayerSelection,
+          payload: {
+            layerIdx: state.selectedLayerIdx,
+            pselection: {
+              selectionArea
+            },
+            withUpdateInitialPresent: true
+          }
+        })
+
         dispatch({ type: StoreActionType.RequestProcessing })
       })
     }
