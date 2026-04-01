@@ -64,8 +64,14 @@ function LayerList() {
   }
 
   const onDragEnd = async (event: DragEndEvent) => {
-    start()
     const { active, over } = event
+
+    // skip processing if we are not moving the layer to save some resources
+    if (active.id == over?.id) {
+      return
+    }
+
+    start()
     dispatch({
       type: StoreActionType.MoveLayerIndex,
       payload: { active: Number(active.id), over: Number(over?.id) }
