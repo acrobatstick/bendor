@@ -40,11 +40,11 @@ const useProcessCanvas = () => {
 
     const nextLayers = [...state.layers]
 
-    setProcessed(1)
-
     for (let i = 0; i < nextLayers.length; i++) {
       const layer = nextLayers[i]
       const { filter, selectionArea } = layer.selection
+
+      setProcessed(i + 1)
 
       if (!selectionArea) {
         console.log("No selection area")
@@ -86,7 +86,6 @@ const useProcessCanvas = () => {
       })
 
       currentImageData = result.processedImageData
-      setProcessed((prev) => prev + 1)
 
       nextLayers[i] = {
         ...layer,
