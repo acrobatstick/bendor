@@ -1,6 +1,5 @@
 import { lazy, Suspense, useState } from "react"
 import styled from "styled-components"
-import { useStore } from "~/hooks/useStore"
 import { FlexEnd } from "~/styles/global"
 import { ExportImage } from "./exports/image"
 import { H5, Text } from "./reusables/typography"
@@ -10,10 +9,7 @@ type ExportTypes = "Image" | "GIF"
 const ExportGIF = lazy(() => import("~/components/exports/gif"))
 
 const Exports = () => {
-  const { state } = useStore()
   const [exportType, setExportType] = useState<ExportTypes>("Image")
-
-  if (!state.imgCtx) return <div></div>
 
   const onChangeExportType = (type: ExportTypes) => {
     setExportType(type)

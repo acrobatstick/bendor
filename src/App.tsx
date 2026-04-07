@@ -1,5 +1,5 @@
 import { fileTypeFromBuffer } from "file-type"
-import { Fragment, useCallback, useContext, useEffect, useRef } from "react"
+import { useCallback, useContext, useEffect, useRef } from "react"
 import styled from "styled-components"
 import Canvas from "./components/canvas"
 import Exports from "./components/exports"
@@ -68,25 +68,6 @@ function App() {
     }
   }, [tour, hasImage])
 
-  if (!hasImage()) {
-    return (
-      <Layout style={{ minHeight: "100vh" }}>
-        <EmptyImageContainer>
-          <LogoContainer>
-            <H1>bendor</H1>
-            <Paragraph variant="secondary">
-              Built as an open source project. Any contributions are welcome on{" "}
-              <Link href="https://github.com/acrobatstick/bendor" target="_blank">
-                GitHub.
-              </Link>
-            </Paragraph>
-          </LogoContainer>
-          <UploadArea ref={imageRef} onChange={onImageChange} />
-        </EmptyImageContainer>
-      </Layout>
-    )
-  }
-
   return (
     <CanvasLoadingProvider>
       <Layout columns={hasActiveLayer() ? 2 : 1}>
@@ -101,20 +82,18 @@ function App() {
             </Paragraph>
           </LogoContainer>
           <ImageInput onChange={onImageChange} ref={imageRef} name="image" type="file" accept="image/*" />
+          <LayerList />
+          <GlobalConfiguration />
+          <Exports />
           {hasImage() && (
-            <Fragment>
-              <LayerList />
-              <GlobalConfiguration />
-              <Exports />
-            </Fragment>
+            <PushTop>
+              <div style={{ padding: "24px" }}>
+                <Button $full variant={hasImage() ? "outline" : "primary"} onClick={onClickInputButton} type="button">
+                  Change Image
+                </Button>
+              </div>
+            </PushTop>
           )}
-          <PushTop>
-            <div style={{ padding: "24px" }}>
-              <Button $full variant={hasImage() ? "outline" : "primary"} onClick={onClickInputButton} type="button">
-                {hasImage() ? "Change Image" : "Upload Image"}
-              </Button>
-            </div>
-          </PushTop>
         </LeftColumn>
         {hasActiveLayer() && (
           <LeftColumn id="layerSettings">
@@ -122,7 +101,13 @@ function App() {
           </LeftColumn>
         )}
         <RightColumn>
-          <Canvas />
+          {hasImage() ? (
+            <Canvas />
+          ) : (
+            <EmptyImageContainer>
+              <UploadArea ref={imageRef} onChange={onImageChange} />
+            </EmptyImageContainer>
+          )}
         </RightColumn>
       </Layout>
     </CanvasLoadingProvider>
@@ -144,14 +129,13 @@ const Layout = styled.div<{ columns?: number }>`
 `
 
 const EmptyImageContainer = styled.div`
- grid-column: 1 / -1; /* Spans all columns */
+  grid-column: 1 / -1; /* Spans all columns */
+  display: flex;
   justify-self: center;
   align-self: center;
-  width: 330px;
+  width: 100%;
+  height: 100%;
   max-width: inherit;
-  background-color: white;
-  border: solid black 1px;
-  border-style: dashed;
   box-sizing: border-box;
 `
 

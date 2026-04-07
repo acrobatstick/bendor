@@ -23,9 +23,14 @@ function LayerItem({ children, selected, onSelectLayer, onMoveSelection, onDupli
   }
   return (
     <Item ref={setNodeRef} style={style} {...attributes}>
-      <Text variant="secondary" onClick={() => onSelectLayer(idx)} style={{ cursor: "pointer" }}>
-        {selected ? "<*> " : "< > "} {children}
-      </Text>
+      <Name onClick={() => onSelectLayer(idx)}>
+        <Text style={{ flexShrink: "1" }} size="small" variant={selected ? "primary" : "secondary"}>
+          {selected ? "<*> " : "< >"}
+        </Text>
+        <Text style={{ flex: 1 }} size="small" variant="secondary">
+          {children}
+        </Text>
+      </Name>
       <ActionList>
         <Action onClick={() => onMoveSelection("up", idx)}>
           <MoveUp size={16} data-tooltip-id="moveUp" data-tooltip-content="Move layer up" data-tooltip-place="bottom" />
@@ -52,7 +57,15 @@ export default LayerItem
 
 const Item = styled.li`
   display: flex;
+  align-items: start;
   justify-content: space-between;
+`
+
+const Name = styled.div`
+  cursor: pointer;
+  display: flex;
+  align-items: start;
+  gap: 6px;
 `
 
 const ActionList = styled.div`

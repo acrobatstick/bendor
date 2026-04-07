@@ -59,12 +59,14 @@ export const ExportImage = () => {
     setIsExporting(false)
   }
 
+  const disabled = isExporting || !state.imgCtx
+
   return (
     <FlexGap direction="col">
       <Slider id="imageQuality" label="Quality" ref={imageQualitySliderRef} type="range" step={1} min={10} max={100} defaultValue={100} />
       <Button
-        variant={`${isExporting ? "disabled" : "primary"}`}
-        disabled={isExporting}
+        variant={`${disabled ? "disabled" : "primary"}`}
+        disabled={disabled}
         $full
         type="button"
         onClick={() => onExportImage(Number(imageQualitySliderRef.current?.value))}

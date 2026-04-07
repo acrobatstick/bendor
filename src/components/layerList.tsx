@@ -80,6 +80,8 @@ function LayerList() {
     dispatch({ type: StoreActionType.RequestProcessing })
   }
 
+  const disabled = !state.imgCtx
+
   return (
     <Container>
       <FlexEnd>
@@ -91,6 +93,7 @@ function LayerList() {
         )}
       </FlexEnd>
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd} modifiers={[restrictToVerticalAxis]}>
+        {" "}
         <SortableContext items={layers} strategy={verticalListSortingStrategy}>
           <List>
             {layers.length > 0 ? (
@@ -112,7 +115,7 @@ function LayerList() {
           </List>
         </SortableContext>
       </DndContext>
-      <Button id="addNewLayer" variant="outline" type="button" $full onClick={onAddLayer}>
+      <Button id="addNewLayer" disabled={disabled} variant={disabled ? "disabled" : "primary"} type="button" $full onClick={onAddLayer}>
         + Add new layer
       </Button>
     </Container>
@@ -136,7 +139,7 @@ const Container = styled.div`
 `
 
 const List = styled.ul`
-  margin-bottom: 8px;
+  margin: 8px 0;
   overflow-y: auto;
   overflow-x: hidden;
   flex: 1; 
