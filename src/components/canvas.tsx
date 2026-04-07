@@ -654,11 +654,6 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
 
   return (
     <div id="canvasContainer" ref={containerRef} style={{ position: "relative", display: "inline-block", lineHeight: 0 }} {...props}>
-      {loading && (
-        <CanvasLoadingSkeleton>
-          <CanvasLoadingText>{processingLayersLoading()}</CanvasLoadingText>
-        </CanvasLoadingSkeleton>
-      )}
       <canvas
         id="imageCanvas"
         ref={imageCanvasRef}
@@ -668,6 +663,9 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
           height: "auto"
         }}
       />
+      <CanvasLoadingSkeleton $visible={loading}>
+        <CanvasLoadingText>{processingLayersLoading()}</CanvasLoadingText>
+      </CanvasLoadingSkeleton>
     </div>
   )
 }
@@ -681,7 +679,10 @@ const shimmer = keyframes`
   }
 `
 
-const CanvasLoadingSkeleton = styled.div`
+const CanvasLoadingSkeleton = styled.div<{ $visible: boolean }>`
+  opacity: ${({ $visible }) => ($visible ? 1 : 0)};
+  transition: opacity 0.4s ease-in-out;
+  pointer-events: none;
   position: absolute;
   inset: 0;
   width: 100%;
