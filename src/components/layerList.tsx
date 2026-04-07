@@ -93,6 +93,7 @@ function LayerList() {
         )}
       </FlexEnd>
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd} modifiers={[restrictToVerticalAxis]}>
+        {" "}
         <SortableContext items={layers} strategy={verticalListSortingStrategy}>
           <List>
             {layers.length > 0 ? (
@@ -138,7 +139,7 @@ const Container = styled.div`
 `
 
 const List = styled.ul`
-  margin-bottom: 8px;
+  margin: 8px 0;
   overflow-y: auto;
   overflow-x: hidden;
   flex: 1; 
