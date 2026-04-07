@@ -80,6 +80,8 @@ function LayerList() {
     dispatch({ type: StoreActionType.RequestProcessing })
   }
 
+  const disabled = !state.imgCtx
+
   return (
     <Container>
       <FlexEnd>
@@ -112,7 +114,7 @@ function LayerList() {
           </List>
         </SortableContext>
       </DndContext>
-      <Button id="addNewLayer" variant="outline" type="button" $full onClick={onAddLayer}>
+      <Button id="addNewLayer" disabled={disabled} variant={disabled ? "disabled" : "primary"} type="button" $full onClick={onAddLayer}>
         + Add new layer
       </Button>
     </Container>

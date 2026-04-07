@@ -331,7 +331,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
     stop,
     tour?.isActive,
     tour?.getCurrentStep,
-    tour?.next,
+    tour?.next
   ])
 
   // Handle selection render on layer index change

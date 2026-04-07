@@ -1,9 +1,8 @@
+import { FileImage } from "lucide-react"
 import { forwardRef, useCallback, useRef, useState } from "react"
 import styled from "styled-components"
 
-interface IUploadArea extends React.InputHTMLAttributes<HTMLInputElement> {}
-
-const UploadArea = forwardRef<HTMLInputElement, IUploadArea>(({ onChange, ...rest }, ref) => {
+const UploadArea = forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(({ onChange, ...rest }, ref) => {
   const containerRef = useRef<HTMLDivElement>(null)
   const [isDragging, setIsDragging] = useState(false)
 
@@ -38,7 +37,7 @@ const UploadArea = forwardRef<HTMLInputElement, IUploadArea>(({ onChange, ...res
             writable: false,
             value: ref.current
           })
-          onChange(event as any)
+          onChange(event as unknown as React.ChangeEvent<HTMLInputElement>)
         }
       }
     },
@@ -57,44 +56,37 @@ const UploadArea = forwardRef<HTMLInputElement, IUploadArea>(({ onChange, ...res
   }
 
   return (
-    <Container ref={containerRef}>
-      <DragArea
-        className={isDragging ? "active" : ""}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-        onClick={handleBrowseClick}
-      >
-        <Icon>
-          <i className="fas fa-images"></i>
-        </Icon>
-        <Header>Drag & Drop</Header>
-        <Header>
-          or <Browse>browse</Browse>
-        </Header>
-        <HiddenInput ref={ref} type="file" accept="image/*" onChange={onChange} {...rest} />
-        <Support>Supports: JPEG, JPG, PNG</Support>
-      </DragArea>
-    </Container>
+    <DragArea
+      ref={containerRef}
+      className={isDragging ? "active" : ""}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      onClick={handleBrowseClick}
+    >
+      <Header style={{ marginBottom: "8px" }}>Upload an image</Header>
+      <Icon>
+        <FileImage size={56} color="#2d2d2d" />
+      </Icon>
+      <Header>Drag & Drop</Header>
+      <Header>
+        or <Browse>browse</Browse>
+      </Header>
+      <HiddenInput ref={ref} type="file" accept="image/*" onChange={onChange} {...rest} />
+      <Support>Supports: JPEG, JPG, PNG</Support>
+    </DragArea>
   )
 })
 
-const Container = styled.div`
-  max-width: 650px;
-  width: 100%;
-  padding: 30px;
-  background: #fff;
-`
-
 const DragArea = styled.div`
   cursor: pointer;
-  height: 400px;
-  border: 1px dashed #9da2ac;
   display: flex;
+  width: 100%;
+  height: 100%;
+  flex: 1;
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  margin: 10px auto;
 
   &.active {
     border: 1px solid ${({ theme }) => theme.colors.primary};
@@ -121,7 +113,7 @@ const Header = styled.span`
 const Support = styled.span`
   font-size: 12px;
   color: gray;
-  margin: 10px 0 15px 0;
+  margin: 10px 0;
 `
 
 const Browse = styled.span`
