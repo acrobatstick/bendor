@@ -1,4 +1,5 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react"
+import { flushSync } from "react-dom"
 import Moveable from "react-moveable"
 import styled, { keyframes } from "styled-components"
 import { useCanvasLoading } from "~/hooks/useCanvasLoading"
@@ -654,27 +655,38 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
   }
 
   const containerRef = useRef<HTMLDivElement>(null)
-
   const [target, setTarget] = useState<HTMLElement | null>(null)
-  const [container, setContainer] = useState<HTMLElement | null>(null)
-
-  const [frame, setFrame] = useState({ x: 0, y: 0 })
-
+  const [frame, setFrame] = useState({ x: 0, y: 0, scale: 1 })
   useEffect(() => {
     if (containerRef.current && canvasContainerRef.current) {
-      setContainer(containerRef.current)
       setTarget(canvasContainerRef.current)
     }
   }, [])
 
   return (
-    <Container ref={containerRef}>
+    <Container
+      ref={containerRef}
+      onWheel={(e: React.WheelEvent<HTMLDivElement>) => {
+        e.preventDefault()
+        const zoomIntensity = 0.001
+        const nextScale = frame.scale - e.deltaY * zoomIntensity
+        const clampedScale = Math.min(Math.max(nextScale, 0.5), 3)
+        if (clampedScale <= 1) {
+          return
+        }
+        setFrame((prev) => ({
+          ...prev,
+          scale: clampedScale
+        }))
+      }}
+    >
       <CanvasContainer
         id="canvasContainer"
         ref={canvasContainerRef}
         {...props}
         style={{
-          transform: `translate(${frame.x}px, ${frame.y}px)`
+          transform: `translate(${frame.x}px, ${frame.y}px) scale(${frame.scale})`,
+          transformOrigin: "top left"
         }}
       >
         <canvas
@@ -690,18 +702,12 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
           <CanvasLoadingText>{processingLayersLoading()}</CanvasLoadingText>
         </CanvasLoadingSkeleton>
       </CanvasContainer>
-
       <Moveable
+        flushSync={flushSync}
         target={target}
         draggable={state.mode === "move"}
-        onDrag={({ beforeTranslate }) => {
-          if (!container || !target) return
-          const [nextX, nextY] = beforeTranslate
-          const maxX = container.clientWidth - target.offsetWidth
-          const maxY = container.clientHeight - target.offsetHeight
-          const clampedX = Math.max(0, Math.min(nextX, maxX))
-          const clampedY = Math.max(0, Math.min(nextY, maxY))
-          setFrame({ x: clampedX, y: clampedY })
+        onDrag={({ target, transform }) => {
+          target.style.transform = transform
         }}
       />
     </Container>
