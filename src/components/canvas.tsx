@@ -665,6 +665,13 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
     }
   }, [])
 
+  // for the sake of updating the moveable component whenever the scale changes
+  // so it wont leave a stale moveable state
+  const moveableRef = useRef<Moveable>(null)
+  useEffect(() => {
+    moveableRef.current?.updateRect()
+  }, [frame.scale])
+
   return (
     <Container
       ref={containerRef}
@@ -680,6 +687,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
           ...prev,
           scale: clampedScale
         }))
+        moveableRef.current?.updateRect()
       }}
     >
       <CanvasContainer
@@ -688,7 +696,6 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
         {...props}
         style={{
           transform: `translate(${frame.x}px, ${frame.y}px) scale(${frame.scale})`,
-          transformOrigin: "top left"
         }}
       >
         <canvas
@@ -705,11 +712,15 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
         </CanvasLoadingSkeleton>
       </CanvasContainer>
       <Moveable
+        ref={moveableRef}
         flushSync={flushSync}
         target={target}
         draggable={state.mode === "move"}
-        onDrag={({ target, transform }) => {
-          target.style.transform = transform
+        onDrag={({ beforeTranslate }) => {
+          const [x, y] = beforeTranslate
+          setFrame(prev => ({
+            ...prev, x, y
+          }))
         }}
       />
     </Container>
