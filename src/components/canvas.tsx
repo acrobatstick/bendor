@@ -26,6 +26,23 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
 
   const { process, processed } = useProcessCanvas()
 
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [targetMoveable, setTargetMoveable] = useState<HTMLElement | null>(null)
+  const [frame, setFrame] = useState({ x: 0, y: 0, scale: 1 })
+  // set Moveable target to the canvas container on the first render
+  useEffect(() => {
+    if (containerRef.current && canvasContainerRef.current) {
+      setTargetMoveable(canvasContainerRef.current)
+    }
+  }, [])
+  // for the sake of updating the moveable component whenever the scale changes
+  // so it wont leave a stale moveable state
+  const moveableRef = useRef<Moveable>(null)
+  useEffect(() => {
+    moveableRef.current?.updateRect()
+  }, [frame.scale])
+
+
   useEffect(() => {
     if (state.imgBuf.byteLength === 0 || !imageCanvasRef.current) return
     const imageCanvas = imageCanvasRef.current
@@ -65,6 +82,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
         type: StoreActionType.UpdateState,
         payload: { key: "originalImageData", value: imageCtx.getImageData(0, 0, imageCtx.canvas.width, imageCtx.canvas.height) }
       })
+      moveableRef.current?.updateRect()
       stop()
     }
     img.onerror = () => {
@@ -656,21 +674,6 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
     )
   }
 
-  const containerRef = useRef<HTMLDivElement>(null)
-  const [target, setTarget] = useState<HTMLElement | null>(null)
-  const [frame, setFrame] = useState({ x: 0, y: 0, scale: 1 })
-  useEffect(() => {
-    if (containerRef.current && canvasContainerRef.current) {
-      setTarget(canvasContainerRef.current)
-    }
-  }, [])
-
-  // for the sake of updating the moveable component whenever the scale changes
-  // so it wont leave a stale moveable state
-  const moveableRef = useRef<Moveable>(null)
-  useEffect(() => {
-    moveableRef.current?.updateRect()
-  }, [frame.scale])
 
   return (
     <Container
@@ -714,7 +717,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
       <Moveable
         ref={moveableRef}
         flushSync={flushSync}
-        target={target}
+        target={targetMoveable}
         draggable={state.mode === "move"}
         onDrag={({ beforeTranslate }) => {
           const [x, y] = beforeTranslate
