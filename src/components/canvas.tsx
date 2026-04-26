@@ -420,6 +420,8 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
       // to determine if the cursor is inside the drawing bounding box or not
       const onMouseDown = (e: MouseEvent) => {
         e.preventDefault()
+        // should ignore updating canvas when we're on mode mode
+        if (state.mode === "move") return
         const { x: mouseX, y: mouseY } = getMouseCanvasCoordinates(activeCanvas, e.clientX, e.clientY)
         const [width, height, minX, minY] = drawManagerRef.current.getPointsBoundingBox()
         const isInBound = cursorInBoundingBox({
