@@ -35,13 +35,51 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
       setTargetMoveable(canvasContainerRef.current)
     }
   }, [])
+  const moveableRef = useRef<Moveable>(null)
   // for the sake of updating the moveable component whenever the scale changes
   // so it wont leave a stale moveable state
-  const moveableRef = useRef<Moveable>(null)
   useEffect(() => {
     moveableRef.current?.updateRect()
   }, [frame.scale])
 
+  // handle middle click panning for the moveable component
+  useEffect(() => {
+    let isMiddle = false
+
+    const down = (e: MouseEvent) => {
+      if (e.button === 1) {
+        e.preventDefault()
+        isMiddle = true
+      }
+    };
+
+    const move = (e: MouseEvent) => {
+      if (!isMiddle) return
+      setFrame(prev => ({
+        ...prev,
+        x: prev.x + e.movementX,
+        y: prev.y + e.movementY,
+      }))
+      moveableRef.current?.updateRect()
+    };
+
+    const up = (e: MouseEvent) => {
+      if (e.button === 1) {
+        isMiddle = false
+      }
+      moveableRef.current?.updateRect()
+    };
+
+    window.addEventListener("mousedown", down)
+    window.addEventListener("mousemove", move)
+    window.addEventListener("mouseup", up)
+
+    return () => {
+      window.removeEventListener("mousedown", down)
+      window.removeEventListener("mousemove", move)
+      window.removeEventListener("mouseup", up)
+    };
+  }, [])
 
   useEffect(() => {
     if (state.imgBuf.byteLength === 0 || !imageCanvasRef.current) return
@@ -107,6 +145,8 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
     }
 
     const onMouseDown = (e: MouseEvent) => {
+      // ignore updating canvas when panning over with middle button
+      if (e.buttons & 4) return
       const point = getMouseCanvasCoordinates(activeCanvas, e.clientX, e.clientY)
       drawManagerRef.current.reset()
       drawManagerRef.current.begin(point)
@@ -716,6 +756,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
       </CanvasContainer>
       <Moveable
         ref={moveableRef}
+        origin={false}
         flushSync={flushSync}
         target={targetMoveable}
         draggable={state.mode === "move"}
