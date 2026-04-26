@@ -1,5 +1,5 @@
 import { fileTypeFromBuffer } from "file-type"
-import { useCallback, useContext, useEffect, useRef } from "react"
+import { useCallback, useContext, useEffect, useRef, Fragment } from "react"
 import styled from "styled-components"
 import Canvas from "./components/canvas"
 import Exports from "./components/exports"
@@ -14,6 +14,7 @@ import { CanvasLoadingProvider } from "./providers/canvasloading/provider"
 import { ShepherdTourContext } from "./providers/shepherd/shepherdContext"
 import { StoreActionType } from "./providers/store/reducer"
 import { PushTop } from "./styles/global"
+import FloatingButtons from "./components/floatingButtons"
 
 function App() {
   const { state, dispatch } = useStore()
@@ -102,7 +103,10 @@ function App() {
         )}
         <RightColumn>
           {hasImage() ? (
-            <Canvas />
+            <Fragment>
+              <Canvas />
+              <FloatingButtons />
+            </Fragment>
           ) : (
             <EmptyImageContainer>
               <UploadArea ref={imageRef} onChange={onImageChange} />
@@ -173,6 +177,7 @@ const ImageInput = styled.input`
 `
 
 const RightColumn = styled.div`
+  position: relative;
   padding: 16px;
 `
 

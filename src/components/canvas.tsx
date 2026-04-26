@@ -1,4 +1,5 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react"
+import Moveable from "react-moveable"
 import styled, { keyframes } from "styled-components"
 import { useCanvasLoading } from "~/hooks/useCanvasLoading"
 import useProcessCanvas from "~/hooks/useProcessCanvas"
@@ -15,7 +16,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
   const tour = useContext(ShepherdTourContext)
 
   const imageCanvasRef = useRef<HTMLCanvasElement>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
+  const canvasContainerRef = useRef<HTMLDivElement>(null)
   const drawManagerRef = useRef<DrawManager>(new DrawManager())
   const [ongoingTouches, setOngoingTouches] = useState<Touch[]>([])
   const [selectionMovable, setSelectionMovable] = useState<boolean>(false)
@@ -30,7 +31,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
     const imageCtx = imageCanvas?.getContext("2d", { willReadFrequently: true })
     if (!imageCtx) return
 
-    const container = containerRef.current
+    const container = canvasContainerRef.current
     if (!container) {
       return
     }
@@ -74,7 +75,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
 
   // To register mouse events to the drawing canvas
   useEffect(() => {
-    const container = containerRef.current
+    const container = canvasContainerRef.current
     if (!container) return
 
     const activeCanvas = container.querySelector<HTMLCanvasElement>(`#drawing-canvas-${state.selectedLayerIdx}`)
@@ -336,7 +337,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
 
   // Handle selection render on layer index change
   useEffect(() => {
-    const container = containerRef.current
+    const container = canvasContainerRef.current
     if (!container) return
 
     const activeCanvas = container.querySelector<HTMLCanvasElement>(`#drawing-canvas-${state.selectedLayerIdx}`)
@@ -360,7 +361,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
 
     // create drawing canvas on new layer creation
     if (state.selectedLayerIdx >= 0 && !state.currentLayer?.ctx) {
-      const container = containerRef.current
+      const container = canvasContainerRef.current
       if (!container) return
       const img = imageCanvasRef.current
       const drawingCanvas = document.createElement("canvas")
@@ -396,7 +397,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
 
   // to handle drawing movement
   useEffect(() => {
-    const container = containerRef.current
+    const container = canvasContainerRef.current
     if (!container) return
 
     const activeCanvas = container.querySelector<HTMLCanvasElement>(`#drawing-canvas-${state.selectedLayerIdx}`)
@@ -579,7 +580,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
 
   // to handle hide/unhide selection points
   useEffect(() => {
-    const container = containerRef.current
+    const container = canvasContainerRef.current
     if (!container) {
       // console.info("no container")
       return
@@ -652,23 +653,67 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
     )
   }
 
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  const [target, setTarget] = useState<HTMLElement | null>(null)
+  const [container, setContainer] = useState<HTMLElement | null>(null)
+
+  const [frame, setFrame] = useState({ x: 0, y: 0 })
+
+  useEffect(() => {
+    if (containerRef.current && canvasContainerRef.current) {
+      setContainer(containerRef.current)
+      setTarget(canvasContainerRef.current)
+    }
+  }, [])
+
   return (
-    <div id="canvasContainer" ref={containerRef} style={{ position: "relative", display: "inline-block", lineHeight: 0 }} {...props}>
-      <canvas
-        id="imageCanvas"
-        ref={imageCanvasRef}
+    <Container ref={containerRef}>
+      <CanvasContainer
+        id="canvasContainer"
+        ref={canvasContainerRef}
+        {...props}
         style={{
-          display: "block",
-          maxWidth: "100%",
-          height: "auto"
+          transform: `translate(${frame.x}px, ${frame.y}px)`
+        }}
+      >
+        <canvas
+          id="imageCanvas"
+          ref={imageCanvasRef}
+          style={{
+            display: "block",
+            maxWidth: "100%",
+            height: "auto"
+          }}
+        />
+        <CanvasLoadingSkeleton $visible={loading}>
+          <CanvasLoadingText>{processingLayersLoading()}</CanvasLoadingText>
+        </CanvasLoadingSkeleton>
+      </CanvasContainer>
+
+      <Moveable
+        target={target}
+        draggable={state.mode === "move"}
+        onDrag={({ beforeTranslate }) => {
+          if (!container || !target) return
+          const [nextX, nextY] = beforeTranslate
+          const maxX = container.clientWidth - target.offsetWidth
+          const maxY = container.clientHeight - target.offsetHeight
+          const clampedX = Math.max(0, Math.min(nextX, maxX))
+          const clampedY = Math.max(0, Math.min(nextY, maxY))
+          setFrame({ x: clampedX, y: clampedY })
         }}
       />
-      <CanvasLoadingSkeleton $visible={loading}>
-        <CanvasLoadingText>{processingLayersLoading()}</CanvasLoadingText>
-      </CanvasLoadingSkeleton>
-    </div>
+    </Container>
   )
 }
+
+const Container = styled.div`
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+`
 
 const shimmer = keyframes`
   0% {
@@ -701,6 +746,12 @@ const CanvasLoadingSkeleton = styled.div<{ $visible: boolean }>`
   align-items: center;
   justify-content: center;
   z-index: 999;
+`
+
+const CanvasContainer = styled.div`
+  position: relative;
+  display: inline-block;
+  line-height: 0
 `
 
 const CanvasLoadingText = styled.div`
