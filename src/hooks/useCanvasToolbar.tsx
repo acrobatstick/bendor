@@ -29,17 +29,14 @@ export const useCanvasToolbar = () => {
   const zoom = (direction: "in" | "out") => {
     const zoomStep = 0.1
 
-    setFrame(prev => {
-      const nextScale =
-        direction === "in"
-          ? prev.scale + zoomStep
-          : prev.scale - zoomStep
+    setFrame((prev) => {
+      const nextScale = direction === "in" ? prev.scale + zoomStep : prev.scale - zoomStep
 
       const clampedScale = Math.min(Math.max(nextScale, 0.5), 3)
 
       return {
         ...prev,
-        scale: clampedScale,
+        scale: clampedScale
       }
     })
   }
@@ -91,20 +88,16 @@ export const useCanvasToolbar = () => {
 
       const rect = target.getBoundingClientRect()
 
-      const isInside =
-        e.clientX >= rect.left &&
-        e.clientX <= rect.right &&
-        e.clientY >= rect.top &&
-        e.clientY <= rect.bottom
+      const isInside = e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom
 
       if (!isInside) return
 
       setIsDragging(true)
 
-      setFrame(prev => ({
+      setFrame((prev) => ({
         ...prev,
         x: prev.x + e.movementX,
-        y: prev.y + e.movementY,
+        y: prev.y + e.movementY
       }))
 
       moveableRef.current?.updateRect()

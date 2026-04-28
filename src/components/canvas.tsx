@@ -14,7 +14,7 @@ import { markProcessingDone } from "~/utils/processing"
 
 function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
   const { loading, start, stop } = useCanvasLoading()
-  const { frame, setFrame, moveableRef, onMwheelZoom, onLeftClickDrag, clearDragging } = useCanvasToolbarContext()
+  const { frame, moveableRef, onMwheelZoom, onLeftClickDrag, clearDragging } = useCanvasToolbarContext()
   const { state, dispatch } = useStore()
   const tour = useContext(ShepherdTourContext)
 

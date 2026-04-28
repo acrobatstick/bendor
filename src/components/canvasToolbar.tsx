@@ -28,19 +28,19 @@ const CanvasToolbar = () => {
   return (
     <FloatingContainer visible={!isDragging}>
       <ButtonsContainer>
-        <Button onClick={() => changeMode("edit")} square variant={state.mode === "edit" ? "primary" : "outline"}>
+        <Button onClick={() => changeMode("edit")} square variant={state.mode === "edit" ? "primary" : "outline"} title="Edit mode">
           <Pen />
         </Button>
-        <Button onClick={() => changeMode("move")} square variant={state.mode === "move" ? "primary" : "outline"}>
+        <Button onClick={() => changeMode("move")} square variant={state.mode === "move" ? "primary" : "outline"} title="Move mode">
           <Move />
         </Button>
-        <Button onClick={onHideOverlay} square variant="outline">
+        <Button onClick={onHideOverlay} square variant="outline" title="Hide layer selection">
           {hideSelection ? <EyeOff /> : <Eye />}
         </Button>
-        <Button onClick={() => zoom("in")} square variant="outline">
+        <Button onClick={() => zoom("in")} square variant="outline" title="Zoom in">
           <ZoomIn />
         </Button>
-        <Button onClick={() => zoom("out")} square variant="outline">
+        <Button onClick={() => zoom("out")} square variant="outline" title="Zoom out">
           <ZoomOut />
         </Button>
       </ButtonsContainer>
@@ -71,8 +71,6 @@ const FloatingContainer = styled.div<{ visible: boolean }>`
     visibility 0s linear ${({ visible }) => (visible ? "0s" : "0.2s")};
 `
 
-// TODO: add active color button
-// TODO: make eye toggle-able to Eye-Off
 const ButtonsContainer = styled.div`
   display: flex;
   flex-direction: row;
