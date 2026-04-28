@@ -43,6 +43,7 @@ export const useCanvasToolbar = () => {
 
   const onMwheelZoom = (e: React.WheelEvent<HTMLDivElement>) => {
     e.preventDefault()
+    e.stopPropagation()
     if (e.deltaY < 0) {
       zoom("in")
     } else {

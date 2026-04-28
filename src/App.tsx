@@ -179,6 +179,8 @@ const ImageInput = styled.input`
 const RightColumn = styled.div`
   position: relative;
   padding: 16px;
+  overlow: hidden;
+  height: 100vh;
 `
 
 export default App
