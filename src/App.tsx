@@ -1,4 +1,3 @@
-import { fileTypeFromBuffer } from "file-type"
 import { useCallback, useContext, useEffect, useRef } from "react"
 import styled from "styled-components"
 import Canvas from "./components/canvas"
@@ -11,10 +10,11 @@ import UploadArea from "./components/uploadArea"
 import { useStore } from "./hooks/useStore"
 import { CanvasLoadingProvider } from "./providers/canvasloading/provider"
 import { ShepherdTourContext } from "./providers/shepherd/shepherdContext"
-import { StoreActionType } from "./providers/store/reducer"
 import { PushTop } from "./styles/global"
 import CanvasToolbar from "./components/canvasToolbar"
 import { CanvasToolbarProvider } from "./hooks/useCanvasToolbar"
+import { StoreActionType } from "./providers/store/reducer"
+import { fileTypeFromBuffer } from "file-type"
 
 function App() {
   const { state, dispatch } = useStore()
@@ -82,7 +82,6 @@ function App() {
               </Link>
             </Paragraph>
           </LogoContainer>
-          <ImageInput onChange={onImageChange} ref={imageRef} name="image" type="file" accept="image/*" />
           <LayerList />
           {/* <GlobalConfiguration /> */}
           <Exports />
@@ -102,16 +101,13 @@ function App() {
           </LeftColumn>
         )}
         <RightColumn>
-          {hasImage() ? (
+          {hasImage() && (
             <CanvasToolbarProvider>
               <Canvas />
               <CanvasToolbar />
             </CanvasToolbarProvider>
-          ) : (
-            <EmptyImageContainer>
-              <UploadArea ref={imageRef} onChange={onImageChange} />
-            </EmptyImageContainer>
           )}
+          <UploadArea visible={!hasImage()} ref={imageRef} onChange={onImageChange} />
         </RightColumn>
       </Layout>
     </CanvasLoadingProvider>
@@ -130,17 +126,6 @@ const Layout = styled.div<{ columns?: number }>`
     grid-template-columns: 1fr;
     min-height: auto;
   }
-`
-
-const EmptyImageContainer = styled.div`
-  grid-column: 1 / -1; /* Spans all columns */
-  display: flex;
-  justify-self: center;
-  align-self: center;
-  width: 100%;
-  height: 100%;
-  max-width: inherit;
-  box-sizing: border-box;
 `
 
 const LeftColumn = styled.div`
@@ -170,10 +155,6 @@ const LogoContainer = styled.div`
   border-bottom: solid black 1px;
   border-bottom-style: dashed;
   padding: 24px;
-`
-
-const ImageInput = styled.input`
-  display: none;
 `
 
 const RightColumn = styled.div`

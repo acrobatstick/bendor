@@ -2,7 +2,11 @@ import { FileImage } from "lucide-react"
 import { forwardRef, useCallback, useRef, useState } from "react"
 import styled from "styled-components"
 
-const UploadArea = forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(({ onChange, ...rest }, ref) => {
+type Props = React.InputHTMLAttributes<HTMLInputElement> & {
+  visible?: boolean
+}
+
+const UploadArea = forwardRef<HTMLInputElement, Props>(({ onChange, ...rest }, ref) => {
   const containerRef = useRef<HTMLDivElement>(null)
   const [isDragging, setIsDragging] = useState(false)
 
@@ -56,27 +60,40 @@ const UploadArea = forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLIn
   }
 
   return (
-    <DragArea
-      ref={containerRef}
-      className={isDragging ? "active" : ""}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
-      onClick={handleBrowseClick}
-    >
-      <Header style={{ marginBottom: "8px" }}>Upload an image</Header>
-      <Icon>
-        <FileImage size={56} color="#2d2d2d" />
-      </Icon>
-      <Header>Drag & Drop</Header>
-      <Header>
-        or <Browse>browse</Browse>
-      </Header>
-      <HiddenInput ref={ref} type="file" accept="image/*" onChange={onChange} {...rest} />
-      <Support>Supports: JPEG, JPG, PNG</Support>
-    </DragArea>
+    <EmptyImageContainer visible={rest.visible}>
+      <DragArea
+        ref={containerRef}
+        className={isDragging ? "active" : ""}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        onClick={handleBrowseClick}
+      >
+        <Header style={{ marginBottom: "8px" }}>Upload an image</Header>
+        <Icon>
+          <FileImage size={56} color="#2d2d2d" />
+        </Icon>
+        <Header>Drag & Drop</Header>
+        <Header>
+          or <Browse>browse</Browse>
+        </Header>
+        <HiddenInput ref={ref} type="file" accept="image/*" onChange={onChange} {...rest} />
+        <Support>Supports: JPEG, JPG, PNG</Support>
+      </DragArea>
+    </EmptyImageContainer>
   )
 })
+
+const EmptyImageContainer = styled.div<{ visible?: boolean }>`
+  display: ${({ visible }) => ((visible ?? true) ? "flex" : "none")};
+  grid-column: 1 / -1; /* Spans all columns */
+  justify-self: center;
+  align-self: center;
+  width: 100%;
+  height: 100%;
+  max-width: inherit;
+  box-sizing: border-box;
+`
 
 const DragArea = styled.div`
   cursor: pointer;

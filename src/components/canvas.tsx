@@ -677,7 +677,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
         ref={canvasContainerRef}
         {...props}
         style={{
-          transform: `translate(${frame.x}px, ${frame.y}px) scale(${frame.scale})`,
+          transform: `translate(${frame.x}px, ${frame.y}px) scale(${frame.scale})`
         }}
       >
         <canvas
