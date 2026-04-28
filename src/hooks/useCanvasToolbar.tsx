@@ -23,6 +23,7 @@ export const useCanvasToolbar = () => {
   // to keep track of the canvas position relative to it's container and for the canvas
   // scale during zoom ins and outs
   const [frame, setFrame] = useState({ x: 0, y: 0, scale: 1 })
+  const [isDragging, setIsDragging] = useState<boolean>(false)
   const moveableRef = useRef<Moveable>(null)
 
   const zoom = (direction: "in" | "out") => {
@@ -45,12 +46,24 @@ export const useCanvasToolbar = () => {
 
   const onMwheelZoom = (e: React.WheelEvent<HTMLDivElement>) => {
     e.preventDefault()
-
     if (e.deltaY < 0) {
       zoom("in")
     } else {
       zoom("out")
     }
+  }
+
+  const clearDragging = () => setIsDragging(false)
+
+  // beforeTranslate is from onDrag event object from Moveable
+  const onLeftClickDrag = (beforeTranslate: number[]) => {
+    const [x, y] = beforeTranslate
+    setFrame((prev) => ({
+      ...prev,
+      x,
+      y
+    }))
+    setIsDragging(true)
   }
 
   // for the sake of updating the moveable component whenever the scale changes
@@ -76,8 +89,17 @@ export const useCanvasToolbar = () => {
       const target = moveableRef.current?.props.target as HTMLElement | null
       if (!target) return
 
-      // only allow drag if cursor is inside target
-      if (!target.contains(e.target as Node)) return
+      const rect = target.getBoundingClientRect()
+
+      const isInside =
+        e.clientX >= rect.left &&
+        e.clientX <= rect.right &&
+        e.clientY >= rect.top &&
+        e.clientY <= rect.bottom
+
+      if (!isInside) return
+
+      setIsDragging(true)
 
       setFrame(prev => ({
         ...prev,
@@ -93,6 +115,7 @@ export const useCanvasToolbar = () => {
         isMiddle = false
       }
       moveableRef.current?.updateRect()
+      clearDragging()
     }
 
     window.addEventListener("mousedown", down)
@@ -106,5 +129,5 @@ export const useCanvasToolbar = () => {
     }
   }, [])
 
-  return { frame, setFrame, moveableRef, zoom, onMwheelZoom }
+  return { frame, setFrame, moveableRef, zoom, onMwheelZoom, onLeftClickDrag, isDragging, clearDragging }
 }

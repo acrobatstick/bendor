@@ -14,7 +14,7 @@ import { markProcessingDone } from "~/utils/processing"
 
 function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
   const { loading, start, stop } = useCanvasLoading()
-  const { frame, setFrame, moveableRef, onMwheelZoom } = useCanvasToolbarContext()
+  const { frame, setFrame, moveableRef, onMwheelZoom, onLeftClickDrag, clearDragging } = useCanvasToolbarContext()
   const { state, dispatch } = useStore()
   const tour = useContext(ShepherdTourContext)
 
@@ -699,14 +699,8 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
         flushSync={flushSync}
         target={targetMoveable}
         draggable={state.mode === "move"}
-        onDrag={({ beforeTranslate }) => {
-          const [x, y] = beforeTranslate
-          setFrame((prev) => ({
-            ...prev,
-            x,
-            y
-          }))
-        }}
+        onDrag={({ beforeTranslate }) => onLeftClickDrag(beforeTranslate)}
+        onDragEnd={clearDragging}
       />
     </Container>
   )
