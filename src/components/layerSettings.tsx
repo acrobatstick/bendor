@@ -71,7 +71,7 @@ const LayerSettings = () => {
       </Select>
       <FilterConfigurations />
       <Actions>
-        <Button $full variant="warning" onClick={onDeleteLayer}>
+        <Button full variant="warning" onClick={onDeleteLayer}>
           <FlexCenter>
             <Trash size={16} />
             <span>Delete Layer</span>

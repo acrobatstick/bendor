@@ -2,7 +2,8 @@ import styled from "styled-components"
 
 interface ButtonProp {
   variant?: "primary" | "outline" | "warning" | "disabled"
-  $full?: boolean
+  full?: boolean
+  square?: boolean
 }
 
 const Button = styled.button<ButtonProp>`
@@ -12,11 +13,12 @@ const Button = styled.button<ButtonProp>`
   border: none;
   font-size: 16px;
 
-  width: ${({ $full }) => ($full ? "100%" : "auto")};
+  width: ${({ full }) => (full ? "100%" : "auto")};
   box-sizing: border-box;
 
   border: ${({ theme, variant }) => {
     switch (variant) {
+      case "primary":
       case "outline":
         return `1px solid ${theme.colors.primary}`
     }
@@ -71,6 +73,8 @@ const Button = styled.button<ButtonProp>`
     }
   }};
   }
+
+  aspect-ratio: ${({ square }) => (square ? "1 / 1" : "auto")};
 `
 
 export default Button

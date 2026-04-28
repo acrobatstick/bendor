@@ -275,6 +275,10 @@ export const GlobalStyles = createGlobalStyle`
     font-size: 12px !important;
     padding: 8px !important;
   }
+
+  .moveable-line {
+     display: none!important;
+  }
 `
 
 export const PushTop = styled.div`

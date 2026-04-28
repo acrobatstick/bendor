@@ -67,7 +67,7 @@ export const ExportImage = () => {
       <Button
         variant={`${disabled ? "disabled" : "primary"}`}
         disabled={disabled}
-        $full
+        full
         type="button"
         onClick={() => onExportImage(Number(imageQualitySliderRef.current?.value))}
       >

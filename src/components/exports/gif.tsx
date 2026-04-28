@@ -238,7 +238,7 @@ const ExportGIF = () => {
         value={exportOpts.compressionQuality}
         onChange={(evt) => setExportOpts((prev) => ({ ...prev, compressionQuality: parseFloat(evt.target.value) }))}
       />
-      <Button $full onClick={onExportGIF} disabled={disabled} variant={disabled ? "disabled" : "primary"}>
+      <Button full onClick={onExportGIF} disabled={disabled} variant={disabled ? "disabled" : "primary"}>
         {!libLoaded ? (
           "Loading..."
         ) : isExporting ? (
