@@ -1,9 +1,8 @@
 import { fileTypeFromBuffer } from "file-type"
-import { useCallback, useContext, useEffect, useRef, Fragment } from "react"
+import { useCallback, useContext, useEffect, useRef } from "react"
 import styled from "styled-components"
 import Canvas from "./components/canvas"
 import Exports from "./components/exports"
-import GlobalConfiguration from "./components/globalConfigurations"
 import LayerList from "./components/layerList"
 import LayerSettings from "./components/layerSettings"
 import Button from "./components/reusables/buttons"
@@ -14,7 +13,8 @@ import { CanvasLoadingProvider } from "./providers/canvasloading/provider"
 import { ShepherdTourContext } from "./providers/shepherd/shepherdContext"
 import { StoreActionType } from "./providers/store/reducer"
 import { PushTop } from "./styles/global"
-import FloatingButtons from "./components/floatingButtons"
+import CanvasToolbar from "./components/canvasToolbar"
+import { CanvasToolbarProvider } from "./hooks/useCanvasToolbar"
 
 function App() {
   const { state, dispatch } = useStore()
@@ -84,12 +84,12 @@ function App() {
           </LogoContainer>
           <ImageInput onChange={onImageChange} ref={imageRef} name="image" type="file" accept="image/*" />
           <LayerList />
-          <GlobalConfiguration />
+          {/* <GlobalConfiguration /> */}
           <Exports />
           {hasImage() && (
             <PushTop>
               <div style={{ padding: "24px" }}>
-                <Button $full variant={hasImage() ? "outline" : "primary"} onClick={onClickInputButton} type="button">
+                <Button full variant={hasImage() ? "outline" : "primary"} onClick={onClickInputButton} type="button">
                   Change Image
                 </Button>
               </div>
@@ -103,10 +103,10 @@ function App() {
         )}
         <RightColumn>
           {hasImage() ? (
-            <Fragment>
+            <CanvasToolbarProvider>
               <Canvas />
-              <FloatingButtons />
-            </Fragment>
+              <CanvasToolbar />
+            </CanvasToolbarProvider>
           ) : (
             <EmptyImageContainer>
               <UploadArea ref={imageRef} onChange={onImageChange} />

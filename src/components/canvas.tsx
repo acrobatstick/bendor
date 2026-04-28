@@ -3,6 +3,7 @@ import { flushSync } from "react-dom"
 import Moveable from "react-moveable"
 import styled, { keyframes } from "styled-components"
 import { useCanvasLoading } from "~/hooks/useCanvasLoading"
+import { useCanvasToolbarContext } from "~/hooks/useCanvasToolbar"
 import useProcessCanvas from "~/hooks/useProcessCanvas"
 import { useStore } from "~/hooks/useStore"
 import { ShepherdTourContext } from "~/providers/shepherd/shepherdContext"
@@ -13,6 +14,7 @@ import { markProcessingDone } from "~/utils/processing"
 
 function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
   const { loading, start, stop } = useCanvasLoading()
+  const { frame, setFrame, moveableRef, onMwheelZoom } = useCanvasToolbarContext()
   const { state, dispatch } = useStore()
   const tour = useContext(ShepherdTourContext)
 
@@ -28,57 +30,11 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
 
   const containerRef = useRef<HTMLDivElement>(null)
   const [targetMoveable, setTargetMoveable] = useState<HTMLElement | null>(null)
-  const [frame, setFrame] = useState({ x: 0, y: 0, scale: 1 })
   // set Moveable target to the canvas container on the first render
   useEffect(() => {
     if (containerRef.current && canvasContainerRef.current) {
       setTargetMoveable(canvasContainerRef.current)
     }
-  }, [])
-  const moveableRef = useRef<Moveable>(null)
-  // for the sake of updating the moveable component whenever the scale changes
-  // so it wont leave a stale moveable state
-  useEffect(() => {
-    moveableRef.current?.updateRect()
-  }, [frame.scale])
-
-  // handle middle click panning for the moveable component
-  useEffect(() => {
-    let isMiddle = false
-
-    const down = (e: MouseEvent) => {
-      if (e.button === 1) {
-        e.preventDefault()
-        isMiddle = true
-      }
-    };
-
-    const move = (e: MouseEvent) => {
-      if (!isMiddle) return
-      setFrame(prev => ({
-        ...prev,
-        x: prev.x + e.movementX,
-        y: prev.y + e.movementY,
-      }))
-      moveableRef.current?.updateRect()
-    };
-
-    const up = (e: MouseEvent) => {
-      if (e.button === 1) {
-        isMiddle = false
-      }
-      moveableRef.current?.updateRect()
-    };
-
-    window.addEventListener("mousedown", down)
-    window.addEventListener("mousemove", move)
-    window.addEventListener("mouseup", up)
-
-    return () => {
-      window.removeEventListener("mousedown", down)
-      window.removeEventListener("mousemove", move)
-      window.removeEventListener("mouseup", up)
-    };
   }, [])
 
   useEffect(() => {
@@ -714,31 +670,14 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
     )
   }
 
-
   return (
-    <Container
-      ref={containerRef}
-      onWheel={(e: React.WheelEvent<HTMLDivElement>) => {
-        e.preventDefault()
-        const zoomIntensity = 0.001
-        const nextScale = frame.scale - e.deltaY * zoomIntensity
-        const clampedScale = Math.min(Math.max(nextScale, 0.5), 3)
-        if (clampedScale <= 1) {
-          return
-        }
-        setFrame((prev) => ({
-          ...prev,
-          scale: clampedScale
-        }))
-        moveableRef.current?.updateRect()
-      }}
-    >
+    <Container ref={containerRef} onWheel={(e: React.WheelEvent<HTMLDivElement>) => onMwheelZoom(e)}>
       <CanvasContainer
         id="canvasContainer"
         ref={canvasContainerRef}
         {...props}
         style={{
-          transform: `translate(${frame.x}px, ${frame.y}px) scale(${frame.scale})`,
+          transform: `translate(${frame.x}px, ${frame.y}px) scale(${frame.scale})`
         }}
       >
         <canvas
@@ -762,8 +701,10 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
         draggable={state.mode === "move"}
         onDrag={({ beforeTranslate }) => {
           const [x, y] = beforeTranslate
-          setFrame(prev => ({
-            ...prev, x, y
+          setFrame((prev) => ({
+            ...prev,
+            x,
+            y
           }))
         }}
       />

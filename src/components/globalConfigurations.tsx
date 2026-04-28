@@ -4,12 +4,13 @@ import { StoreActionType } from "~/providers/store/reducer"
 import { FlexEnd, FlexGap } from "~/styles/global"
 import Switch from "./reusables/switch"
 import { H5, Text } from "./reusables/typography"
+import type { State } from "~/types"
 
 const GlobalConfiguration = () => {
   const { dispatch, state } = useStore()
 
   const onChangeMode = () => {
-    let mode: "edit" | "move" = "move"
+    let mode: State["mode"]
     if (state.mode === "edit") {
       mode = "move"
     } else {
