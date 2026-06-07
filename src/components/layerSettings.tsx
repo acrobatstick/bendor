@@ -13,7 +13,7 @@ import Button from "./reusables/buttons"
 import { Select } from "./reusables/select"
 import { H4, Label } from "./reusables/typography"
 
-const LayerSettings = () => {
+const LayerSettings = ({ isHidden }: { isHidden: boolean }) => {
   const { state, dispatch } = useStore()
   const { start } = useCanvasLoading()
 
@@ -54,7 +54,7 @@ const LayerSettings = () => {
   }
 
   return (
-    <Container>
+    <Container $isHidden={isHidden}>
       <H4 style={{ marginBottom: "12px" }}>Layer Configurations</H4>
       <Label>Filter</Label>
       <Select
@@ -94,7 +94,7 @@ const LayerSettings = () => {
   )
 }
 
-const Container = styled.div`
+const Container = styled.div<{ $isHidden: boolean }>`
   padding: 24px;
   flex: 1; // stretch the height until the next element
   min-height: 0;
@@ -105,6 +105,12 @@ const Container = styled.div`
     flex: none;
     min-height: auto;
   }
+  ${({ $isHidden }) =>
+    $isHidden &&
+    `
+      visibility: hidden;
+      pointer-events: none;
+`}
 `
 
 const Actions = styled.div`
