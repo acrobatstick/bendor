@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useRef } from "react"
+import { useCallback, useContext, useEffect, useRef, useState } from "react"
 import styled from "styled-components"
 import Canvas from "./components/canvas"
 import Exports from "./components/exports"
@@ -15,6 +15,7 @@ import CanvasToolbar from "./components/canvasToolbar"
 import { CanvasToolbarProvider } from "./hooks/useCanvasToolbar"
 import { StoreActionType } from "./providers/store/reducer"
 import { fileTypeFromBuffer } from "file-type"
+import Divider from "./components/divider"
 
 function App() {
   const { state, dispatch } = useStore()
@@ -69,9 +70,11 @@ function App() {
     }
   }, [tour, hasImage])
 
+  const [settingsWidth, setSettingsWidth] = useState(250)
+
   return (
     <CanvasLoadingProvider>
-      <Layout columns={hasActiveLayer() ? 2 : 1}>
+      <Layout $settingsWidth={settingsWidth} columns={hasActiveLayer() ? 2 : 1}>
         <LeftColumn>
           <LogoContainer>
             <H1>bendor</H1>
@@ -97,7 +100,8 @@ function App() {
         </LeftColumn>
         {hasActiveLayer() && (
           <LeftColumn id="layerSettings">
-            <LayerSettings />
+            <LayerSettings isHidden={settingsWidth < 250} />
+            <Divider maxSize={250} minSize={0} onResize={setSettingsWidth} />
           </LeftColumn>
         )}
         <RightColumn>
@@ -114,9 +118,12 @@ function App() {
   )
 }
 
-const Layout = styled.div<{ columns?: number }>`
+const Layout = styled.div<{
+  columns?: number
+  $settingsWidth?: number
+}>`
   display: grid;
-  grid-template-columns: ${({ columns = 1 }) => (columns === 2 ? "330px 250px 1fr" : "330px 1fr")};
+  grid-template-columns: ${({ columns = 1, $settingsWidth = 250 }) => (columns === 2 ? `330px ${$settingsWidth}px 1fr` : "330px 1fr")};
   min-height: 100vh;
   width: 100%;
   overflow-wrap: break-word;
@@ -129,9 +136,7 @@ const Layout = styled.div<{ columns?: number }>`
 `
 
 const LeftColumn = styled.div`
-  top: 0;
-  left: 0;
-  position: sticky;
+  position: relative;
   display: flex;
   flex-direction: column;
   background-color: white;
