@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useRef, useState } from "react"
+import { useContext, useEffect, useRef, useState } from "react"
 import { flushSync } from "react-dom"
 import Moveable from "react-moveable"
 import styled, { keyframes } from "styled-components"
@@ -21,10 +21,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
   const imageCanvasRef = useRef<HTMLCanvasElement>(null)
   const canvasContainerRef = useRef<HTMLDivElement>(null)
   const drawManagerRef = useRef<DrawManager>(new DrawManager())
-  const [ongoingTouches, setOngoingTouches] = useState<Touch[]>([])
   const [selectionMovable, setSelectionMovable] = useState<boolean>(false)
-
-  const getOngoingTouchById = useCallback((id: number) => ongoingTouches.findIndex((t) => t.identifier === id), [ongoingTouches])
 
   const { process, processed } = useProcessCanvas()
 
@@ -163,99 +160,6 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
       })
     }
 
-    const onTouchStart = (e: TouchEvent) => {
-      e.preventDefault()
-      const touches = e.changedTouches
-      if (touches.length > 0) {
-        const point = getMouseCanvasCoordinates(activeCanvas, touches[0].clientX, touches[0].clientY)
-        drawManagerRef.current.reset()
-        drawManagerRef.current.begin(point)
-        setOngoingTouches([touches[0]])
-        drawManagerRef.current.renderSelection(drawingCanvasCtx, activeCanvas, state.currentLayer!.color)
-      }
-    }
-
-    const onTouchMove = (e: TouchEvent) => {
-      if (!drawManagerRef.current.isDrawing) return
-      const touches = e.changedTouches
-      for (let i = 0; i < touches.length; i++) {
-        const idx = getOngoingTouchById(touches[i].identifier)
-        if (idx >= 0) {
-          const point = getMouseCanvasCoordinates(activeCanvas, touches[i].clientX, touches[i].clientY)
-          drawManagerRef.current.update(point)
-          setOngoingTouches((prev) => {
-            const updated = [...prev]
-            updated.splice(idx, 1, touches[i])
-            return updated
-          })
-        }
-      }
-      drawManagerRef.current.renderSelection(drawingCanvasCtx, activeCanvas, state.currentLayer!.color)
-    }
-
-    const onTouchEnd = (e: TouchEvent) => {
-      if (!drawManagerRef.current.isDrawing) return
-      e.preventDefault()
-      drawManagerRef.current.finish()
-      const touches = e.changedTouches
-      for (let i = 0; i < touches.length; i++) {
-        const idx = getOngoingTouchById(touches[i].identifier)
-        if (idx >= 0) {
-          setOngoingTouches((prev) => prev.filter((_, j) => j !== idx))
-        }
-      }
-      drawManagerRef.current.renderSelection(drawingCanvasCtx, activeCanvas, state.currentLayer!.color)
-      start()
-      requestIdleCallback(() => {
-        drawManagerRef.current.getSelectArea()
-        const { points, startPoint } = drawManagerRef.current
-        dispatch({
-          type: StoreActionType.SetPointsToLayer,
-          payload: {
-            points,
-            start: startPoint!
-          }
-        })
-        const imageCanvas = imageCanvasRef.current
-        const imageCtx = imageCanvas?.getContext("2d")
-        if (!imageCtx) return
-        const selectionArea = drawManagerRef.current.getSelectedAreaCoords()
-        dispatch({
-          type: StoreActionType.UpdateLayerSelection,
-          payload: {
-            layerIdx: state.selectedLayerIdx,
-            pselection: {
-              selectionArea
-            },
-            withUpdateInitialPresent: true
-          }
-        })
-        const [, , minX, minY] = drawManagerRef.current.getPointsBoundingBox()
-        drawManagerRef.current.mouseStartPos = { x: minX, y: minY }
-        if (tour?.isActive) {
-          if (!drawManagerRef.current.isAllArea && tour.getCurrentStep()?.id === "selectArea") {
-            tour.next()
-          }
-          if (drawManagerRef.current.isAllArea && tour.getCurrentStep()?.id === "selectAllArea") {
-            tour.next()
-          }
-        }
-        dispatch({ type: StoreActionType.RequestProcessing })
-      })
-    }
-
-    const onTouchCancel = (e: TouchEvent) => {
-      e.preventDefault()
-      const touches = e.changedTouches
-      for (let i = 0; i < touches.length; i++) {
-        const idx = getOngoingTouchById(touches[i].identifier)
-        if (idx >= 0) {
-          setOngoingTouches((prev) => prev.filter((_, j) => j !== idx))
-        }
-      }
-      drawManagerRef.current.finish()
-    }
-
     const onMouseOut = () => {
       if (!drawManagerRef.current.isDrawing) return
       document.addEventListener("mousemove", handleMouseMoveOutside)
@@ -327,28 +231,13 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
       activeCanvas.addEventListener("mousedown", onMouseDown, ctrl)
       activeCanvas.addEventListener("mousemove", onMouseMove, ctrl)
       activeCanvas.addEventListener("mouseup", onMouseUp, ctrl)
-      activeCanvas.addEventListener("touchstart", onTouchStart, ctrl)
-      activeCanvas.addEventListener("touchmove", onTouchMove, ctrl)
-      activeCanvas.addEventListener("touchend", onTouchEnd, ctrl)
-      activeCanvas.addEventListener("touchcancel", onTouchCancel, ctrl)
       activeCanvas.addEventListener("mouseout", onMouseOut, ctrl)
     }
 
     return () => {
       ctrl.abort()
     }
-  }, [
-    state.selectedLayerIdx,
-    state.currentLayer,
-    state.mode,
-    dispatch,
-    getOngoingTouchById,
-    start,
-    stop,
-    tour?.isActive,
-    tour?.getCurrentStep,
-    tour?.next
-  ])
+  }, [state.selectedLayerIdx, state.currentLayer, state.mode, dispatch, start, stop, tour?.isActive, tour?.getCurrentStep, tour?.next])
 
   // Handle selection render on layer index change
   useEffect(() => {

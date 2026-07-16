@@ -16,9 +16,13 @@ import { CanvasToolbarProvider } from "./hooks/useCanvasToolbar"
 import { StoreActionType } from "./providers/store/reducer"
 import { fileTypeFromBuffer } from "file-type"
 import Divider from "./components/divider"
+import { isMobile as isUserAgentMobile } from "react-device-detect"
+import { IncompatibleDevice } from "./components/incompatibleDevice"
 
 function App() {
   const { state, dispatch } = useStore()
+
+  const [settingsWidth, setSettingsWidth] = useState(250)
   const imageRef = useRef<HTMLInputElement>(null)
 
   const tour = useContext(ShepherdTourContext)
@@ -70,7 +74,10 @@ function App() {
     }
   }, [tour, hasImage])
 
-  const [settingsWidth, setSettingsWidth] = useState(250)
+  const isMobile = isUserAgentMobile || window.innerWidth < 768
+  if (isMobile) {
+    return <IncompatibleDevice />
+  }
 
   return (
     <CanvasLoadingProvider>
