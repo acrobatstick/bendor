@@ -237,17 +237,7 @@ function Canvas(props: React.HTMLAttributes<HTMLDivElement>) {
     return () => {
       ctrl.abort()
     }
-  }, [
-    state.selectedLayerIdx,
-    state.currentLayer,
-    state.mode,
-    dispatch,
-    start,
-    stop,
-    tour?.isActive,
-    tour?.getCurrentStep,
-    tour?.next
-  ])
+  }, [state.selectedLayerIdx, state.currentLayer, state.mode, dispatch, start, stop, tour?.isActive, tour?.getCurrentStep, tour?.next])
 
   // Handle selection render on layer index change
   useEffect(() => {
